@@ -641,7 +641,7 @@
         <script src="data/PThuDuc_3.js"></script>
 
         <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4OWjSTyoszUY4PG4KnsLs8zXXlJxOkOfd9_3bnqOepXFM9rF7J3fgmaWlqnPYVXKX/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXxLRvG5XrVUeOSCRc8WMmtYV4cyc-bA7-rPIo2qGERu32w0_ahnItJNIKfc0udijL/exec';
 
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
@@ -965,11 +965,10 @@
                 redirect: 'follow'
             })
             .then(response => {
-                if (!response.ok) throw new Error('Yêu cầu danh sách thất bại.');
                 return response.json();
             })
             .then(data => {
-                if(data.status === "success" && data.files.length > 0) {
+                if(data.status === "success" && data.files && data.files.length > 0) {
                     let listHTML = "";
                     data.files.forEach(file => {
                         listHTML += `
@@ -979,13 +978,15 @@
                             </div>`;
                     });
                     $('#drive-files-list').html(listHTML);
+                } else if (data.status === "error") {
+                    $('#drive-files-list').html(`<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Lỗi hệ thống: ${data.message}</p>`);
                 } else {
-                    $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px;">Không tìm thấy tệp bản đồ (.kml, .kmz) nào trong thư mục.</p>');
+                    $('#drive-files-list').html('<p style="text-align:center; color:#888; font-size:13px; padding: 10px;">Không tìm thấy tệp bản đồ (.kml, .kmz) nào trong thư mục này.</p>');
                 }
             })
             .catch(err => {
                 console.error(err);
-                $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Không thể tải danh sách. Hãy kiểm tra phân quyền Deploy cấu hình (Anyone) và ID Folder Drive trên mã Apps Script.</p>');
+                $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Không thể tải danh sách. Hãy kiểm tra phân quyền Deploy Web App (Mọi người/Anyone), bật chia sẻ link thư mục Google Drive.</p>');
             });
         }
 
@@ -998,7 +999,6 @@
                 redirect: 'follow'
             })
             .then(response => {
-                if (!response.ok) throw new Error('Tải tệp tin thất bại.');
                 return response.json();
             })
             .then(async (data) => {
@@ -1015,24 +1015,22 @@
                         dom = (new DOMParser()).parseFromString(data.content, 'text/xml');
                     }
                     
-                    // Giải phóng lớp cũ trước khi nạp để tránh chồng lấn dữ liệu
                     extState.kmzIndividualLayers.forEach(l => map.removeLayer(l.layer));
                     extState.kmzIndividualLayers = [];
                     externalLayersNode.children = [];
 
                     processAndAppendParsedLayer(dom, fileName, kmzFiles);
                 } else {
-                    showToast("Lỗi phản hồi nội dung file dữ liệu từ Drive.", "error");
+                    showToast(`Lỗi Drive: ${data.message}`, "error");
                     toggleLoading(false);
                 }
             })
             .catch(err => {
                 console.error(err);
-                showToast("Lỗi tải tệp tin từ hệ thống Drive đám mây.", "error");
+                showToast("Lỗi giải mã cấu trúc tệp dữ liệu từ Drive.", "error");
                 toggleLoading(false);
             });
         }
-        // ----------------------------------------------------
 
         function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
         function toggleDirectionsModal(show) { $('#directions-modal').toggleClass('visible', show); if(!show) { resetMapPickers(); } }
@@ -1214,6 +1212,7 @@
 
         $('#custom-directions-btn').click(function(e) { e.preventDefault(); if (extState.userGPSPosition && !document.getElementById('directions-start-input').value.trim()) { document.getElementById('directions-start-input').value = 'Vị trí của tôi'; } toggleDirectionsModal(true); });
 
+        // ĐÃ KHẮC PHỤC LỖI TẠI ĐÂY: Thêm '$(' và bọc nháy đơn đúng cấu trúc jQuery selector
         $('#get-directions-btn').click(async function() {
             if (extState.routingControl) { map.removeControl(extState.routingControl); extState.routingControl = null; }
             document.getElementById('route-summary-modal').style.display = 'none'; extState.currentActiveRouteGeo = null; extState.currentActiveInstructions = null;
