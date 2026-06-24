@@ -6,7 +6,7 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <title>Quản lý</title>
+        <title>Quản lý </title>
         
         <link rel="stylesheet" href="css/leaflet.css">
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
@@ -198,6 +198,39 @@
             font-family: 'Georgia', serif;
         }
 
+        #draw-edit-overlay-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 3000;
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            align-items: center;
+            border: 1px solid #28a745;
+        }
+        #draw-edit-overlay-container span {
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn-draw-helper {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-draw-undo { background-color: #ff9800; }
+        .btn-draw-undo:hover { background-color: #e65100; }
+        .btn-draw-cancel { background-color: #d32f2f; }
+        .btn-draw-cancel:hover { background-color: #b71c1c; }
+
         .modal-overlay { 
             position: fixed; 
             top: 0; 
@@ -368,14 +401,14 @@
         .drive-file-item {
             padding: 10px;
             border-bottom: 1px solid #eee;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             transition: background 0.2s;
         }
         .drive-file-item:hover { background: #f5f5f5; }
-        .drive-file-item span { font-size: 14px; color: #333; font-weight: 500; }
+        .drive-file-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; font-size: 14px; color: #333; font-weight: 500; margin: 0; }
+        .drive-file-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
         @media (max-width: 767px) {
             .leaflet-top.leaflet-right { top: 65px !important; }
@@ -411,6 +444,12 @@
         </svg>
 
         <div id="map"></div>
+
+        <div id="draw-edit-overlay-container" style="display: none;">
+            <span>CHẾ ĐỘ VẼ:</span>
+            <button class="btn-draw-helper btn-draw-undo" id="btn-draw-undo-node" title="Xóa điểm/nút vừa chấm sai">↩ Hủy nút vừa chấm</button>
+            <button class="btn-draw-helper btn-draw-cancel" id="btn-draw-cancel-all" title="Hủy vẽ lại toàn bộ">❌ Hủy nét vẽ</button>
+        </div>
 
         <div id="search-ui-container">
             <input type="text" id="search-input" placeholder="Địa danh, Tọa độ DMS hoặc link Maps...">
@@ -529,16 +568,20 @@
         <div id="drive-browser-modal" class="modal-overlay">
             <div class="modal-content" style="max-width: 450px;">
                 <button class="modal-close-btn" onclick="$('#drive-browser-modal').removeClass('visible')">×</button>
-                <h3>Kho bản đồ:</h3>
-                <p style="font-size:12px; color:#666; margin-top:-5px;">Chọn một dữ liệu dưới đây để nạp nhanh vào lớp dữ liệu ngoại vi.</p>
+                <h3>Kho bản đồ dữ liệu:</h3>
+                <p style="font-size:12px; color:#666; margin-top:-5px;">Tích chọn một hoặc nhiều lớp bản đồ dưới đây để mở đồng thời.</p>
                 <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
                 
                 <div id="drive-files-list" style="max-height: 300px; overflow-y: auto;">
                     <p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>
                 </div>
                 
-                <div class="modal-footer" style="margin-top: 15px;">
-                    <button class="btn-action btn-gray" onclick="$('#drive-browser-modal').removeClass('visible')" style="border-radius:20px;">Đóng</button>
+                <div class="modal-footer" style="margin-top: 15px; justify-content: space-between; display: flex; align-items: center;">
+                    <button class="btn-action btn-gray" onclick="clearAllExternalLayers()" style="border-radius:20px; font-size:11px; background-color:#6c757d;">Xóa hết lớp nền cũ</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-action btn-gray" onclick="$('#drive-browser-modal').removeClass('visible')" style="border-radius:20px;">Đóng</button>
+                        <button class="btn-action btn-blue" onclick="loadSelectedDriveFiles()" style="border-radius:20px; padding: 8px 18px;">NẠP LỚP ĐÃ CHỌN</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -886,36 +929,92 @@
             })
         });
         
-        // CẤU HÌNH ĐÃ ĐƯỢC HIỆU CHỈNH: Tối ưu hóa đo khoảng cách/vẽ đường mượt mà trên di động
         var drawLineHandler = new L.Draw.Polyline(map, {
             shapeOptions: { color: '#007bff', weight: 4 },
             metric: true,
             feet: false,
             nautic: false,
             repeatMode: false,
-            touchExtend: true // Cho phép ghi nhận cảm ứng kéo dài liên tục trên Mobile
+            touchExtend: true
         });
 
         var drawPolyHandler = new L.Draw.Polygon(map, {
             shapeOptions: { color: '#28a745', weight: 3, fillOpacity: 0.2 }, metric: true
         });
 
+        var activeCurrentHandler = null;
+
+        function showDrawHelperUI(handler, isLineOrPoly) {
+            activeCurrentHandler = handler;
+            if (isLineOrPoly) {
+                $('#draw-edit-overlay-container').show();
+                $('#btn-draw-undo-node').show();
+            } else {
+                $('#draw-edit-overlay-container').show();
+                $('#btn-draw-undo-node').hide();
+            }
+        }
+
+        function hideDrawHelperUI() {
+            $('#draw-edit-overlay-container').hide();
+            activeCurrentHandler = null;
+        }
+
+        $('#btn-draw-undo-node').click(function(e) {
+            e.preventDefault();
+            if (activeCurrentHandler && typeof activeCurrentHandler.deleteLastVertex === 'function') {
+                activeCurrentHandler.deleteLastVertex();
+                showToast("Đã xóa nút vừa chấm gần nhất.", "info");
+            }
+        });
+
+        $('#btn-draw-cancel-all').click(function(e) {
+            e.preventDefault();
+            if (activeCurrentHandler) {
+                activeCurrentHandler.disable();
+                $('#custom-draw-marker-btn, #custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active');
+                hideDrawHelperUI();
+                showToast("Đã hủy thao tác vẽ hiện tại.", "info");
+            }
+        });
+
         $('#custom-draw-marker-btn').click(function(e) {
             e.preventDefault(); drawLineHandler.disable(); drawPolyHandler.disable();
             $(this).toggleClass('btn-active'); $('#custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active');
-            if ($(this).hasClass('btn-active')) { drawMarkerHandler.enable(); showToast("Bắt đầu chọn vị trí. Nhấp vào bản đồ để tạo điểm mốc.", "info"); } else { drawMarkerHandler.disable(); }
+            if ($(this).hasClass('btn-active')) { 
+                drawMarkerHandler.enable(); 
+                showDrawHelperUI(drawMarkerHandler, false);
+                showToast("Bắt đầu chọn vị trí. Nhấp vào bản đồ để tạo điểm mốc.", "info"); 
+            } else { 
+                drawMarkerHandler.disable(); 
+                hideDrawHelperUI();
+            }
         });
 
         $('#custom-draw-line-btn').click(function(e) {
             e.preventDefault(); drawMarkerHandler.disable(); drawPolyHandler.disable();
             $(this).toggleClass('btn-active'); $('#custom-draw-marker-btn, #custom-draw-poly-btn').removeClass('btn-active');
-            if ($(this).hasClass('btn-active')) { drawLineHandler.enable(); showToast("Bắt đầu vẽ đường. Nhấp đúp (hoặc nhấp vào điểm cuối) để kết thúc nét vẽ.", "info"); } else { drawLineHandler.disable(); }
+            if ($(this).hasClass('btn-active')) { 
+                drawLineHandler.enable(); 
+                showDrawHelperUI(drawLineHandler, true);
+                showToast("Bắt đầu vẽ đường. Nhấp đúp hoặc bấm nút phụ để hiệu chỉnh.", "info"); 
+            } else { 
+                drawLineHandler.disable(); 
+                hideDrawHelperUI();
+            }
         });
 
         $('#custom-draw-poly-btn').click(function(e) {
             e.preventDefault(); drawMarkerHandler.disable(); drawLineHandler.disable();
             $(this).toggleClass('btn-active'); $('#custom-draw-marker-btn, #custom-draw-line-btn').removeClass('btn-active');
-            if ($(this).hasClass('btn-active')) { drawPolyHandler.enable(); showToast("Bắt đầu vẽ vùng / Đo diện tích. Nhấp vào điểm đầu để khép góc.", "info"); } else { drawPolyHandler.disable(); }
+            if ($(this).hasClass('btn-active')) { 
+                drawPolyHandler.enable(); 
+                showDrawHelperUI(drawPolyHandler, true);
+                showToast("Bắt đầu vẽ vùng. Nhấp điểm đầu để khép góc hoặc bấm nút phụ để sửa node.", "info"); 
+            } else { 
+                drawPolyHandler.disable(); 
+                hideDrawHelperUI();
+            }
         });
 
         map.on(L.Draw.Event.CREATED, function (event) {
@@ -933,6 +1032,7 @@
             }
             layer.bindPopup(popupContent).addTo(drawnItems); layer.openPopup();
             $('#custom-draw-marker-btn, #custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active'); $('#custom-export-kml-btn').show();
+            hideDrawHelperUI();
         });
 
         $('#custom-export-kml-btn').click(function(e) {
@@ -987,6 +1087,7 @@
             loadDriveFilesList();
         });
 
+        // HIỆU CHỈNH: Render danh sách dạng Checkbox để tích chọn nhiều file cùng lúc
         function loadDriveFilesList() {
             $('#drive-files-list').html('<p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>');
             
@@ -994,17 +1095,20 @@
                 method: 'GET',
                 redirect: 'follow'
             })
-            .then(response => {
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if(data.status === "success" && data.files && data.files.length > 0) {
                     let listHTML = "";
                     data.files.forEach(file => {
+                        // Kiểm tra file này đã được nạp lên bản đồ trước đó chưa để giữ trạng thái Checked
+                        const isLoaded = extState.kmzIndividualLayers.some(l => l.name === file.name);
                         listHTML += `
-                            <div class="drive-file-item" onclick="loadKmlFromDrive('${file.id}', '${file.name}')">
-                                <svg style="width:20px; height:20px; fill:#1a73e8;" viewBox="0 0 24 24"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>
-                                <span>${file.name}</span>
+                            <div class="drive-file-item">
+                                <label>
+                                    <input type="checkbox" class="drive-select-file" data-id="${file.id}" data-name="${file.name}" ${isLoaded ? 'checked' : ''}>
+                                    <svg style="width:20px; height:20px; fill:#1a73e8; flex-shrink:0;" viewBox="0 0 24 24"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>
+                                    <span>${file.name}</span>
+                                </label>
                             </div>`;
                     });
                     $('#drive-files-list').html(listHTML);
@@ -1016,50 +1120,96 @@
             })
             .catch(err => {
                 console.error(err);
-                $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Không thể tải danh sách. Hãy kiểm tra phân quyền Deploy Web App (Mọi người/Anyone), bật chia sẻ link thư mục Google Drive.</p>');
+                $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Không thể tải danh sách. Hãy kiểm tra cài đặt thư mục Google Drive.</p>');
             });
         }
 
-        function loadKmlFromDrive(fileId, fileName) {
+        // BỔ SUNG: Hàm xóa sạch các lớp dữ liệu ngoại vi nếu người dùng muốn làm sạch bản đồ
+        function clearAllExternalLayers() {
+            if (extState.kmzIndividualLayers.length === 0) {
+                showToast("Không có lớp ngoại vi nào đang mở.", "info");
+                return;
+            }
+            extState.kmzIndividualLayers.forEach(l => map.removeLayer(l.layer));
+            extState.kmzIndividualLayers = [];
+            externalLayersNode.children = [];
+            refreshLayerTreeControl();
+            $('.drive-select-file').prop('checked', false);
+            showToast("Đã xóa sạch toàn bộ các lớp bản đồ ngoại vi.", "success");
+        }
+
+        // HIỆU CHỈNH: Xử lý nạp đồng thời nhiều file được tích chọn từ danh sách
+        async function loadSelectedDriveFiles() {
+            const selectedCheckboxes = $('.drive-select-file:checked');
+            if (selectedCheckboxes.length === 0) {
+                showToast("Vui lòng tích chọn ít nhất một lớp bản đồ để nạp!", "error");
+                return;
+            }
+            
             $('#drive-browser-modal').removeClass('visible');
             toggleLoading(true);
-
-            fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${fileId}`, {
-                method: 'GET',
-                redirect: 'follow'
-            })
-            .then(response => {
-                return response.json();
-            })
-            .then(async (data) => {
-                if(data.status === "success") {
-                    let dom; let kmzFiles = {};
-                    if (fileName.toLowerCase().endsWith('.kmz')) {
-                        const zip = await JSZip.loadAsync(data.content, {base64: true});
-                        const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
-                        if (!kmlFile) throw new Error("Không tìm thấy dữ liệu cấu trúc KML bên trong.");
-                        dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
-                        zip.forEach((relativePath, zipEntry) => { if (!zipEntry.dir && relativePath !== kmlFile) kmzFiles[relativePath] = zipEntry.async('base64'); });
-                        for (const key in kmzFiles) kmzFiles[key] = await kmzFiles[key];
-                    } else {
-                        dom = (new DOMParser()).parseFromString(data.content, 'text/xml');
+            
+            const combinedBounds = L.latLngBounds();
+            let successCount = 0;
+            
+            // Duyệt tuần tự qua các file được chọn để tải dữ liệu
+            for (let i = 0; i < selectedCheckboxes.length; i++) {
+                const cb = $(selectedCheckboxes[i]);
+                const fileId = cb.data('id');
+                const fileName = cb.data('name');
+                
+                // Nếu lớp này đã được mở rồi thì bỏ qua không tải lại trùng lặp
+                if (extState.kmzIndividualLayers.some(l => l.name === fileName)) {
+                    successCount++;
+                    // Lấy lại layer bounds để extend gom chung tiêu điểm focus
+                    const existingLayer = extState.kmzIndividualLayers.find(l => l.name === fileName).layer;
+                    if (existingLayer.getBounds && existingLayer.getBounds().isValid()) {
+                        combinedBounds.extend(existingLayer.getBounds());
                     }
-                    
-                    extState.kmzIndividualLayers.forEach(l => map.removeLayer(l.layer));
-                    extState.kmzIndividualLayers = [];
-                    externalLayersNode.children = [];
-
-                    processAndAppendParsedLayer(dom, fileName, kmzFiles);
-                } else {
-                    showToast(`Lỗi Drive: ${data.message}`, "error");
-                    toggleLoading(false);
+                    continue;
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("Lỗi giải mã cấu trúc tệp dữ liệu từ Drive.", "error");
-                toggleLoading(false);
-            });
+                
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${fileId}`, { method: 'GET', redirect: 'follow' });
+                    const data = await response.json();
+                    
+                    if(data.status === "success") {
+                        let dom; let kmzFiles = {};
+                        if (fileName.toLowerCase().endsWith('.kmz')) {
+                            const zip = await JSZip.loadAsync(data.content, {base64: true});
+                            const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                            if (!kmlFile) throw new Error("Không tìm thấy dữ liệu cấu trúc KML bên trong.");
+                            dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                            
+                            // Sử dụng vòng lặp truyền thống thay cho zip.forEach để kiểm soát async/await an toàn
+                            const fileKeys = Object.keys(zip.files);
+                            for (const relativePath of fileKeys) {
+                                const zipEntry = zip.files[relativePath];
+                                if (!zipEntry.dir && relativePath !== kmlFile) {
+                                    kmzFiles[relativePath] = await zipEntry.async('base64');
+                                }
+                            }
+                        } else {
+                            dom = (new DOMParser()).parseFromString(data.content, 'text/xml');
+                        }
+                        
+                        // Tiến hành xử lý đưa lớp này vào bản đồ và tích hợp vào global bounds
+                        processAndAppendParsedLayer(dom, fileName, kmzFiles, combinedBounds, false);
+                        successCount++;
+                    }
+                } catch (err) {
+                    console.error(`Lỗi khi nạp file ${fileName}:`, err);
+                }
+            }
+            
+            // Cập nhật lại thanh quản lý lớp Layer Tree và Focus tâm bản đồ bao quát các lớp
+            refreshLayerTreeControl();
+            if (combinedBounds.isValid()) {
+                map.fitBounds(combinedBounds, { padding: [40, 40] });
+            }
+            
+            toggleLoading(false);
+            showToast(`Đã nạp thành công đồng thời ${successCount} lớp dữ liệu bản đồ!`, "success");
         }
 
         function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
@@ -1385,6 +1535,11 @@
             layerGroup.addTo(map);
             extState.kmzIndividualLayers.push({ name: layerName, layer: layerGroup });
             externalLayersNode.children.push({ label: layerName, layer: layerGroup });
+
+            // Extend gom bounds chung khi nạp ở chế độ chọn nhiều lớp
+            if (globalBounds && layerGroup.getBounds && layerGroup.getBounds().isValid()) {
+                globalBounds.extend(layerGroup.getBounds());
+            }
 
             if(singleMode) {
                 if (layerGroup.getBounds().isValid() && map) map.fitBounds(layerGroup.getBounds(), { padding: [40, 40] });
