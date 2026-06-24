@@ -410,6 +410,24 @@
         .drive-file-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; font-size: 14px; color: #333; font-weight: 500; margin: 0; }
         .drive-file-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
+        .drive-search-wrapper {
+            margin: 8px 0 12px 0;
+            position: relative;
+        }
+        .drive-search-wrapper input {
+            width: 100%;
+            padding: 10px 14px;
+            box-sizing: border-box;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            outline: none;
+            font-size: 13px;
+            transition: border-color 0.2s;
+        }
+        .drive-search-wrapper input:focus {
+            border-color: #1a73e8;
+        }
+
         @media (max-width: 767px) {
             .leaflet-top.leaflet-right { top: 65px !important; }
             #search-ui-container { top: 12px; padding: 2px 6px; width: 92%; }
@@ -526,7 +544,7 @@
                         <input type="text" id="directions-start-input" placeholder="Nhập địa điểm hoặc chọn từ bản đồ...">
                         <span class="inner-clear-btn" data-target="directions-start-input">×</span>
                         <button type="button" class="btn-map-picker" id="btn-pick-start" title="Chọn điểm bắt đầu từ Bản đồ">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5 1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                         </button>
                     </div>
                 </div>
@@ -551,12 +569,12 @@
                 <button class="modal-close-btn" onclick="$('#save-kml-modal').removeClass('visible')">×</button>
                 <h3 id="save-modal-title">Lưu dữ liệu đo vẽ</h3>
                 <div class="form-group" style="margin-top: 15px;">
-                    <label for="kml-filename">Tên File:</label>
-                    <input type="text" id="kml-filename" placeholder="Ví dụ: DoDac_KhuVuc_A">
+                    <label for="kml-filename">Tên File (Theo cấu trúc gợi ý):</label>
+                    <input type="text" id="kml-filename" placeholder="Ví dụ: NguyenVanA_KhaoSatCayXanh_ThuDuc">
                 </div>
                 <div class="form-group">
-                    <label for="kml-description" id="save-modal-desc-label">Mô tả nội dung đo vẽ:</label>
-                    <textarea id="kml-description" placeholder="Nhập mô tả chi tiết..."></textarea>
+                    <label for="kml-description" id="save-modal-desc-label">Mô tả nội dung đo vẽ chi tiết:</label>
+                    <textarea id="kml-description" placeholder="Ví dụ: Người thực hiện: Nguyễn Văn A&#10;Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đức..."></textarea>
                 </div>
                 <div class="modal-footer">
                     <button class="btn-action btn-gray" onclick="$('#save-kml-modal').removeClass('visible')" style="border-radius:20px;">HỦY</button>
@@ -572,7 +590,11 @@
                 <p style="font-size:12px; color:#666; margin-top:-5px;">Tích chọn một hoặc nhiều lớp bản đồ dưới đây để mở đồng thời.</p>
                 <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
                 
-                <div id="drive-files-list" style="max-height: 300px; overflow-y: auto;">
+                <div class="drive-search-wrapper">
+                    <input type="text" id="drive-search-input" placeholder="🔍 Gõ từ khóa để lọc nhanh file bản đồ...">
+                </div>
+                
+                <div id="drive-files-list" style="max-height: 260px; overflow-y: auto;">
                     <p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>
                 </div>
                 
@@ -1035,16 +1057,24 @@
             hideDrawHelperUI();
         });
 
+        // HIỆU CHỈNH: Trống dữ liệu mặc định để người dùng tự do điền thông tin theo định dạng gợi ý của Placeholder
         $('#custom-export-kml-btn').click(function(e) {
             e.preventDefault(); if (drawnItems.getLayers().length === 0) { showToast("Không tìm thấy dữ liệu tự vẽ nào để xuất.", "error"); return; }
             $('#save-modal-title').text("Lưu dữ liệu đo vẽ"); $('#save-modal-desc-label').text("Mô tả nội dung đo vẽ:");
-            $('#kml-filename').val("ThucDia_DoDac_" + new Date().toISOString().slice(0,10)); $('#kml-description').val("");
+            $('#kml-filename').val(""); // Xóa bỏ cấu trúc tự động "ThucDia_DoDac_..." cũ
+            $('#kml-description').val("");
             $('#btn-confirm-save-drive').off('click').on('click', executeSaveDrawingsToDrive); $('#save-kml-modal').addClass('visible');
         });
 
         function executeSaveDrawingsToDrive() {
-            var fileName = $('#kml-filename').val().trim(); var description = $('#kml-description').val().trim() || "Không có mô tả.";
-            if (!fileName) { alert("Vui lòng đặt tên file trước khi lưu trữ!"); return; }
+            var fileName = $('#kml-filename').val().trim(); var description = $('#kml-description').val().trim() || "Không có mô tả chi tiết.";
+            
+            // HIỆU CHỈNH: Ràng buộc yêu cầu nhập liệu để tránh người dùng lưu tệp trống thông tin
+            if (!fileName) { 
+                alert("Vui lòng nhập tên file theo cấu trúc gợi ý (Họ tên_Nội dung) để lưu trữ!"); 
+                return; 
+            }
+            
             if (APPS_SCRIPT_URL.includes('THAY_URL_APPS_SCRIPT')) { alert("Bạn chưa cấu hình URL Apps Script!"); return; }
             $('#save-kml-modal').removeClass('visible'); toggleLoading(true);
 
@@ -1052,13 +1082,13 @@
             drawnItems.eachLayer(function(layer) {
                 if (layer instanceof L.Marker) {
                     let pt = layer.getLatLng();
-                    kml += `  <Placemark>\n    <name>Diem khao sat thuc dia</name>\n    <description><![CDATA[Mô tả tổng: ${description}]]></description>\n    <Point>\n      <coordinates>${pt.lng},${pt.lat},0</coordinates>\n    </Point>\n  </Placemark>\n`;
+                    kml += `  <Placemark>\n    <name>Diem khao sat thuc dia</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <Point>\n      <coordinates>${pt.lng},${pt.lat},0</coordinates>\n    </Point>\n  </Placemark>\n`;
                 } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-                    kml += `  <Placemark>\n    <name>Duong do ve</name>\n    <description><![CDATA[Mô tả tổng: ${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
+                    kml += `  <Placemark>\n    <name>Duong do ve</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
                     layer.getLatLngs().forEach(pt => { kml += `        ${pt.lng},${pt.lat},0\n`; });
                     kml += `      </coordinates>\n    </LineString>\n  </Placemark>\n`;
                 } else if (layer instanceof L.Polygon) {
-                    kml += `  <Placemark>\n    <name>Vung do dac thuc dia</name>\n    <description><![CDATA[Mô tả tổng: ${description}]]></description>\n    <Polygon>\n      <outerBoundaryIs>\n        <LinearRing>\n          <coordinates>\n`;
+                    kml += `  <Placemark>\n    <name>Vung do dac thuc dia</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <Polygon>\n      <outerBoundaryIs>\n        <LinearRing>\n          <coordinates>\n`;
                     let pts = layer.getLatLngs()[0]; pts.forEach(pt => { kml += `            ${pt.lng},${pt.lat},0\n`; });
                     kml += `            ${pts[0].lng},${pts[0].lat},0\n`; kml += `          </coordinates>\n        </LinearRing>\n      </outerBoundaryIs>\n    </Polygon>\n  </Placemark>\n`;
                 }
@@ -1083,11 +1113,11 @@
         
         $('#custom-browse-drive-btn').click(function(e) {
             e.preventDefault();
+            $('#drive-search-input').val('');
             $('#drive-browser-modal').addClass('visible');
             loadDriveFilesList();
         });
 
-        // HIỆU CHỈNH: Render danh sách dạng Checkbox để tích chọn nhiều file cùng lúc
         function loadDriveFilesList() {
             $('#drive-files-list').html('<p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>');
             
@@ -1100,7 +1130,6 @@
                 if(data.status === "success" && data.files && data.files.length > 0) {
                     let listHTML = "";
                     data.files.forEach(file => {
-                        // Kiểm tra file này đã được nạp lên bản đồ trước đó chưa để giữ trạng thái Checked
                         const isLoaded = extState.kmzIndividualLayers.some(l => l.name === file.name);
                         listHTML += `
                             <div class="drive-file-item">
@@ -1124,7 +1153,18 @@
             });
         }
 
-        // BỔ SUNG: Hàm xóa sạch các lớp dữ liệu ngoại vi nếu người dùng muốn làm sạch bản đồ
+        $('#drive-search-input').on('keyup', function() {
+            var keyword = $(this).val().toLowerCase().trim();
+            $('.drive-file-item').each(function() {
+                var fileName = $(this).find('span').text().toLowerCase();
+                if (fileName.indexOf(keyword) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
         function clearAllExternalLayers() {
             if (extState.kmzIndividualLayers.length === 0) {
                 showToast("Không có lớp ngoại vi nào đang mở.", "info");
@@ -1138,7 +1178,6 @@
             showToast("Đã xóa sạch toàn bộ các lớp bản đồ ngoại vi.", "success");
         }
 
-        // HIỆU CHỈNH: Xử lý nạp đồng thời nhiều file được tích chọn từ danh sách
         async function loadSelectedDriveFiles() {
             const selectedCheckboxes = $('.drive-select-file:checked');
             if (selectedCheckboxes.length === 0) {
@@ -1152,16 +1191,13 @@
             const combinedBounds = L.latLngBounds();
             let successCount = 0;
             
-            // Duyệt tuần tự qua các file được chọn để tải dữ liệu
             for (let i = 0; i < selectedCheckboxes.length; i++) {
                 const cb = $(selectedCheckboxes[i]);
                 const fileId = cb.data('id');
                 const fileName = cb.data('name');
                 
-                // Nếu lớp này đã được mở rồi thì bỏ qua không tải lại trùng lặp
                 if (extState.kmzIndividualLayers.some(l => l.name === fileName)) {
                     successCount++;
-                    // Lấy lại layer bounds để extend gom chung tiêu điểm focus
                     const existingLayer = extState.kmzIndividualLayers.find(l => l.name === fileName).layer;
                     if (existingLayer.getBounds && existingLayer.getBounds().isValid()) {
                         combinedBounds.extend(existingLayer.getBounds());
@@ -1181,7 +1217,6 @@
                             if (!kmlFile) throw new Error("Không tìm thấy dữ liệu cấu trúc KML bên trong.");
                             dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
                             
-                            // Sử dụng vòng lặp truyền thống thay cho zip.forEach để kiểm soát async/await an toàn
                             const fileKeys = Object.keys(zip.files);
                             for (const relativePath of fileKeys) {
                                 const zipEntry = zip.files[relativePath];
@@ -1193,7 +1228,6 @@
                             dom = (new DOMParser()).parseFromString(data.content, 'text/xml');
                         }
                         
-                        // Tiến hành xử lý đưa lớp này vào bản đồ và tích hợp vào global bounds
                         processAndAppendParsedLayer(dom, fileName, kmzFiles, combinedBounds, false);
                         successCount++;
                     }
@@ -1202,7 +1236,6 @@
                 }
             }
             
-            // Cập nhật lại thanh quản lý lớp Layer Tree và Focus tâm bản đồ bao quát các lớp
             refreshLayerTreeControl();
             if (combinedBounds.isValid()) {
                 map.fitBounds(combinedBounds, { padding: [40, 40] });
@@ -1320,8 +1353,8 @@
 
         $('#btn-save-route-kml').click(function(e) {
             e.preventDefault(); if (!extState.currentActiveRouteGeo || extState.currentActiveRouteGeo.length === 0) { showToast("Không tìm thấy dữ liệu lộ trình hành trình để xuất file.", "error"); return; }
-            $('#save-modal-title').text("Lưu lộ trình (KML)"); $('#save-modal-desc-label').text("Mô tả tuyến đường:"); $('#kml-filename').val("LoTrinh_DuongDi_" + new Date().toISOString().slice(0,10));
-            $('#kml-description').val(`Tuyến đường đi ngắn nhất. Khoảng cách: ${$('#summary-distance').text()} | Thời gian ước tính: ${$('#summary-time').text()}`);
+            $('#save-modal-title').text("Lưu lộ trình (KML)"); $('#save-modal-desc-label').text("Mô tả tuyến đường:"); $('#kml-filename').val("");
+            $('#kml-description').val("");
             $('#btn-confirm-save-drive').off('click').on('click', executeSaveRouteToDrive); $('#save-kml-modal').addClass('visible');
         });
 
@@ -1536,7 +1569,6 @@
             extState.kmzIndividualLayers.push({ name: layerName, layer: layerGroup });
             externalLayersNode.children.push({ label: layerName, layer: layerGroup });
 
-            // Extend gom bounds chung khi nạp ở chế độ chọn nhiều lớp
             if (globalBounds && layerGroup.getBounds && layerGroup.getBounds().isValid()) {
                 globalBounds.extend(layerGroup.getBounds());
             }
