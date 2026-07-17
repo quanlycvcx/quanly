@@ -117,6 +117,7 @@
         .info-box.hidden { display: none; }
         
         .weather-tab-container { display: flex; gap: 4px; margin: 8px 0; border-bottom: 1px solid #ddd; padding-bottom: 6px; overflow-x: auto; }
+        .weather-tab-container { display: flex; gap: 4px; margin: 8px 0; border-bottom: 1px solid #ddd; padding-bottom: 6px; overflow-x: auto; }
         .weather-tab-btn { background: #f1f3f4; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; white-space: nowrap; transition: 0.2s; }
         .weather-tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         .weather-chart-wrapper { width: 100%; margin-top: 10px; background: #fff; border-radius: 6px; padding: 5px; box-sizing: border-box; border: 1px solid #eee; }
@@ -676,6 +677,30 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_ContourLines', opacity: 0.6,
         });
 
+        // ==================== KHỞI TẠO LỚP TILE VỆ TINH BING MAPS ====================
+        // Custom Leaflet layer xử lý cấu trúc đường dẫn quadkey {q} thay cho x/y/z của Bing Maps
+        L.BingSatelliteLayer = L.TileLayer.extend({
+            getTileUrl: function (coords) {
+                var quadkey = '';
+                for (var i = coords.z; i > 0; i--) {
+                    var digit = 0;
+                    var mask = 1 << (i - 1);
+                    if ((coords.x & mask) !== 0) digit++;
+                    if ((coords.y & mask) !== 0) digit += 2;
+                    quadkey += digit;
+                }
+                return this._url.replace('{q}', quadkey);
+            }
+        });
+        L.bingSatelliteLayer = function (url, options) { return new L.BingSatelliteLayer(url, options); };
+
+        map.createPane('pane_BingSatellite_Map');
+        map.getPane('pane_BingSatellite_Map').style.zIndex = 399;
+        var layer_BingSatellite_Map = L.bingSatelliteLayer('https://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1', {
+            pane: 'pane_BingSatellite_Map', opacity: 1.0, attribution: '© Microsoft Bing Maps', minZoom: 1, maxZoom: 28
+        });
+        // =============================================================================
+
         map.createPane('pane_GEHybrid_0');
         map.getPane('pane_GEHybrid_0').style.zIndex = 400;
         var layer_GEHybrid_0 = L.tileLayer('http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}', {
@@ -687,6 +712,20 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         map.getPane('pane_GoogleMaps_1').style.zIndex = 401;
         var layer_GoogleMaps_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             pane: 'pane_GoogleMaps_1', opacity: 1.0, attribution: '', minZoom: 1, maxZoom: 28, minNativeZoom: 0, maxNativeZoom: 22
+        });
+
+        // Khởi tạo lớp bản đồ Raster Vietbando
+        map.createPane('pane_Vietbando_Map');
+        map.getPane('pane_Vietbando_Map').style.zIndex = 402;
+        var layer_Vietbando_Map = L.tileLayer('http://images.vietbando.com/ImageLoader/GetImage.ashx?Ver=2016&LayerIds=VBD&Y={y}&X={x}&Level={z}', {
+            pane: 'pane_Vietbando_Map', opacity: 1.0, attribution: '© Vietbando', minZoom: 1, maxZoom: 28
+        });
+
+        // Khởi tạo lớp bản đồ Raster TP.HCM
+        map.createPane('pane_HCM_Raster_Map');
+        map.getPane('pane_HCM_Raster_Map').style.zIndex = 402;
+        var layer_HCM_Raster_Map = L.tileLayer('https://bando.tphcm.gov.vn/service/gisp/tile/raster/{z}/{x}/{y}', {
+            pane: 'pane_HCM_Raster_Map', opacity: 1.0, attribution: '© Bản đồ TP.HCM', minZoom: 1, maxZoom: 28
         });
 
         map.createPane('pane_GoogleTraffic_Traffic');
@@ -705,6 +744,61 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         map.getPane('pane_HydroEstimatorRainfall_4').style.zIndex = 401;
         var layer_HydroEstimatorRainfall_4 = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=NESDIS-GHE-HourlyRainfall.map&version=1.3", "current", {
             pane: 'pane_HydroEstimatorRainfall_4', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '',
+        });
+
+        // Khởi tạo lớp GloFAS Flood
+        map.createPane('pane_GloFAS_Flood');
+        map.getPane('pane_GloFAS_Flood').style.zIndex = 401;
+        var layer_GloFAS_Flood = L.WMS.layer("https://globalfloods-ows.ecmwf.int/glofas-ows/ows.py", "acc_3day", {
+            pane: 'pane_GloFAS_Flood', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '© GloFAS'
+        });
+
+        // Khởi tạo các lớp Himawari
+        const himawariLayersData = [
+            { id: 'HIMAWARI_B01', name: 'Himawari B01 (Visible)', mapParam: 'HIMAWARI-B01.map' },
+            { id: 'HIMAWARI_B02', name: 'Himawari B02 (Visible)', mapParam: 'HIMAWARI-B02.map' },
+            { id: 'HIMAWARI_B03', name: 'Himawari B03 (Visible)', mapParam: 'HIMAWARI-B03.map' },
+            { id: 'HIMAWARI_B04', name: 'Himawari B04 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B04.map' },
+            { id: 'HIMAWARI_B05', name: 'Himawari B05 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B05.map' },
+            { id: 'HIMAWARI_B06', name: 'Himawari B06 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B06.map' },
+            { id: 'HIMAWARI_B07', name: 'Himawari B07 (Fire & Heat)', mapParam: 'HIMAWARI-B07.map' },
+            { id: 'HIMAWARI_B07_FIRE', name: 'Himawari B07 FIRE (Fire & Heat)', mapParam: 'HIMAWARI-B07-FIRE.map' },
+            { id: 'HIMAWARI_B08', name: 'Himawari B08 (Water Vapor)', mapParam: 'HIMAWARI-B08.map' },
+            { id: 'HIMAWARI_B08_VAPR', name: 'Himawari B08 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B08-VAPR.map' },
+            { id: 'HIMAWARI_B09', name: 'Himawari B09 (Water Vapor)', mapParam: 'HIMAWARI-B09.map' },
+            { id: 'HIMAWARI_B09_VAPR', name: 'Himawari B09 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B09-VAPR.map' },
+            { id: 'HIMAWARI_B10', name: 'Himawari B10 (Water Vapor)', mapParam: 'HIMAWARI-B10.map' },
+            { id: 'HIMAWARI_B10_VAPR', name: 'Himawari B10 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B10-VAPR.map' },
+            { id: 'HIMAWARI_B11', name: 'Himawari B11 (Water Vapor)', mapParam: 'HIMAWARI-B11.map' },
+            { id: 'HIMAWARI_B12', name: 'Himawari B12 (Atmospheric)', mapParam: 'HIMAWARI-B12.map' },
+            { id: 'HIMAWARI_B13', name: 'Himawari B13 (Infrared)', mapParam: 'HIMAWARI-B13.map' },
+            { id: 'HIMAWARI_B13_GRAD', name: 'Himawari B13 GRAD (Infrared)', mapParam: 'HIMAWARI-B13-GRAD.map' },
+            { id: 'HIMAWARI_B14', name: 'Himawari B14 (Infrared)', mapParam: 'HIMAWARI-B14.map' },
+            { id: 'HIMAWARI_B14_GRAD', name: 'Himawari B14 GRAD (Infrared)', mapParam: 'HIMAWARI-B14-GRAD.map' },
+            { id: 'HIMAWARI_B15', name: 'Himawari B15 (Infrared)', mapParam: 'HIMAWARI-B15.map' },
+            { id: 'HIMAWARI_B15_GRAD', name: 'Himawari B15 GRAD (Infrared)', mapParam: 'HIMAWARI-B15-GRAD.map' },
+            { id: 'HIMAWARI_B16', name: 'Himawari B16 (Atmospheric)', mapParam: 'HIMAWARI-B16.map' },
+            { id: 'HIMAWARI_airmass', name: 'Himawari Airmass (Hazards & Disasters)', mapParam: 'HIMAWARI-airmass.map' },
+            { id: 'HIMAWARI_ash', name: 'Himawari Ash (Hazards & Disasters)', mapParam: 'HIMAWARI-ash.map' },
+            { id: 'HIMAWARI_cloudtop', name: 'Himawari Cloudtop (Hazards & Disasters)', mapParam: 'HIMAWARI-cloudtop.map' },
+            { id: 'HIMAWARI_convection', name: 'Himawari Convection (Hazards & Disasters)', mapParam: 'HIMAWARI-convection.map' },
+            { id: 'HIMAWARI_day_microphysics_ahi', name: 'Himawari Day Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-day-microphysics-ahi.map' },
+            { id: 'HIMAWARI_dust', name: 'Himawari Dust (Hazards & Disasters)', mapParam: 'HIMAWARI-dust.map' },
+            { id: 'HIMAWARI_fire_temperature_awips', name: 'Himawari Fire Temp (Hazards & Disasters)', mapParam: 'HIMAWARI-fire-temperature-awips.map' },
+            { id: 'HIMAWARI_fog', name: 'Himawari Fog (Hazards & Disasters)', mapParam: 'HIMAWARI-fog.map' },
+            { id: 'HIMAWARI_night_microphysics', name: 'Himawari Night Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-night-microphysics.map' },
+            { id: 'HIMAWARI_true_color', name: 'Himawari True Color (Composite)', mapParam: 'HIMAWARI-true-color.map' },
+            { id: 'HIMAWARI_water_vapors2', name: 'Himawari Water Vapors 2 (Composite)', mapParam: 'HIMAWARI-water-vapors2.map' }
+        ];
+
+        var himawariLayers = {};
+        himawariLayersData.forEach(function(l) {
+            var paneName = 'pane_' + l.id;
+            map.createPane(paneName);
+            map.getPane(paneName).style.zIndex = 401;
+            himawariLayers[l.id] = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=" + l.mapParam + "&version=1.3", "current", {
+                pane: paneName, format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: ''
+            });
         });
 
         map.createPane('pane_RainViewerRadar');
@@ -811,7 +905,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             if (url.startsWith('data:image')) return url;
             let driveId = '';
             let matchD = url.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
-            let matchId = url.match(/[?&]id=([a-zA-Z0-9_-]{25,})/);
+            let matchId = url.match(/[?&] id=([a-zA-Z0-9_-]{25,})/);
             if (matchD && matchD[1]) driveId = matchD[1];
             else if (matchId && matchId[1]) driveId = matchId[1];
             else if (url.length >= 25 && !url.includes('/') && !url.includes('.')) driveId = url;
@@ -893,16 +987,56 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             ]},
             {label: '<b>Tham khảo:</b>', children: [
                 {label: "Mật độ lưu thông", layer: layer_GoogleTraffic_1},
-		{label: "Rain Viewer HD", layer: layer_RainViewerRadar},
+                {label: "Rain Viewer HD", layer: layer_RainViewerRadar},
                 {label: "Open Weather", layer: layer_OpenWeatherPrecipitation},
-                {label: "Hydro Estimator Rainfall", layer: layer_HydroEstimatorRainfall_4}
+                {label: "GloFAS Flood (Global Warning)", layer: layer_GloFAS_Flood},
+                {label: "Hydro Estimator Rainfall", layer: layer_HydroEstimatorRainfall_4},
+                {label: "Himawari B01 (Visible)", layer: himawariLayers['HIMAWARI_B01']},
+                {label: "Himawari B02 (Visible)", layer: himawariLayers['HIMAWARI_B02']},
+                {label: "Himawari B03 (Visible)", layer: himawariLayers['HIMAWARI_B03']},
+                {label: "Himawari B04 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B04']},
+                {label: "Himawari B05 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B05']},
+                {label: "Himawari B06 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B06']},
+                {label: "Himawari B07 (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07']},
+                {label: "Himawari B07 FIRE (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07_FIRE']},
+                {label: "Himawari B08 (Water Vapor)", layer: himawariLayers['HIMAWARI_B08']},
+                {label: "Himawari B08 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B08_VAPR']},
+                {label: "Himawari B09 (Water Vapor)", layer: himawariLayers['HIMAWARI_B09']},
+                {label: "Himawari B09 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B09_VAPR']},
+                {label: "Himawari B10 (Water Vapor)", layer: himawariLayers['HIMAWARI_B10']},
+                {label: "Himawari B10 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B10_VAPR']},
+                {label: "Himawari B11 (Water Vapor)", layer: himawariLayers['HIMAWARI_B11']},
+                {label: "Himawari B12 (Atmospheric)", layer: himawariLayers['HIMAWARI_B12']},
+                {label: "Himawari B13 (Infrared)", layer: himawariLayers['HIMAWARI_B13']},
+                {label: "Himawari B13 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B13_GRAD']},
+                {label: "Himawari B14 (Infrared)", layer: himawariLayers['HIMAWARI_B14']},
+                {label: "Himawari B14 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B14_GRAD']},
+                {label: "Himawari B15 (Infrared)", layer: himawariLayers['HIMAWARI_B15']},
+                {label: "Himawari B15 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B15_GRAD']},
+                {label: "Himawari B16 (Atmospheric)", layer: himawariLayers['HIMAWARI_B16']},
+                {label: "Himawari airmass (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_airmass']},
+                {label: "Himawari ash (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_ash']},
+                {label: "Himawari cloudtop (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_cloudtop']},
+                {label: "Himawari convection (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_convection']},
+                {label: "Himawari day microphysics", layer: himawariLayers['HIMAWARI_day_microphysics_ahi']},
+                {label: "Himawari dust (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_dust']},
+                {label: "Himawari fire temperature", layer: himawariLayers['HIMAWARI_fire_temperature_awips']},
+                {label: "Himawari fog (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_fog']},
+                {label: "Himawari night microphysics", layer: himawariLayers['HIMAWARI_night_microphysics']},
+                {label: "Himawari true color (Composite)", layer: himawariLayers['HIMAWARI_true_color']},
+                {label: "Himawari water vapors 2 (Composite)", layer: himawariLayers['HIMAWARI_water_vapors2']}
             ]},
             externalLayersNode, 
+            // ==================== XẾP LỚP BẢN ĐỒ VỆ TINH BING MAPS PHÍA TRÊN LỚP ĐỊA HÌNH ====================
 			{label: '<b>Bản đồ nền:</b>', children: [
+                {label: "Bản đồ Vietbando", layer: layer_Vietbando_Map},
+                {label: "Bản đồ Raster TP.HCM", layer: layer_HCM_Raster_Map},
                 {label: "Google Maps", layer: layer_GoogleMaps_1},
                 {label: "Google Satellite Hybrid", layer: layer_GEHybrid_0},
+                {label: "Bản đồ vệ tinh Bing Maps", layer: layer_BingSatellite_Map},
                 {label: "Bản đồ địa hình (Contour)", layer: layer_ContourLines}
 			]}
+            // =================================================================================================
         ];
         
         var lay = L.control.layers.tree(null, overlaysTree, { collapsed: true });
@@ -1582,7 +1716,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
             let descHtml = `<div style="font-family:Arial,sans-serif;padding:5px;max-width:300px;"><h3 style="color:#e65100;margin:0 0 8px 0;">Mốc Hiện Trường Timemark</h3><p><b>Vị trí:</b> ${data.address}</p><p><b>Thời gian chụp:</b> ${data.time} - ${data.date}</p><p><b>Tọa độ GPS:</b> ${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}</p><div style="margin-top:10px;text-align:center;"><img src="images/${fileNameImg}" style="width:100%;max-width:260px;border-radius:4px;border:1px solid #ccc Papayawhip;"/></div></div>`;
 
-            const kmlContent = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${data.imgName}</name><description>Tệp xuất dữ liệu từ Công cụ Quản lý Timemark</description><Placemark><name>${data.imgName}</name><description><![CDATA[${descHtml}]]></description><Point><coordinates>${data.lng},${data.lat},0</coordinates></Point></Placemark></Document></kml>`;
+            const kmlContent = `xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${data.imgName}</name><description>Tệp xuất dữ liệu từ Công cụ Quản lý Timemark</description><Placemark><name>${data.imgName}</name><description><![CDATA[${descHtml}]]></description><Point><coordinates>${data.lng},${data.lat},0</coordinates></Point></Placemark></Document></kml>`;
 
             zip.file("doc.kml", kmlContent);
             const kmzBlob = await zip.generateAsync({type: "blob"});
