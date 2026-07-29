@@ -166,22 +166,22 @@
         .btn-draw-cancel { background-color: #d32f2f; }
         .btn-draw-cancel:hover { background-color: #b71c1c; }
 
-        /* Style cho nút chia sẻ vị trí dạng One-time trong Popup */
+        /* Style cho nhóm nút hành động Chia sẻ & Dẫn đường trong Popup */
         .share-popup-box {
             font-size: 13px;
             color: #333;
             line-height: 1.4;
-            min-width: 200px;
+            min-width: 220px;
         }
         .share-btn-group {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             margin-top: 10px;
             flex-wrap: wrap;
         }
         .btn-share-action {
             flex: 1;
-            padding: 6px 10px;
+            padding: 6px 8px;
             border-radius: 18px;
             border: none;
             font-size: 11px;
@@ -190,7 +190,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             transition: opacity 0.2s, transform 0.1s;
             white-space: nowrap;
         }
@@ -199,6 +199,8 @@
         .btn-share-copy:hover { background-color: #d3e3fd; }
         .btn-share-gmaps { background-color: #28a745; color: white; }
         .btn-share-gmaps:hover { background-color: #218838; }
+        .btn-share-route { background-color: #ff9800; color: white; }
+        .btn-share-route:hover { background-color: #e65100; }
 
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -383,7 +385,7 @@
           <defs>
             <filter id="radar-palette">
               <feColorMatrix type="matrix" values="
-                2.5  -0.5  0.0  0.0  0.2 
+                2.5  -0.5  0.0  0.2 
                 1.2   0.8  -0.5  0.0  0.1 
                -0.5  -1.5  3.0  0.0  -0.1 
                 0.0   0.0  0.0  1.0  0.0" />
@@ -665,7 +667,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">Em</a> · <a href="https://leafletjs.com" title="A JS library for interactive maps">Ếch</a> · <a href="https://qgis.org">Xinh</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
 
-        /* --- BỔ SUNG CÁC HÀM XỬ LÝ CHIA SẺ VỊ TRÍ ONE-TIME & SAO CHÉP LINK --- */
+        /* --- BỔ SUNG HÀM XỬ LÝ CHIA SẺ & BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP --- */
         function copyLocationLink(lat, lng) {
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             navigator.clipboard.writeText(googleMapsUrl).then(() => {
@@ -682,7 +684,25 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             showToast("Đã mở Google Maps & sao chép liên kết!", "info");
         }
 
-        function createLocationSharePopupHTML(title, lat, lng, extraDesc = "") {
+        // HÀM BỔ SUNG: Kích hoạt lộ trình dẫn đường đến/từ vị trí chỉ định
+        function navigateToCoords(lat, lng, isStartPoint = false) {
+            const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            if (isStartPoint) {
+                document.getElementById('directions-start-input').value = coordStr;
+                extState.startCoord = L.latLng(lat, lng);
+                showToast("Đã chọn vị trí này làm ĐIỂM BẮT ĐẦU di chuyển", "info");
+            } else {
+                document.getElementById('directions-end-input').value = coordStr;
+                extState.endCoord = L.latLng(lat, lng);
+                if (extState.userGPSPosition && !document.getElementById('directions-start-input').value.trim()) {
+                    document.getElementById('directions-start-input').value = 'Vị trí của tôi';
+                }
+                showToast("Đã chọn vị trí này làm ĐIỂM ĐẾN", "info");
+            }
+            toggleDirectionsModal(true);
+        }
+
+        function createLocationSharePopupHTML(title, lat, lng, extraDesc = "", isCurrentGPS = false) {
             const latVal = typeof lat === 'number' ? lat.toFixed(6) : lat;
             const lngVal = typeof lng === 'number' ? lng.toFixed(6) : lng;
             return `
@@ -691,11 +711,14 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     ${extraDesc ? `<span style="display:block; margin: 3px 0; color:#555;">${extraDesc}</span>` : ''}
                     <span style="font-size:0.85em; color:#666;">Tọa độ: <b>${latVal}, ${lngVal}</b></span>
                     <div class="share-btn-group">
-                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${latVal}, ${lngVal})">
-                            📋 Sao chép link
+                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${latVal}, ${lngVal})" title="Sao chép link Google Maps">
+                            📋 Link
                         </button>
-                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${latVal}, ${lngVal})">
-                            📍 Chia sẻ Google Maps
+                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${latVal}, ${lngVal})" title="Mở trên ứng dụng Google Maps">
+                            📍 Maps
+                        </button>
+                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${latVal}, ${lngVal}, ${isCurrentGPS})" title="Dẫn đường đi ngay lập tức">
+                            🚗 Dẫn đường
                         </button>
                     </div>
                 </div>`;
@@ -1044,6 +1067,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                                                 <b>Tuyến đường:</b> ${tuyenDuongHienThi}<br>
                                                 <b>Tình trạng:</b> ${tinhTrangHienThi}
                                                 ${htmlGallery}
+                                                <div class="share-btn-group">
+                                                    <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${lat}, ${lng}, false)">🚗 Dẫn đường đến cây</button>
+                                                </div>
                                               </div>`;
                             marker.bindPopup(popupText);
                             layerCloudTreesCluster.addLayer(marker);
@@ -1258,12 +1284,12 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             }
         });
 
-        /* --- BỔ SUNG CHIA SẺ ONE-TIME VÀ SAO CHÉP CHO CÔNG CỤ ĐÁNH DẤU ĐIỂM VỊ TRÍ --- */
+        /* --- BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP CHO ĐÁNH DẤU ĐIỂM VỊ TRÍ --- */
         map.on(L.Draw.Event.CREATED, function (event) {
             var layer = event.layer; var type = event.layerType; let popupContent = "";
             if (type === 'marker') {
                 var latlng = layer.getLatLng();
-                popupContent = createLocationSharePopupHTML("📍 Điểm mốc vị trí đánh dấu", latlng.lat, latlng.lng);
+                popupContent = createLocationSharePopupHTML("📍 Điểm mốc vị trí đánh dấu", latlng.lat, latlng.lng, "", false);
             } else if (type === 'polyline') {
                 var latlngs = layer.getLatLngs(); var distance = 0;
                 for (var i = 0; i < latlngs.length - 1; i++) { distance += latlngs[i].distanceTo(latlngs[i+1]); }
@@ -1759,7 +1785,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             });
         }
 
-        /* --- BỔ SUNG CHIA SẺ VỊ TRÍ VÀ SAO CHÉP KHI CLICK GHIM VỊ TRÍ BẤT KỲ TRÊN BẢN ĐỒ --- */
+        /* --- BỔ SUNG CHIA SẺ VỊ TRÍ VÀ DẪN ĐƯỜNG KHI GHIM VỊ TRÍ CLICK BẤT KỲ --- */
         map.on('click', async (e) => {
             L.DomEvent.stopPropagation(e); const latlng = e.latlng;
             if (extState.isPickingStart) { extState.startCoord = latlng; document.getElementById('directions-start-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; resetMapPickers(); toggleDirectionsModal(true); showToast("Đã ghi nhận điểm xuất phát từ bản đồ", "success"); return; }
@@ -1781,7 +1807,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
             if (extState.searchMarker) map.removeLayer(extState.searchMarker);
             
-            const popupHtml = createLocationSharePopupHTML("📍 Vị trí chọn trên bản đồ", latlng.lat, latlng.lng, locationName);
+            const popupHtml = createLocationSharePopupHTML("📍 Vị trí chọn trên bản đồ", latlng.lat, latlng.lng, locationName, false);
             extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup();
             getWeather(latlng.lat, latlng.lng, locationName);
         });
@@ -1861,7 +1887,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             if (targetLatLng) { 
                 map.setView(targetLatLng, 15); 
                 if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
-                const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", targetLatLng.lat, targetLatLng.lng, displayName);
+                const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", targetLatLng.lat, targetLatLng.lng, displayName, false);
                 extState.searchMarker = L.marker(targetLatLng).addTo(map).bindPopup(popupHtml).openPopup(); 
                 toggleLoading(false); 
                 showToast("Đã định vị theo tọa độ thành công", "success"); 
@@ -1876,7 +1902,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         const latlng = L.latLng(loc.lat, loc.lng); 
                         map.setView(latlng, 14); 
                         if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
-                        const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", loc.lat, loc.lng, addr);
+                        const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", loc.lat, loc.lng, addr, false);
                         extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup(); 
                         getWeather(loc.lat, loc.lng, addr); 
                     }
@@ -1886,7 +1912,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         }
         $('#search-button').click(debounce(execAddressSearch, 300)); $('#search-input').keypress((e) => { if (e.key === 'Enter') debounce(execAddressSearch, 300)(); });
 
-        /* --- BỔ SUNG CHIA SẺ ONE-TIME VÀ SAO CHÉP CHO NÚT "VỊ TRÍ HIỆN TẠI CỦA TÔI" --- */
+        /* --- BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP CHO NÚT "VỊ TRÍ HIỆN TẠI CỦA TÔI" --- */
         $('#custom-locate-btn').click(function(e) {
             e.preventDefault(); if (!navigator.geolocation) { showToast("Trình duyệt không hỗ trợ định vị.", "error"); return; } toggleLoading(true);
             navigator.geolocation.getCurrentPosition(
@@ -1899,7 +1925,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     map.flyTo(latlng, 15, { animate: true, duration: 1.5 }); 
                     if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
                     
-                    const popupHtml = createLocationSharePopupHTML("📍 Vị trí hiện tại của bạn", lat, lng);
+                    const popupHtml = createLocationSharePopupHTML("📍 Vị trí hiện tại của bạn", lat, lng, "", true);
 
                     extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup(); 
                     toggleLoading(false); 
@@ -2051,8 +2077,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <br><span class="popup-btn-large">🔍 Xem hình lớn</span>
                     </div>
                     <div class="share-btn-group">
-                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${data.lat}, ${data.lng})">📋 Sao chép link</button>
-                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${data.lat}, ${data.lng})">📍 Chia sẻ Maps</button>
+                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${data.lat}, ${data.lng})">📋 Link</button>
+                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${data.lat}, ${data.lng})">📍 Maps</button>
+                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${data.lat}, ${data.lng}, false)">🚗 Dẫn đường</button>
                     </div>
                 </div>
             `;
