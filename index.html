@@ -166,7 +166,6 @@
         .btn-draw-cancel { background-color: #d32f2f; }
         .btn-draw-cancel:hover { background-color: #b71c1c; }
 
-        /* Style cho nhóm nút hành động Chia sẻ & Dẫn đường trong Popup */
         .share-popup-box {
             font-size: 13px;
             color: #333;
@@ -385,7 +384,7 @@
           <defs>
             <filter id="radar-palette">
               <feColorMatrix type="matrix" values="
-                2.5  -0.5  0.0  0.2 
+                2.5  -0.5  0.0  0.0  0.2 
                 1.2   0.8  -0.5  0.0  0.1 
                -0.5  -1.5  3.0  0.0  -0.1 
                 0.0   0.0  0.0  1.0  0.0" />
@@ -473,7 +472,7 @@
                 <div>
                     <label>Điểm bắt đầu:</label>
                     <div class="input-with-clear">
-                        <input type="text" id="directions-start-input" placeholder="Nhập địa điểm hoặc chọn từ bản đồ...">
+                        <input type="text" id="directions-start-input" placeholder="Nhập địa điểm, tọa độ hoặc Vị trí của tôi...">
                         <span class="inner-clear-btn" data-target="directions-start-input">×</span>
                         <button type="button" class="btn-map-picker" id="btn-pick-start" title="Chọn điểm bắt đầu từ Bản đồ">
                             <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -652,9 +651,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <script src="data/GT_KV2_11_2.js"></script>
-        <script src="data/PThuDuc_3.js"></script>
-
         <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzckg1oCmPyGiN24c_InJNXfo0kBZmPei8aqRDZFt8BBeXumJTo-Rjabo1o9iQ8Ga-w/exec';
         const CLOUD_TREE_APP_URL = 'https://script.google.com/macros/s/AKfycbyIarwHrEIqU0Ih308ZRgkfXJi-LvBUcpqe8Ao33IA7L712tIHyltskoBHgAq_aMlijjQ/exec';
@@ -667,7 +663,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">Em</a> · <a href="https://leafletjs.com" title="A JS library for interactive maps">Ếch</a> · <a href="https://qgis.org">Xinh</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
 
-        /* --- BỔ SUNG HÀM XỬ LÝ CHIA SẺ & BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP --- */
         function copyLocationLink(lat, lng) {
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             navigator.clipboard.writeText(googleMapsUrl).then(() => {
@@ -684,20 +679,19 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             showToast("Đã mở Google Maps & sao chép liên kết!", "info");
         }
 
-        // HÀM BỔ SUNG: Kích hoạt lộ trình dẫn đường đến/từ vị trí chỉ định
         function navigateToCoords(lat, lng, isStartPoint = false) {
             const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             if (isStartPoint) {
                 document.getElementById('directions-start-input').value = coordStr;
                 extState.startCoord = L.latLng(lat, lng);
-                showToast("Đã chọn vị trí này làm ĐIỂM BẮT ĐẦU di chuyển", "info");
+                showToast("Đã chọn làm ĐIỂM XUẤT PHÁT", "info");
             } else {
                 document.getElementById('directions-end-input').value = coordStr;
                 extState.endCoord = L.latLng(lat, lng);
                 if (extState.userGPSPosition && !document.getElementById('directions-start-input').value.trim()) {
                     document.getElementById('directions-start-input').value = 'Vị trí của tôi';
                 }
-                showToast("Đã chọn vị trí này làm ĐIỂM ĐẾN", "info");
+                showToast("Đã chọn làm ĐIỂM ĐẾN", "info");
             }
             toggleDirectionsModal(true);
         }
@@ -714,10 +708,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${latVal}, ${lngVal})" title="Sao chép link Google Maps">
                             📋 Link
                         </button>
-                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${latVal}, ${lngVal})" title="Mở trên ứng dụng Google Maps">
+                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${latVal}, ${lngVal})" title="Mở trên Google Maps">
                             📍 Maps
                         </button>
-                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${latVal}, ${lngVal}, ${isCurrentGPS})" title="Dẫn đường đi ngay lập tức">
+                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${latVal}, ${lngVal}, ${isCurrentGPS})" title="Dẫn đường đi ngay">
                             🚗 Dẫn đường
                         </button>
                     </div>
@@ -744,7 +738,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             var imgTd = tempDiv.querySelector('td img');
             if (imgTd) {
                 var src = imgTd.getAttribute('src');
-                if (/\ Kahn\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
                     popup._contentNode.classList.add('media');
                     setTimeout(function() { popup.update(); }, 10);
                 } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
@@ -832,16 +826,11 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_HCM_Raster_Map', opacity: 1.0, attribution: '© Bản đồ TP.HCM', minZoom: 1, maxZoom: 28
         });
 
+        /* --- CÁC LỚP THỜI TIẾT & THAM KHẢO (ĐÃ TÍCH HỢP MẬT ĐỘ LƯU THÔNG & HYDRO ESTIMATOR RAINFALL) --- */
         map.createPane('pane_GoogleTraffic_Traffic');
         map.getPane('pane_GoogleTraffic_Traffic').style.zIndex = 405;
         var layer_GoogleTraffic_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=h@159000000,traffic&hl=vi&x={x}&y={y}&z={z}', {
             pane: 'pane_GoogleTraffic_Traffic', opacity: 0.6, minZoom: 1, maxZoom: 28
-        });
-
-        map.createPane('pane_OpenWeatherPrecipitation');
-        map.getPane('pane_OpenWeatherPrecipitation').style.zIndex = 404;
-        var layer_OpenWeatherPrecipitation = L.tileLayer('https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=07634769a5de7a23837694d8813c38d4', {
-            pane: 'pane_OpenWeatherPrecipitation', opacity: 1.0, maxZoom: 18, maxNativeZoom: 8, className: 'radar-contrast-layer'
         });
 
         map.createPane('pane_HydroEstimatorRainfall_4');
@@ -850,154 +839,22 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_HydroEstimatorRainfall_4', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '',
         });
 
-        map.createPane('pane_GloFAS_Flood');
-        map.getPane('pane_GloFAS_Flood').style.zIndex = 401;
-        var layer_GloFAS_Flood = L.WMS.layer("https://globalfloods-ows.ecmwf.int/glofas-ows/ows.py", "acc_3day", {
-            pane: 'pane_GloFAS_Flood', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '© GloFAS'
-        });
-
-        const himawariLayersData = [
-            { id: 'HIMAWARI_B01', name: 'Himawari B01 (Visible)', mapParam: 'HIMAWARI-B01.map' },
-            { id: 'HIMAWARI_B02', name: 'Himawari B02 (Visible)', mapParam: 'HIMAWARI-B02.map' },
-            { id: 'HIMAWARI_B03', name: 'Himawari B03 (Visible)', mapParam: 'HIMAWARI-B03.map' },
-            { id: 'HIMAWARI_B04', name: 'Himawari B04 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B04.map' },
-            { id: 'HIMAWARI_B05', name: 'Himawari B05 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B05.map' },
-            { id: 'HIMAWARI_B06', name: 'Himawari B06 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B06.map' },
-            { id: 'HIMAWARI_B07', name: 'Himawari B07 (Fire & Heat)', mapParam: 'HIMAWARI-B07.map' },
-            { id: 'HIMAWARI_B07_FIRE', name: 'Himawari B07 FIRE (Fire & Heat)', mapParam: 'HIMAWARI-B07-FIRE.map' },
-            { id: 'HIMAWARI_B08', name: 'Himawari B08 (Water Vapor)', mapParam: 'HIMAWARI-B08.map' },
-            { id: 'HIMAWARI_B08_VAPR', name: 'Himawari B08 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B08-VAPR.map' },
-            { id: 'HIMAWARI_B09', name: 'Himawari B09 (Water Vapor)', mapParam: 'HIMAWARI-B09.map' },
-            { id: 'HIMAWARI_B09_VAPR', name: 'Himawari B09 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B09-VAPR.map' },
-            { id: 'HIMAWARI_B10', name: 'Himawari B10 (Water Vapor)', mapParam: 'HIMAWARI-B10.map' },
-            { id: 'HIMAWARI_B10_VAPR', name: 'Himawari B10 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B10-VAPR.map' },
-            { id: 'HIMAWARI_B11', name: 'Himawari B11 (Water Vapor)', mapParam: 'HIMAWARI-B11.map' },
-            { id: 'HIMAWARI_B12', name: 'Himawari B12 (Atmospheric)', mapParam: 'HIMAWARI-B12.map' },
-            { id: 'HIMAWARI_B13', name: 'Himawari B13 (Infrared)', mapParam: 'HIMAWARI-B13.map' },
-            { id: 'HIMAWARI_B13_GRAD', name: 'Himawari B13 GRAD (Infrared)', mapParam: 'HIMAWARI-B13-GRAD.map' },
-            { id: 'HIMAWARI_B14', name: 'Himawari B14 (Infrared)', mapParam: 'HIMAWARI-B14.map' },
-            { id: 'HIMAWARI_B14_GRAD', name: 'Himawari B14 GRAD (Infrared)', mapParam: 'HIMAWARI-B14-GRAD.map' },
-            { id: 'HIMAWARI_B15', name: 'Himawari B15 (Infrared)', mapParam: 'HIMAWARI-B15.map' },
-            { id: 'HIMAWARI_B15_GRAD', name: 'Himawari B15 GRAD (Infrared)', mapParam: 'HIMAWARI-B15-GRAD.map' },
-            { id: 'HIMAWARI_B16', name: 'Himawari B16 (Atmospheric)', mapParam: 'HIMAWARI-B16.map' },
-            { id: 'HIMAWARI_airmass', name: 'Himawari Airmass (Hazards & Disasters)', mapParam: 'HIMAWARI-airmass.map' },
-            { id: 'HIMAWARI_ash', name: 'Himawari Ash (Hazards & Disasters)', mapParam: 'HIMAWARI-ash.map' },
-            { id: 'HIMAWARI_cloudtop', name: 'Himawari Cloudtop (Hazards & Disasters)', mapParam: 'HIMAWARI-cloudtop.map' },
-            { id: 'HIMAWARI_convection', name: 'Himawari Convection (Hazards & Disasters)', mapParam: 'HIMAWARI-convection.map' },
-            { id: 'HIMAWARI_day_microphysics_ahi', name: 'Himawari Day Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-day-microphysics-ahi.map' },
-            { id: 'HIMAWARI_dust', name: 'Himawari Dust (Hazards & Disasters)', mapParam: 'HIMAWARI-dust.map' },
-            { id: 'HIMAWARI_fire_temperature_awips', name: 'Himawari Fire Temp (Hazards & Disasters)', mapParam: 'HIMAWARI-fire-temperature-awips.map' },
-            { id: 'HIMAWARI_fog', name: 'Himawari Fog (Hazards & Disasters)', mapParam: 'HIMAWARI-fog.map' },
-            { id: 'HIMAWARI_night_microphysics', name: 'Himawari Night Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-night-microphysics.map' },
-            { id: 'HIMAWARI_true_color', name: 'Himawari True Color (Composite)', mapParam: 'HIMAWARI-true-color.map' },
-            { id: 'HIMAWARI_water_vapors2', name: 'Himawari Water Vapors 2 (Composite)', mapParam: 'HIMAWARI-water-vapors2.map' }
-        ];
-
-        var himawariLayers = {};
-        himawariLayersData.forEach(function(l) {
-            var paneName = 'pane_' + l.id;
-            map.createPane(paneName);
-            map.getPane(paneName).style.zIndex = 401;
-            himawariLayers[l.id] = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=" + l.mapParam + "&version=1.3", "current", {
-                pane: paneName, format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: ''
-            });
-        });
-
-        map.createPane('pane_RainViewerRadar');
-        map.getPane('pane_RainViewerRadar').style.zIndex = 403;
-        var layer_RainViewerRadar = L.tileLayer('', {
-            pane: 'pane_RainViewerRadar', opacity: 0.6, attribution: '© RainViewer'
-        });
-
-        async function initRainViewerLayer() {
-            try {
-                const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-                if (!response.ok) return;
-                const data = await response.json();
-                if (data && data.radar && data.radar.past && data.radar.past.length > 0) {
-                    const latestRadar = data.radar.past[data.radar.past.length - 1];
-                    const tileUrl = `${data.host}${latestRadar.path}/256/{z}/{x}/{y}/7/1_0.png`;
-                    layer_RainViewerRadar.setUrl(tileUrl);
-                }
-            } catch (error) {
-                console.error('Lỗi khởi tạo RainViewer Radar API:', error);
-            }
-        }
-        initRainViewerLayer();
-
-        function pop_GT_KV2_11_2(feature, layer) {
-            var popupContent = '<table>\
-                    <tr><td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['Osm_id'] !== null ? autolinker.link(String(feature.properties['Osm_id']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['Code'] !== null ? autolinker.link(String(feature.properties['Code']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['fclass'] !== null ? autolinker.link(String(feature.properties['fclass']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(String(feature.properties['name']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['ref'] !== null ? autolinker.link(String(feature.properties['ref']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['oneway'] !== null ? autolinker.link(String(feature.properties['oneway']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['maxspeed'] !== null ? autolinker.link(String(feature.properties['maxspeed']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(String(feature.properties['layer']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['bridge'] !== null ? autolinker.link(String(feature.properties['bridge']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['tunnel'] !== null ? autolinker.link(String(feature.properties['tunnel']).toLocaleString()) : '') + '</td></tr>\
-                </table>';
-            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) { addClassToPopupIfMedia(content, e.popup); });
-			layer.bindPopup(content, { maxHeight: 400 });
-        }
-
-        function style_GT_KV2_11_2_0() {
-            return {
-                pane: 'pane_GT_KV2_11_2', opacity: 1, color: 'rgba(150,8,8,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 3, fillOpacity: 0, interactive: true,
-            }
-        }
-        map.createPane('pane_GT_KV2_11_2');
-        map.getPane('pane_GT_KV2_11_2').style.zIndex = 402;
-        var layer_GT_KV2_11_2 = new L.geoJson(json_GT_KV2_11_2, {
-            interactive: true, dataVar: 'json_GT_KV2_11_2', layerName: 'layer_GT_KV2_11_2', pane: 'pane_GT_KV2_11_2', onEachFeature: pop_GT_KV2_11_2, style: style_GT_KV2_11_2_0,
-        });
-        bounds_group.addLayer(layer_GT_KV2_11_2);
-
-        function pop_PThuDuc_3(feature, layer) {
-            var popupContent = '<table>\
-                    <tr><td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['descriptio'] !== null ? autolinker.link(String(feature.properties['descriptio']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['timestamp'] !== null ? autolinker.link(String(feature.properties['timestamp']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['begin'] !== null ? autolinker.link(String(feature.properties['begin']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['end'] !== null ? autolinker.link(String(feature.properties['end']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['altitudeMo'] !== null ? autolinker.link(String(feature.properties['altitudeMo']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['tessellate'] !== null ? autolinker.link(String(feature.properties['tessellate']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['extrude'] !== null ? autolinker.link(String(feature.properties['extrude']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['visibility'] !== null ? autolinker.link(String(feature.properties['visibility']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['drawOrder'] !== null ? autolinker.link(String(feature.properties['drawOrder']).toLocaleString()) : '') + '</td></tr>\
-                    <tr><td colspan="2">' + (feature.properties['icon'] !== null ? autolinker.link(String(feature.properties['icon']).toLocaleString()) : '') + '</td></tr>\
-                </table>';
-            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) { addClassToPopupIfMedia(content, e.popup); });
-			layer.bindPopup(content, { maxHeight: 400 });
-        }
-
-        function style_PThuDuc_3_0() {
-            return {
-                pane: 'pane_PThuDuc_3', opacity: 1, color: 'rgba(150,8,8,1.0)', dashArray: '6.0,12.0', lineCap: 'square', lineJoin: 'bevel', weight: 6.0, fillOpacity: 0, interactive: false,
-            }
-        }
-        map.createPane('pane_PThuDuc_3');
-        map.getPane('pane_PThuDuc_3').style.zIndex = 403;
-        var layer_PThuDuc_3 = new L.geoJson(json_PThuDuc_3, {
-            interactive: false, dataVar: 'json_PThuDuc_3', layerName: 'layer_PThuDuc_3', pane: 'pane_PThuDuc_3', onEachFeature: pop_PThuDuc_3, style: style_PThuDuc_3_0,
-        });
-        bounds_group.addLayer(layer_PThuDuc_3);
-
-        var layer_EQ_Tourism2026 = L.featureGroup();
-        var layer_VN_2026 = L.featureGroup();
-        map.addLayer(layer_VN_2026); 
-
+        /* --- KHỞI TẠO CÁC LỚP QUẢN LÝ VÀ GIÁM SÁT --- */
         var layerCloudTreesCluster = L.markerClusterGroup({
             disableClusteringAtZoom: 15,
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false
         });
-        map.addLayer(layerCloudTreesCluster); 
+        map.addLayer(layerCloudTreesCluster);
+
+        var layer_QuanLy_TuyenCayXanh = L.featureGroup();
+        var layer_QuanLy_MangXanh = L.featureGroup();
+        var layer_QuanLy_CongVien = L.featureGroup();
+
+        var layer_GiamSat_NamThu = L.featureGroup();
+        var layer_GiamSat_MaiCanh = L.featureGroup();
+        var layer_GiamSat_Khoa = L.featureGroup();
+        var layer_GiamSat_Khong = L.featureGroup();
 
         function parseCloudCoordinate(coordStr) {
             if (!coordStr) return NaN;
@@ -1044,7 +901,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             const linkAnh2 = convertDriveLink(tree.img2 || tree.Img2 || tree.IMG2 || tree.anh2 || tree.Anh2 || '');
 
                             var marker = L.circleMarker([lat, lng], {
-                                radius: 6, fillColor: '#43a047', color: '#ffffff', weight: 1.5, opacity: 1, fillOpacity: 0.9
+                                radius: 6, fillColor: '#2e7d32', color: '#ffffff', weight: 1.5, opacity: 1, fillOpacity: 0.9
                             });
 
                             let htmlGallery = `<div class="tree-gallery">`;
@@ -1061,7 +918,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             htmlGallery += `</div>`;
 
                             const popupText = `<div class="tree-popup-container">
-                                                <b class="tree-popup-title">🌳</b>
+                                                <b class="tree-popup-title">🌳 Cây Xanh</b>
                                                 <b>Mã số cây:</b> ${maSoCayHienThi}<br>
                                                 <b>Loài cây:</b> ${loaiCayHienThi}<br>
                                                 <b>Tuyến đường:</b> ${tuyenDuongHienThi}<br>
@@ -1083,59 +940,165 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             }
         }
 
+        function getLayerColorTheme(layerName) {
+            const nameLower = layerName.toLowerCase();
+            if (nameLower.includes('tuyến có cây xanh')) return { color: '#00c853', fillColor: '#69f0ae', weight: 4 };
+            if (nameLower.includes('mảng xanh')) return { color: '#00b0ff', fillColor: '#80d8ff', weight: 3 };
+            if (nameLower.includes('công viên')) return { color: '#d500f9', fillColor: '#ea80fc', weight: 3 };
+            
+            if (nameLower.includes('nam + thu')) return { color: '#ff6d00', fillColor: '#ffab40', weight: 3 };
+            if (nameLower.includes('mai + cảnh')) return { color: '#ffea00', fillColor: '#ffff8d', weight: 3 };
+            if (nameLower.includes('khoa')) return { color: '#304ffe', fillColor: '#8c9eff', weight: 3 };
+            if (nameLower.includes('không')) return { color: '#607d8b', fillColor: '#cfd8dc', weight: 3 };
+            
+            return { color: '#e91e63', fillColor: '#f48fb1', weight: 3 };
+        }
+
+        async function loadLayerById(fileId, targetLayerGroup, layerName) {
+            try {
+                const fileResp = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${fileId}`, { method: 'GET', redirect: 'follow' });
+                const fileData = await fileResp.json();
+                if (fileData.status === "success") {
+                    let dom; let kmzFiles = {};
+                    try {
+                        const zip = await JSZip.loadAsync(fileData.content, {base64: true});
+                        const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                        if (kmlFile) {
+                            dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                            for (const relativePath of Object.keys(zip.files)) {
+                                if (!zip.files[relativePath].dir && relativePath !== kmlFile) {
+                                    kmzFiles[relativePath] = await zip.files[relativePath].async('base64');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        dom = (new DOMParser()).parseFromString(fileData.content, 'text/xml');
+                    }
+                    if (dom) {
+                        parseAndPopulateLayerGroupWithTheme(dom, targetLayerGroup, kmzFiles, layerName);
+                    }
+                }
+            } catch (err) {
+                console.error(`Không thể tự động nạp lớp ${layerName} từ Drive: `, err);
+            }
+        }
+
+        function parseAndPopulateLayerGroupWithTheme(dom, targetLayerGroup, kmzFiles = {}, layerName = "") {
+            const groundOverlays = dom.getElementsByTagName('GroundOverlay'); 
+            let layerGroup = targetLayerGroup;
+            const theme = getLayerColorTheme(layerName);
+
+            for (let i = 0; i < groundOverlays.length; i++) {
+                const overlay = groundOverlays[i];
+                const hrefElement = overlay.getElementsByTagName('href')[0] || overlay.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
+                const href = hrefElement ? hrefElement.textContent.trim() : null;
+                const latLonBox = overlay.getElementsByTagName('LatLonBox')[0];
+
+                if (href && latLonBox) {
+                    const parseCoord = (tagName) => {
+                        const val = latLonBox.getElementsByTagName(tagName)[0]?.textContent;
+                        return val ? parseFloat(val.trim()) : NaN;
+                    };
+
+                    const south = parseCoord('south');
+                    const north = parseCoord('north');
+                    const east = parseCoord('east');
+                    const west = parseCoord('west');
+
+                    if (!isNaN(south) && !isNaN(north) && !isNaN(east) && !isNaN(west)) {
+                        const bounds = [[south, west], [north, east]];
+                        let cleanHref = href.replace(/^(\.\.\/|\.\/)/, '');
+                        let imageUrl = href;
+
+                        if (kmzFiles[cleanHref]) {
+                            let ext = cleanHref.split('.').pop().toLowerCase();
+                            if (ext === 'jpg') ext = 'jpeg';
+                            imageUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`;
+                        } else {
+                            let baseName = cleanHref.split('/').pop();
+                            let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
+                            if (foundKey) {
+                                let ext = foundKey.split('.').pop().toLowerCase();
+                                if (ext === 'jpg') ext = 'jpeg';
+                                imageUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`;
+                            }
+                        }
+
+                        const imgOverlay = L.imageOverlay(imageUrl, bounds, { opacity: 1.0 });
+                        imgOverlay.addTo(layerGroup);
+                    }
+                }
+            }
+
+            var geoJsonData = toGeoJSON.kml(dom);
+            L.geoJSON(geoJsonData, {
+                style: (f) => {
+                    return {
+                        color: theme.color,
+                        fillColor: theme.fillColor,
+                        weight: theme.weight,
+                        opacity: 0.9,
+                        fillOpacity: 0.4
+                    };
+                },
+                pointToLayer: function (f, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 6,
+                        fillColor: theme.color,
+                        color: '#ffffff',
+                        weight: 1.5,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    });
+                },
+                onEachFeature: function(f, layer) {
+                    let c = ""; 
+                    if (f.properties.name) c += `<b>${f.properties.name}</b>`; 
+                    if (f.properties.description) {
+                        let desc = f.properties.description;
+                        for (const relativePath in kmzFiles) {
+                            if (desc.includes(relativePath)) {
+                                let ext = relativePath.split('.').pop().toLowerCase();
+                                if(ext === 'jpg') ext = 'jpeg';
+                                desc = desc.replace(new RegExp(relativePath, 'g'), `data:image/${ext};base64,${kmzFiles[relativePath]}`);
+                            }
+                        }
+                        c += `<br>${desc}`;
+                    }
+                    if (c) {
+                        layer.bindPopup(c, { maxWidth: 320 });
+                        layer.on('popupopen', function(e) {
+                            $(e.popup._contentNode).find('img').css({'cursor': 'pointer', 'width': '100%', 'max-width': '260px'}).attr('title', 'Nhấn để phóng to ảnh').off('click').on('click', function() {
+                                openLargeImageModal(f.properties.name, $(this).attr('src'));
+                            });
+                        });
+                    }
+                    layerGroup.addLayer(layer);
+                }
+            });
+        }
+
         var externalLayersNode = {
             label: '<b>Dữ liệu ngoại vi:</b>',
             children: []
         };
 
         var overlaysTree = [
-            {label: '<b>Dữ liệu Khảo sát:</b>', children: [
-                {label: "Cây Xanh", layer: layerCloudTreesCluster},
-                {label: "KV2", layer: layer_GT_KV2_11_2},
-                {label: "Phường Thủ Đức", layer: layer_PThuDuc_3},
-                {label: "EQ_Tourism2026", layer: layer_EQ_Tourism2026},
-                {label: "VN_2026", layer: layer_VN_2026}
+            {label: '<b>Quản lý:</b>', children: [
+                {label: "0. Cây xanh", layer: layerCloudTreesCluster},
+                {label: "1. Tuyến có cây xanh", layer: layer_QuanLy_TuyenCayXanh},
+                {label: "2. Mảng xanh", layer: layer_QuanLy_MangXanh},
+                {label: "3. Công viên", layer: layer_QuanLy_CongVien}
             ]},
-            {label: '<b>Tham khảo:</b>', children: [
+            {label: '<b>Giám sát:</b>', children: [
+                {label: "1. GS Nam + Thu", layer: layer_GiamSat_NamThu},
+                {label: "2. GS Mai + Cảnh", layer: layer_GiamSat_MaiCanh},
+                {label: "3. GS Khoa", layer: layer_GiamSat_Khoa},
+                {label: "4. GS không", layer: layer_GiamSat_Khong}
+            ]},
+            {label: '<b>Tham khảo (Thời tiết & Giao thông):</b>', children: [
                 {label: "Mật độ lưu thông", layer: layer_GoogleTraffic_1},
-                {label: "Rain Viewer HD", layer: layer_RainViewerRadar},
-                {label: "Open Weather", layer: layer_OpenWeatherPrecipitation},
-                {label: "GloFAS Flood (Global Warning)", layer: layer_GloFAS_Flood},
-                {label: "Hydro Estimator Rainfall", layer: layer_HydroEstimatorRainfall_4},
-                {label: "Himawari B01 (Visible)", layer: himawariLayers['HIMAWARI_B01']},
-                {label: "Himawari B02 (Visible)", layer: himawariLayers['HIMAWARI_B02']},
-                {label: "Himawari B03 (Visible)", layer: himawariLayers['HIMAWARI_B03']},
-                {label: "Himawari B04 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B04']},
-                {label: "Himawari B05 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B05']},
-                {label: "Himawari B06 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B06']},
-                {label: "Himawari B07 (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07']},
-                {label: "Himawari B07 FIRE (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07_FIRE']},
-                {label: "Himawari B08 (Water Vapor)", layer: himawariLayers['HIMAWARI_B08']},
-                {label: "Himawari B08 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B08_VAPR']},
-                {label: "Himawari B09 (Water Vapor)", layer: himawariLayers['HIMAWARI_B09']},
-                {label: "Himawari B09 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B09_VAPR']},
-                {label: "Himawari B10 (Water Vapor)", layer: himawariLayers['HIMAWARI_B10']},
-                {label: "Himawari B10 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B10_VAPR']},
-                {label: "Himawari B11 (Water Vapor)", layer: himawariLayers['HIMAWARI_B11']},
-                {label: "Himawari B12 (Atmospheric)", layer: himawariLayers['HIMAWARI_B12']},
-                {label: "Himawari B13 (Infrared)", layer: himawariLayers['HIMAWARI_B13']},
-                {label: "Himawari B13 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B13_GRAD']},
-                {label: "Himawari B14 (Infrared)", layer: himawariLayers['HIMAWARI_B14']},
-                {label: "Himawari B14 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B14_GRAD']},
-                {label: "Himawari B15 (Infrared)", layer: himawariLayers['HIMAWARI_B15']},
-                {label: "Himawari B15 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B15_GRAD']},
-                {label: "Himawari B16 (Atmospheric)", layer: himawariLayers['HIMAWARI_B16']},
-                {label: "Himawari airmass (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_airmass']},
-                {label: "Himawari ash (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_ash']},
-                {label: "Himawari cloudtop (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_cloudtop']},
-                {label: "Himawari convection (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_convection']},
-                {label: "Himawari day microphysics", layer: himawariLayers['HIMAWARI_day_microphysics_ahi']},
-                {label: "Himawari dust (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_dust']},
-                {label: "Himawari fire temperature", layer: himawariLayers['HIMAWARI_fire_temperature_awips']},
-                {label: "Himawari fog (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_fog']},
-                {label: "Himawari night microphysics", layer: himawariLayers['HIMAWARI_night_microphysics']},
-                {label: "Himawari true color (Composite)", layer: himawariLayers['HIMAWARI_true_color']},
-                {label: "Himawari water vapors 2 (Composite)", layer: himawariLayers['HIMAWARI_water_vapors2']}
+                {label: "Hydro Estimator Rainfall", layer: layer_HydroEstimatorRainfall_4}
             ]},
             externalLayersNode, 
 			{label: '<b>Bản đồ nền:</b>', children: [
@@ -1284,7 +1247,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             }
         });
 
-        /* --- BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP CHO ĐÁNH DẤU ĐIỂM VỊ TRÍ --- */
         map.on(L.Draw.Event.CREATED, function (event) {
             var layer = event.layer; var type = event.layerType; let popupContent = "";
             if (type === 'marker') {
@@ -1394,99 +1356,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             });
         }
 
-        async function autoLoadVN2026LayerFromDrive() {
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=listFiles`, { method: 'GET', redirect: 'follow' });
-                const data = await response.json();
-                if (data.status === "success" && data.files && data.files.length > 0) {
-                    const vn2026File = data.files.find(f => f.name.toLowerCase().includes('vn_2026'));
-                    if (vn2026File) {
-                        const fileResp = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${vn2026File.id}`, { method: 'GET', redirect: 'follow' });
-                        const fileData = await fileResp.json();
-                        if (fileData.status === "success") {
-                            let dom; let kmzFiles = {};
-                            if (vn2026File.name.toLowerCase().endsWith('.kmz')) {
-                                const zip = await JSZip.loadAsync(fileData.content, {base64: true});
-                                const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
-                                if (kmlFile) {
-                                    dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
-                                    for (const relativePath of Object.keys(zip.files)) {
-                                        if (!zip.files[relativePath].dir && relativePath !== kmlFile) {
-                                            kmzFiles[relativePath] = await zip.files[relativePath].async('base64');
-                                        }
-                                    }
-                                }
-                            } else {
-                                dom = (new DOMParser()).parseFromString(fileData.content, 'text/xml');
-                            }
-                            if (dom) {
-                                parseAndPopulateLayerGroup(dom, layer_VN_2026, kmzFiles);
-                                showToast("Đã tự động hiển thị lớp VN_2026 từ Google Drive", "success");
-                            }
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Không thể tự động nạp lớp VN_2026 từ Drive: ", err);
-            }
-        }
-
-        async function fetchAndLoadEQTourism2026() {
-            if (extState.eqTourismLoaded) {
-                map.zoomOut(1);
-                return;
-            }
-            toggleLoading(true);
-            showToast("Đang kết nối tải dữ liệu EQ_Tourism2026...", "info");
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=listFiles`, { method: 'GET', redirect: 'follow' });
-                const data = await response.json();
-                if (data.status === "success" && data.files && data.files.length > 0) {
-                    const targetFile = data.files.find(f => f.name.toLowerCase().includes('eq_tourism2026'));
-                    if (targetFile) {
-                        const fileResp = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${targetFile.id}`, { method: 'GET', redirect: 'follow' });
-                        const fileData = await fileResp.json();
-                        if (fileData.status === "success") {
-                            let dom; let kmzFiles = {};
-                            if (targetFile.name.toLowerCase().endsWith('.kmz')) {
-                                const zip = await JSZip.loadAsync(fileData.content, {base64: true});
-                                const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
-                                if (kmlFile) {
-                                    dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
-                                    for (const relativePath of Object.keys(zip.files)) {
-                                        if (!zip.files[relativePath].dir && relativePath !== kmlFile) {
-                                            kmzFiles[relativePath] = await zip.files[relativePath].async('base64');
-                                        }
-                                    }
-                                }
-                            } else {
-                                dom = (new DOMParser()).parseFromString(fileData.content, 'text/xml');
-                            }
-                            if (dom) {
-                                parseAndPopulateLayerGroup(dom, layer_EQ_Tourism2026, kmzFiles);
-                                extState.eqTourismLoaded = true;
-                                map.zoomOut(1);
-                                showToast("Đã tải và hiển thị lớp EQ_Tourism2026 thành công!", "success");
-                            }
-                        }
-                    } else {
-                        showToast("Không tìm thấy file EQ_Tourism2026.kmz trên kho Drive.", "error");
-                    }
-                }
-            } catch (err) {
-                console.error("Lỗi khi nạp lớp EQ_Tourism2026: ", err);
-                showToast("Lỗi kết nối khi nạp lớp EQ_Tourism2026.", "error");
-            } finally {
-                toggleLoading(false);
-            }
-        }
-
-        map.on('overlayadd', function(e) {
-            if (e.layer === layer_EQ_Tourism2026) {
-                fetchAndLoadEQTourism2026();
-            }
-        });
-
         $('#drive-search-input').on('keyup', function() {
             var keyword = $(this).val().toLowerCase().trim();
             $('.drive-file-item').each(function() {
@@ -1572,131 +1441,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             
             toggleLoading(false);
             showToast(`Đã nạp thành công đồng thời ${successCount} lớp dữ liệu bản đồ!`, "success");
-        }
-
-        function parseAndPopulateLayerGroup(dom, targetLayerGroup, kmzFiles = {}) {
-            const groundOverlays = dom.getElementsByTagName('GroundOverlay'); 
-            const hasGroundOverlays = groundOverlays.length > 0;
-            let layerGroup = targetLayerGroup || (hasGroundOverlays ? L.layerGroup() : L.markerClusterGroup({ disableClusteringAtZoom: 16 }));
-
-            for (let i = 0; i < groundOverlays.length; i++) {
-                const overlay = groundOverlays[i];
-                const hrefElement = overlay.getElementsByTagName('href')[0] || overlay.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
-                const href = hrefElement ? hrefElement.textContent.trim() : null;
-                const latLonBox = overlay.getElementsByTagName('LatLonBox')[0];
-
-                if (href && latLonBox) {
-                    const parseCoord = (tagName) => {
-                        const val = latLonBox.getElementsByTagName(tagName)[0]?.textContent;
-                        return val ? parseFloat(val.trim()) : NaN;
-                    };
-
-                    const south = parseCoord('south');
-                    const north = parseCoord('north');
-                    const east = parseCoord('east');
-                    const west = parseCoord('west');
-
-                    if (!isNaN(south) && !isNaN(north) && !isNaN(east) && !isNaN(west)) {
-                        const bounds = [[south, west], [north, east]];
-                        let cleanHref = href.replace(/^(\.\.\/|\.\/)/, '');
-                        let imageUrl = href;
-
-                        if (kmzFiles[cleanHref]) {
-                            let ext = cleanHref.split('.').pop().toLowerCase();
-                            if (ext === 'jpg') ext = 'jpeg';
-                            imageUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`;
-                        } else {
-                            let baseName = cleanHref.split('/').pop();
-                            let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
-                            if (foundKey) {
-                                let ext = foundKey.split('.').pop().toLowerCase();
-                                if (ext === 'jpg') ext = 'jpeg';
-                                imageUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`;
-                            }
-                        }
-
-                        const imgOverlay = L.imageOverlay(imageUrl, bounds, { opacity: 1.0 });
-                        imgOverlay.addTo(layerGroup);
-                    }
-                }
-            }
-
-            const iconStyles = {}; const styleMaps = {}; const styles = dom.getElementsByTagName('Style');
-            for (const style of styles) {
-                const styleId = style.getAttribute('id'); const iconHrefElement = style.getElementsByTagName('IconStyle')[0]?.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
-                if (styleId && iconHrefElement) {
-                    let iconHref = iconHrefElement.textContent.trim(); let cleanHref = iconHref.replace(/^(\.\.\/|\.\/)/, ''); let finalIconUrl = "";
-                    if (kmzFiles[cleanHref]) { 
-                        let ext = cleanHref.split('.').pop().toLowerCase(); 
-                        if(ext === 'jpg') ext = 'jpeg';
-                        finalIconUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`; 
-                    } 
-                    else {
-                        let baseName = cleanHref.split('/').pop(); let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
-                        if (foundKey) { 
-                            let ext = foundKey.split('.').pop().toLowerCase(); 
-                            if(ext === 'jpg') ext = 'jpeg';
-                            finalIconUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`; 
-                        } 
-                        else if (iconHref.startsWith('http')) { finalIconUrl = iconHref; } 
-                        else { finalIconUrl = getCustomIcon(baseName.split('.')[0]).options.iconUrl; }
-                    }
-                    iconStyles[`#${styleId}`] = L.icon({ iconUrl: finalIconUrl, iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
-                }
-            }
-            const kmlStyleMaps = dom.getElementsByTagName('StyleMap');
-            for (const styleMap of kmlStyleMaps) { 
-                const styleMapId = styleMap.getAttribute('id'); const pairs = styleMap.getElementsByTagName('Pair');
-                for (let j = 0; j < pairs.length; j++) {
-                    let key = pairs[j].getElementsByTagName('key')[0]?.textContent;
-                    if (key === 'normal') { let normalStyleUrl = pairs[j].getElementsByTagName('styleUrl')[0]?.textContent; if (styleMapId && normalStyleUrl) styleMaps[`#${styleMapId}`] = normalStyleUrl; break; }
-                }
-            }
-
-            var geoJsonData = toGeoJSON.kml(dom);
-            L.geoJSON(geoJsonData, {
-                style: (f) => f.properties.styleUrl && f.properties.styleUrl.includes('LineString') ? { color: '#007BFF', weight: 4 } : {},
-                pointToLayer: function (f, latlng) {
-                    let o = { pane: 'popupPane' };
-                    let sUrl = f.properties.styleUrl; 
-                    if (sUrl) { 
-                        if (styleMaps[sUrl]) sUrl = styleMaps[sUrl]; 
-                        if (iconStyles[sUrl]) o.icon = iconStyles[sUrl]; 
-                    }
-                    if (!o.icon) {
-                        o.icon = L.icon({ 
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', 
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', 
-                            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] 
-                        });
-                    }
-                    return L.marker(latlng, o);
-                },
-                onEachFeature: function(f, layer) {
-                    let c = ""; 
-                    if (f.properties.name) c += `<b>${f.properties.name}</b>`; 
-                    if (f.properties.description) {
-                        let desc = f.properties.description;
-                        for (const relativePath in kmzFiles) {
-                            if (desc.includes(relativePath)) {
-                                let ext = relativePath.split('.').pop().toLowerCase();
-                                if(ext === 'jpg') ext = 'jpeg';
-                                desc = desc.replace(new RegExp(relativePath, 'g'), `data:image/${ext};base64,${kmzFiles[relativePath]}`);
-                            }
-                        }
-                        c += `<br>${desc}`;
-                    }
-                    if (c) {
-                        layer.bindPopup(c, { maxWidth: 320 });
-                        layer.on('popupopen', function(e) {
-                            $(e.popup._contentNode).find('img').css({'cursor': 'pointer', 'width': '100%', 'max-width': '260px'}).attr('title', 'Nhấn để phóng to ảnh').off('click').on('click', function() {
-                                openLargeImageModal(f.properties.name, $(this).attr('src'));
-                            });
-                        });
-                    }
-                    layerGroup.addLayer(layer);
-                }
-            });
         }
 
         function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
@@ -1785,11 +1529,24 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             });
         }
 
-        /* --- BỔ SUNG CHIA SẺ VỊ TRÍ VÀ DẪN ĐƯỜNG KHI GHIM VỊ TRÍ CLICK BẤT KỲ --- */
         map.on('click', async (e) => {
             L.DomEvent.stopPropagation(e); const latlng = e.latlng;
-            if (extState.isPickingStart) { extState.startCoord = latlng; document.getElementById('directions-start-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; resetMapPickers(); toggleDirectionsModal(true); showToast("Đã ghi nhận điểm xuất phát từ bản đồ", "success"); return; }
-            if (extState.isPickingEnd) { extState.endCoord = latlng; document.getElementById('directions-end-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; resetMapPickers(); toggleDirectionsModal(true); showToast("Đã ghi nhận điểm đến từ bản đồ", "success"); return; }
+            if (extState.isPickingStart) { 
+                extState.startCoord = latlng; 
+                document.getElementById('directions-start-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; 
+                resetMapPickers(); 
+                toggleDirectionsModal(true); 
+                showToast("Đã ghi nhận ĐIỂM BẮT ĐẦU từ bản đồ", "success"); 
+                return; 
+            }
+            if (extState.isPickingEnd) { 
+                extState.endCoord = latlng; 
+                document.getElementById('directions-end-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; 
+                resetMapPickers(); 
+                toggleDirectionsModal(true); 
+                showToast("Đã ghi nhận ĐIỂM ĐẾN từ bản đồ", "success"); 
+                return; 
+            }
             if (drawMarkerHandler._enabled || drawLineHandler._enabled || drawPolyHandler._enabled) return;
             if (extState.streetViewActive) { loadStreetViewPanorama(latlng.lat, latlng.lng); return; }
 
@@ -1912,7 +1669,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         }
         $('#search-button').click(debounce(execAddressSearch, 300)); $('#search-input').keypress((e) => { if (e.key === 'Enter') debounce(execAddressSearch, 300)(); });
 
-        /* --- BỔ SUNG NĂNG LỰC DẪN ĐƯỜNG TRỰC TIẾP CHO NÚT "VỊ TRÍ HIỆN TẠI CỦA TÔI" --- */
         $('#custom-locate-btn').click(function(e) {
             e.preventDefault(); if (!navigator.geolocation) { showToast("Trình duyệt không hỗ trợ định vị.", "error"); return; } toggleLoading(true);
             navigator.geolocation.getCurrentPosition(
@@ -1941,16 +1697,56 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         $('#get-directions-btn').click(async function() {
             if (extState.routingControl) { map.removeControl(extState.routingControl); extState.routingControl = null; }
             document.getElementById('route-summary-modal').style.display = 'none'; extState.currentActiveRouteGeo = null; extState.currentActiveInstructions = null;
-            const startVal = document.getElementById('directions-start-input').value.trim(); const endVal = document.getElementById('directions-end-input').value.trim(); if (!startVal || !endVal) { showToast("Vui lòng điền đủ lộ trình.", "error"); return; } toggleLoading(true);
-            const parseCoordStr = (str) => { const parts = str.split(','); if (parts.length === 2) { const lat = parseFloat(parts[0]); const lng = parseFloat(parts[1]); if (!isNaN(lat) && !isNaN(lng)) return L.latLng(lat, lng); } return null; };
-            const geocodeTarget = async (query, fallbackCoord) => {
-                if (query.toLowerCase() === 'vị trí của tôi' && extState.userGPSPosition) { return L.latLng(extState.userGPSPosition.lat, extState.userGPSPosition.lng); }
-                const inlineLatLng = parseCoordStr(query); if (inlineLatLng) return inlineLatLng; if (fallbackCoord) return fallbackCoord;
-                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`; const resp = await fetch(url); const data = await resp.json(); if (data.status !== 'OK') throw new Error('Lỗi Geocoding'); return L.latLng(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
+            const startVal = document.getElementById('directions-start-input').value.trim(); 
+            const endVal = document.getElementById('directions-end-input').value.trim(); 
+            
+            if (!startVal || !endVal) { showToast("Vui lòng nhập đủ Điểm bắt đầu và Điểm đến.", "error"); return; } 
+            toggleLoading(true);
+            
+            const parseCoordStr = (str) => { 
+                const parts = str.split(','); 
+                if (parts.length === 2) { 
+                    const lat = parseFloat(parts[0]); 
+                    const lng = parseFloat(parts[1]); 
+                    if (!isNaN(lat) && !isNaN(lng)) return L.latLng(lat, lng); 
+                } 
+                return null; 
             };
+            
+            const geocodeTarget = async (query, fallbackCoord) => {
+                if (query.toLowerCase() === 'vị trí của tôi') { 
+                    if (extState.userGPSPosition) {
+                        return L.latLng(extState.userGPSPosition.lat, extState.userGPSPosition.lng); 
+                    } else {
+                        return new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) { reject(new Error("Thiết bị không hỗ trợ GPS")); return; }
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                    extState.userGPSPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                    resolve(L.latLng(pos.coords.latitude, pos.coords.longitude));
+                                },
+                                (err) => reject(new Error("Không thể lấy vị trí hiện tại của thiết bị.")),
+                                { enableHighAccuracy: true, timeout: 8000 }
+                            );
+                        });
+                    }
+                }
+                const inlineLatLng = parseCoordStr(query); 
+                if (inlineLatLng) return inlineLatLng; 
+                if (fallbackCoord) return fallbackCoord;
+                
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`; 
+                const resp = await fetch(url); 
+                const data = await resp.json(); 
+                if (data.status !== 'OK') throw new Error('Lỗi Geocoding địa điểm: ' + query); 
+                return L.latLng(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
+            };
+
             try {
-                const startLatLng = await geocodeTarget(startVal, extState.startCoord); const endLatLng = await geocodeTarget(endVal, extState.endCoord);
+                const startLatLng = await geocodeTarget(startVal, extState.startCoord); 
+                const endLatLng = await geocodeTarget(endVal, extState.endCoord);
                 const pad = getAdaptiveBoundsPadding();
+                
                 extState.routingControl = L.Routing.control({ 
                     waypoints: [startLatLng, endLatLng], 
                     router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }), 
@@ -1959,12 +1755,27 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 }).addTo(map);
                 
                 extState.routingControl.on('routesfound', function(e) {
-                    const route = e.routes[0]; const summary = route.summary; extState.currentActiveRouteGeo = route.coordinates; extState.currentActiveInstructions = route.instructions;
-                    document.getElementById('summary-distance').textContent = (summary.totalDistance / 1000).toFixed(2) + ' km'; document.getElementById('summary-time').textContent = Math.round(summary.totalTime / 60) + ' phút'; document.getElementById('route-summary-modal').style.display = 'block'; toggleLoading(false); toggleDirectionsModal(false);
-                    const routeBounds = L.latLngBounds(route.coordinates); map.fitBounds(routeBounds, { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true });
+                    const route = e.routes[0]; 
+                    const summary = route.summary; 
+                    extState.currentActiveRouteGeo = route.coordinates; 
+                    extState.currentActiveInstructions = route.instructions;
+                    document.getElementById('summary-distance').textContent = (summary.totalDistance / 1000).toFixed(2) + ' km'; 
+                    document.getElementById('summary-time').textContent = Math.round(summary.totalTime / 60) + ' phút'; 
+                    document.getElementById('route-summary-modal').style.display = 'block'; 
+                    toggleLoading(false); 
+                    toggleDirectionsModal(false);
+                    const routeBounds = L.latLngBounds(route.coordinates); 
+                    map.fitBounds(routeBounds, { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true });
                 });
-                extState.routingControl.on('routingerror', function() { showToast("Không tìm thấy đường đi khả dụng.", "error"); toggleLoading(false); });
-            } catch(err) { showToast("Lỗi phân tích cú pháp địa điểm.", "error"); toggleLoading(false); }
+                
+                extState.routingControl.on('routingerror', function() { 
+                    showToast("Không tìm thấy đường đi giữa 2 địa điểm này.", "error"); 
+                    toggleLoading(false); 
+                });
+            } catch(err) { 
+                showToast(err.message || "Lỗi phân tích địa điểm dẫn đường.", "error"); 
+                toggleLoading(false); 
+            }
         });
 
         $('#custom-image-ocr-btn').click((e) => { e.preventDefault(); toggleOcrModal(true); });
@@ -2390,8 +2201,16 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             lay.addTo(map);
         }
 
+        // Khởi chạy hệ thống tự động đồng bộ
         loadCloudTrees();
-        autoLoadVN2026LayerFromDrive();
+
+        loadLayerById('1RhWVXO4PCXSw2hCOOB9lUzQhhqFjdr5k', layer_QuanLy_TuyenCayXanh, '1. Tuyến có cây xanh');
+        loadLayerById('1ywqat7_l1HEfLmqc_r2U_G94OyySx4oX', layer_QuanLy_MangXanh, '2. Mảng xanh');
+        loadLayerById('15hnIvsTkpHNMHJVMM0i-gZFjPHyzhBV5', layer_QuanLy_CongVien, '3. Công viên');
+        loadLayerById('1ZLiimPod3Giu2Qy46v3V5A_kaBGrC3rK', layer_GiamSat_NamThu, '1. GS Nam + Thu');
+        loadLayerById('1FdWpyXbNOCfblyf93Eu06nBdCb3HvUKP', layer_GiamSat_MaiCanh, '2. GS Mai + Cảnh');
+        loadLayerById('1xTefl1RcqqGJFYAzXBwyo1WLEjSNRsnN', layer_GiamSat_Khoa, '3. GS Khoa');
+        loadLayerById('1I17cM14OpuxsOnMKYrLy69Es6CX4cb9_', layer_GiamSat_Khong, '4. GS không');
         </script>
     </body>
 </html>
