@@ -365,6 +365,7 @@
             background: rgba(255, 255, 255, 0.98); padding: 12px 16px;
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.25);
             width: 260px; font-size: 13px; color: #333; border: 2px solid #e91e63;
+            touch-action: none; /* Hỗ trợ chống cuộn trang khi kéo trên di động */
         }
         .tracking-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -507,7 +508,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/></svg>
             </button>
             <button id="custom-browse-drive-btn" title="Mở danh mục bản đồ" style="background-color: #fff; color: #1a73e8;">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
             </button>
             <a href="#" id="custom-upload-kmz-btn" title="Tải lên tệp KML hoặc KMZ cục bộ">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
@@ -704,6 +705,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
         <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
@@ -1168,7 +1170,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             trackingTotalDistance: 0
         };
 
-        // Kích hoạt tính năng kéo thả (Draggable) cho hộp thoại Tracking bằng jQuery UI
+        // Kích hoạt tính năng kéo thả (Draggable) cho hộp thoại Tracking bằng jQuery UI kết hợp Touch Punch cho mobile
         $(function() {
             if ($.fn.draggable) {
                 $('#tracking-control-panel').draggable({
