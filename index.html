@@ -359,6 +359,43 @@
             cursor: pointer;
         }
 
+        /* Styles cho Bảng điều khiển Lưu dấu hành trình (Tracking Panel) */
+        #tracking-control-panel {
+            position: absolute; top: 75px; right: 12px; z-index: 2000;
+            background: rgba(255, 255, 255, 0.98); padding: 12px 16px;
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            width: 260px; font-size: 13px; color: #333; border: 2px solid #e91e63;
+        }
+        .tracking-header {
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: move; margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 6px;
+        }
+        .tracking-header h4 { margin: 0; color: #e91e63; font-size: 1.05em; font-weight: bold; }
+        .tracking-header-tools { display: flex; gap: 6px; align-items: center; }
+        .tracking-tool-btn {
+            background: #f1f3f4; border: 1px solid #ccc; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 12px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; color: #666;
+        }
+        .tracking-tool-btn:hover { background: #ddd; color: #333; }
+        
+        #tracking-body-content { display: block; }
+        #tracking-control-panel.minimized #tracking-body-content { display: none; }
+        #tracking-control-panel.minimized { width: auto; padding: 8px 12px; }
+
+        #tracking-control-panel p { margin: 4px 0; display: flex; justify-content: space-between; font-weight: 500; }
+        #tracking-control-panel p span { font-weight: bold; color: #1a73e8; }
+        .tracking-btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .tracking-btn-group button {
+            flex: 1; padding: 6px 10px; border: none; border-radius: 18px; font-weight: bold; font-size: 11px; cursor: pointer; color: white;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .tracking-btn-group button:active { transform: scale(0.96); }
+        .btn-stop-tracking { background-color: #d32f2f; }
+        .btn-stop-tracking:hover { background-color: #b71c1c; }
+        .btn-pause-tracking { background-color: #ff9800; }
+        .btn-pause-tracking:hover { background-color: #e65100; }
+
         @media (max-width: 767px) {
             .leaflet-top.leaflet-right { top: 65px !important; }
             #search-ui-container { top: 12px; padding: 2px 6px; width: 92%; }
@@ -374,6 +411,7 @@
             .info-box { top: 65px; left: 4%; width: 92%; max-width: none; max-height: 50vh; }
             .modal-content { padding: 18px; width: 94%; max-height: 80vh; }
             #route-summary-modal { top: 65px; width: 85%; padding: 12px; }
+            #tracking-control-panel { top: 65px; right: 10px; width: 230px; padding: 10px; }
             .leaflet-top.leaflet-left { top: 70px; }
             #streetview-modal .modal-content { height: 60vh; }
         }
@@ -408,11 +446,35 @@
 
         <div class="info-box hidden" id="weather-info"></div>
 
+        <!-- BẢNG ĐIỀU KHIỂN HÀNH TRÌNH (HỖ TRỢ DRAGGABLE & MINIMIZE) -->
+        <div id="tracking-control-panel" style="display: none;">
+            <div class="tracking-header">
+                <h4>📍 Lưu Hành Trình</h4>
+                <div class="tracking-header-tools">
+                    <button class="tracking-tool-btn" id="btn-minimize-track" title="Thu nhỏ/Phóng to">_</button>
+                </div>
+            </div>
+            <div id="tracking-body-content">
+                <p>Quãng đường: <span id="track-dist">0.00 m</span></p>
+                <p>Thời gian: <span id="track-time">00:00</span></p>
+                <p>Tốc độ: <span id="track-speed">0.0 km/h</span></p>
+                <div class="tracking-btn-group">
+                    <button class="btn-pause-tracking" id="btn-pause-track">Tạm dừng</button>
+                    <button class="btn-stop-tracking" id="btn-finish-track">Kết thúc & Lưu</button>
+                </div>
+            </div>
+        </div>
+
         <div id="support-controls-container">
             <a href="#" id="custom-locate-btn" title="Vị trí hiện tại của tôi">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
             </a>
             
+            <!-- NÚT BẮT ĐẦU LƯU DẤU HÀNH TRÌNH GPS (ICON NGƯỜI CHẠY BỘ - ĐẶT NGAY DƯỚI NÚT LOCATE) -->
+            <button id="custom-start-tracking-btn" title="Bắt đầu lưu dấu hành trình thực địa GPS" style="background-color: #e91e63; color: white;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.3V13h2V9.6l1.8-.7z"/></svg>
+            </button>
+
             <button id="custom-draw-marker-btn" title="Đánh Dấu Điểm Vị Trí">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
             </button>
@@ -422,6 +484,7 @@
             <button id="custom-draw-poly-btn" title="Đo Diện Tích / Vẽ Vùng">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 15.58V13c0-1.1-.9-2-2-2H9V9.42c1.16-.41 2-1.51 2-2.82 0-1.66-1.34-3-3-3S5 4.94 5 6.6c0 1.31.84 2.41 2 2.82v5.16c-1.16.41-2 1.51-2 2.82 0 1.66 1.34 3 3 3s3-1.34 3-3c0-1.31-.84-2.41-2-2.82V13h4v2.58c-1.16.41-2 1.51-2 2.82 0 1.66 1.34 3 3 3s3-1.34 3-3c0-1.31-.84-2.41-2-2.82z"/></svg>
             </button>
+            
             <button id="custom-export-kml-btn" title="Lưu Dữ Liệu" style="display: none; background-color: #e8f0fe; color: #28a745;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
             </button>
@@ -718,56 +781,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 </div>`;
         }
 
-        function removeEmptyRowsFromPopupContent(content, feature) {
-         var tempDiv = document.createElement('div');
-         tempDiv.innerHTML = content;
-         var rows = tempDiv.querySelectorAll('tr');
-         for (var i = 0; i < rows.length; i++) {
-             var td = rows[i].querySelector('td.visible-with-data');
-             var key = td ? td.id : '';
-             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
-                 rows[i].parentNode.removeChild(rows[i]);
-             }
-         }
-         return tempDiv.innerHTML;
-        }
-
-        function addClassToPopupIfMedia(content, popup) {
-            var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = content;
-            var imgTd = tempDiv.querySelector('td img');
-            if (imgTd) {
-                var src = imgTd.getAttribute('src');
-                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
-                    popup._contentNode.classList.add('media');
-                    setTimeout(function() { popup.update(); }, 10);
-                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
-                    var audio = document.createElement('audio');
-                    audio.controls = true;
-                    audio.src = src;
-                    imgTd.parentNode.replaceChild(audio, imgTd);
-                    popup._contentNode.classList.add('media');
-                    setTimeout(function() { popup.setContent(tempDiv.innerHTML); popup.update(); }, 10);
-                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
-                    var video = document.createElement('video');
-                    video.controls = true;
-                    video.src = src;
-                    video.style.width = "400px";
-                    video.style.height = "300px";
-                    video.style.maxHeight = "60vh";
-                    video.style.maxWidth = "60vw";
-                    imgTd.parentNode.replaceChild(video, imgTd);
-                    popup._contentNode.classList.add('media');
-                    video.addEventListener('loadedmetadata', function() { popup.update(); });
-                    setTimeout(function() { popup.setContent(tempDiv.innerHTML); popup.update(); }, 10);
-                } else {
-                    popup._contentNode.classList.remove('media');
-                }
-            } else {
-                popup._contentNode.classList.remove('media');
-            }
-        }
-
         var zoomControl = L.control.zoom({ position: 'topleft' }).addTo(map);
         L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
         
@@ -826,7 +839,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_HCM_Raster_Map', opacity: 1.0, attribution: '© Bản đồ TP.HCM', minZoom: 1, maxZoom: 28
         });
 
-        /* --- CÁC LỚP THỜI TIẾT & THAM KHẢO (ĐÃ TÍCH HỢP MẬT ĐỘ LƯU THÔNG & HYDRO ESTIMATOR RAINFALL) --- */
         map.createPane('pane_GoogleTraffic_Traffic');
         map.getPane('pane_GoogleTraffic_Traffic').style.zIndex = 405;
         var layer_GoogleTraffic_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=h@159000000,traffic&hl=vi&x={x}&y={y}&z={z}', {
@@ -839,7 +851,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_HydroEstimatorRainfall_4', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '',
         });
 
-        /* --- KHỞI TẠO CÁC LỚP QUẢN LÝ VÀ GIÁM SÁT --- */
         var layerCloudTreesCluster = L.markerClusterGroup({
             disableClusteringAtZoom: 15,
             spiderfyOnMaxZoom: true,
@@ -1143,8 +1154,43 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 time: "",
                 date: "",
                 address: ""
-            }
+            },
+
+            // Trạng thái Theo dõi Hành trình GPS (Tracking State)
+            isTracking: false,
+            isTrackingPaused: false,
+            trackingWatchId: null,
+            trackingPoints: [],
+            trackingPolyline: null,
+            trackingStartTime: null,
+            trackingTimerInterval: null,
+            trackingElapsedSeconds: 0,
+            trackingTotalDistance: 0
         };
+
+        // Kích hoạt tính năng kéo thả (Draggable) cho hộp thoại Tracking bằng jQuery UI
+        $(function() {
+            if ($.fn.draggable) {
+                $('#tracking-control-panel').draggable({
+                    handle: '.tracking-header',
+                    containment: 'window',
+                    scroll: false
+                });
+            }
+        });
+
+        // Xử lý sự kiện thu nhỏ / phóng to bảng thông tin tracking
+        $('#btn-minimize-track').click(function() {
+            const panel = $('#tracking-control-panel');
+            panel.toggleClass('minimized');
+            if (panel.hasClass('minimized')) {
+                $(this).text("+");
+                $(this).attr("title", "Phóng to bảng");
+            } else {
+                $(this).text("_");
+                $(this).attr("title", "Thu nhỏ bảng");
+            }
+        });
 
         var drawnItems = new L.FeatureGroup().addTo(map);
         
@@ -1265,6 +1311,147 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             hideDrawHelperUI();
         });
 
+        /* --- LOGIC TÍCH HỢP LƯU DẤU HÀNH TRÌNH GPS (TRACKING) --- */
+        $('#custom-start-tracking-btn').click(function(e) {
+            e.preventDefault();
+            if (!navigator.geolocation) {
+                showToast("Trình duyệt không hỗ trợ tính năng định vị GPS.", "error");
+                return;
+            }
+            if (extState.isTracking) {
+                showToast("Hành trình đang được ghi nhận.", "info");
+                return;
+            }
+
+            // Khởi tạo trạng thái tracking
+            extState.isTracking = true;
+            extState.isTrackingPaused = false;
+            extState.trackingPoints = [];
+            extState.trackingTotalDistance = 0;
+            extState.trackingElapsedSeconds = 0;
+            extState.trackingStartTime = new Date();
+
+            $('#custom-start-tracking-btn').addClass('btn-active');
+            $('#tracking-control-panel').show();
+            $('#btn-pause-track').text("Tạm dừng");
+
+            if (extState.trackingPolyline) {
+                map.removeLayer(extState.trackingPolyline);
+            }
+            extState.trackingPolyline = L.polyline([], {
+                color: '#e91e63',
+                weight: 5,
+                opacity: 0.85
+            }).addTo(map);
+
+            // Bắt đầu đồng hồ bấm giờ
+            if (extState.trackingTimerInterval) clearInterval(extState.trackingTimerInterval);
+            extState.trackingTimerInterval = setInterval(() => {
+                if (!extState.isTrackingPaused) {
+                    extState.trackingElapsedSeconds++;
+                    let mins = Math.floor(extState.trackingElapsedSeconds / 60);
+                    let secs = extState.trackingElapsedSeconds % 60;
+                    let timeStr = (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+                    $('#track-time').text(timeStr);
+                }
+            }, 1000);
+
+            // Lắng nghe vị trí thời gian thực qua watchPosition
+            extState.trackingWatchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    if (!extState.isTracking || extState.isTrackingPaused) return;
+                    let lat = position.coords.latitude;
+                    let lng = position.coords.longitude;
+                    let speed = position.coords.speed ? position.coords.speed * 3.6 : 0; // m/s sang km/h
+                    let newLatLng = L.latLng(lat, lng);
+
+                    $('#track-speed').text(speed.toFixed(1) + " km/h");
+
+                    let pts = extState.trackingPolyline.getLatLngs();
+                    if (pts.length > 0) {
+                        let lastPt = pts[pts.length - 1];
+                        let distStep = lastPt.distanceTo(newLatLng);
+                        if (distStep > 2) { // Chỉ cộng dồn nếu di chuyển > 2m để lọc nhiễu GPS đứng yên
+                            extState.trackingTotalDistance += distStep;
+                            extState.trackingPolyline.addLatLng(newLatLng);
+                            map.panTo(newLatLng);
+                        }
+                    } else {
+                        extState.trackingPolyline.addLatLng(newLatLng);
+                        map.setView(newLatLng, 17);
+                    }
+
+                    let distDisplay = extState.trackingTotalDistance >= 1000 
+                        ? (extState.trackingTotalDistance / 1000).toFixed(2) + " km" 
+                        : extState.trackingTotalDistance.toFixed(1) + " m";
+                    $('#track-dist').text(distDisplay);
+                },
+                (error) => {
+                    console.error("Lỗi GPS tracking:", error);
+                    showToast("Mất tín hiệu định vị GPS thực địa.", "error");
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+            );
+
+            showToast("Đã bắt đầu lưu dấu hành trình thực địa!", "success");
+        });
+
+        $('#btn-pause-track').click(function() {
+            extState.isTrackingPaused = !extState.isTrackingPaused;
+            if (extState.isTrackingPaused) {
+                $(this).text("Tiếp tục").css("background-color", "#28a745");
+                showToast("Đã tạm dừng ghi nhận hành trình.", "info");
+            } else {
+                $(this).text("Tạm dừng").css("background-color", "#ff9800");
+                showToast("Đã tiếp tục ghi nhận hành trình.", "success");
+            }
+        });
+
+        $('#btn-finish-track').click(function() {
+            if (!extState.isTracking) return;
+
+            // Dừng watchPosition và Timer
+            if (extState.trackingWatchId !== null) {
+                navigator.geolocation.clearWatch(extState.trackingWatchId);
+                extState.trackingWatchId = null;
+            }
+            if (extState.trackingTimerInterval) {
+                clearInterval(extState.trackingTimerInterval);
+                extState.trackingTimerInterval = null;
+            }
+
+            extState.isTracking = false;
+            $('#tracking-control-panel').hide();
+            $('#custom-start-tracking-btn').removeClass('btn-active');
+
+            let pts = extState.trackingPolyline ? extState.trackingPolyline.getLatLngs() : [];
+            if (pts.length < 2) {
+                showToast("Quãng đường hành trình quá ngắn hoặc không đủ điểm dữ liệu để lưu.", "error");
+                if (extState.trackingPolyline) map.removeLayer(extState.trackingPolyline);
+                return;
+            }
+
+            // Thêm tuyến đường tracking vào drawnItems để có thể lưu trữ qua modal lưu dữ liệu chung
+            extState.trackingPolyline.bindPopup(`<b>Hành trình thực địa GPS</b><br>Quãng đường: ${$('#track-dist').text()}<br>Thời gian: ${$('#track-time').text()}`);
+            drawnItems.addLayer(extState.trackingPolyline);
+            $('#custom-export-kml-btn').show();
+
+            // Mở modal lưu file KML/KMZ
+            $('#save-modal-title').text("Lưu dấu hành trình thực địa (KML)");
+            $('#save-modal-desc-label').text("Mô tả hành trình thực địa:");
+            let defaultName = "HanhTrinhGPS_" + new Date().toISOString().slice(0,10).replace(/-/g,'');
+            $('#kml-filename').val(defaultName);
+            $('#kml-description').val(`Thời gian bắt đầu: ${extState.trackingStartTime.toLocaleString('vi-VN')}
+Tổng quãng đường: ${$('#track-dist').text()}
+Thời gian di chuyển: ${$('#track-time').text()}`);
+            
+            $('#btn-confirm-save-drive').off('click').on('click', executeSaveDrawingsToDrive); 
+            $('#save-kml-modal').addClass('visible');
+
+            showToast("Đã hoàn tất ghi nhận hành trình!", "success");
+        });
+        /* ----------------------------------------------------------------- */
+
         $('#custom-export-kml-btn').click(function(e) {
             e.preventDefault(); if (drawnItems.getLayers().length === 0) { showToast("Không tìm thấy dữ liệu tự vẽ nào để xuất.", "error"); return; }
             $('#save-modal-title').text("Lưu dữ liệu đo vẽ"); $('#save-modal-desc-label').text("Mô tả nội dung đo vẽ:");
@@ -1290,7 +1477,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     let pt = layer.getLatLng();
                     kml += `  <Placemark>\n    <name>Diem khao sat thuc dia</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <Point>\n      <coordinates>${pt.lng},${pt.lat},0</coordinates>\n    </Point>\n  </Placemark>\n`;
                 } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-                    kml += `  <Placemark>\n    <name>Duong do ve</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
+                    kml += `  <Placemark>\n    <name>Duong do ve / Hanh trinh</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
                     layer.getLatLngs().forEach(pt => { kml += `        ${pt.lng},${pt.lat},0\n`; });
                     kml += `      </coordinates>\n    </LineString>\n  </Placemark>\n`;
                 } else if (layer instanceof L.Polygon) {
@@ -2201,7 +2388,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             lay.addTo(map);
         }
 
-        // Khởi chạy hệ thống tự động đồng bộ
         loadCloudTrees();
 
         loadLayerById('1RhWVXO4PCXSw2hCOOB9lUzQhhqFjdr5k', layer_QuanLy_TuyenCayXanh, '1. Tuyến có cây xanh');
