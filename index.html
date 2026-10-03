@@ -307,6 +307,12 @@
         .form-group textarea { resize: vertical; height: 80px; }
 
         .radar-contrast-layer { filter: url(#radar-palette) saturate(200%) contrast(125%) !important; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+        
+        /* Bộ lọc loại bỏ màu đen, giữ lại mây trắng cho lớp Himawari Cloudtop */
+        .cloudtop-filter-layer {
+            filter: url(#black-to-transparent) contrast(150%) brightness(120%) !important;
+            mix-blend-mode: screen !important;
+        }
 
         .drive-file-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
         .drive-file-item:hover { background: #f5f5f5; }
@@ -426,6 +432,14 @@
                 1.2   0.8  -0.5  0.0  0.1 
                -0.5  -1.5  3.0  0.0  -0.1 
                 0.0   0.0  0.0  1.0  0.0" />
+            </filter>
+            <!-- SVG Matrix chuyển đổi màu đen thành trong suốt, giữ lại mây trắng -->
+            <filter id="black-to-transparent">
+              <feColorMatrix type="matrix" values="
+                1  0  0  0  0
+                0  1  0  0  0
+                0  0  1  0  0
+                1  1  1  0  0" />
             </filter>
           </defs>
         </svg>
@@ -850,6 +864,20 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_HydroEstimatorRainfall_4', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '',
         });
 
+        // Tích hợp 2 lớp Himawari với bộ lọc loại bỏ màu đen cho lớp cloudtop
+        map.createPane('pane_HIMAWARI_true_color');
+        map.getPane('pane_HIMAWARI_true_color').style.zIndex = 401;
+        var layer_Himawari_TrueColor = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=HIMAWARI-true-color.map&version=1.3", "current", {
+            pane: 'pane_HIMAWARI_true_color', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: ''
+        });
+
+        map.createPane('pane_HIMAWARI_cloudtop');
+        map.getPane('pane_HIMAWARI_cloudtop').style.zIndex = 401;
+        var layer_Himawari_Cloudtop = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=HIMAWARI-cloudtop.map&version=1.3", "current", {
+            pane: 'pane_HIMAWARI_cloudtop', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.75, identify: false, attribution: '',
+            className: 'cloudtop-filter-layer'
+        });
+
         var layerCloudTreesCluster = L.markerClusterGroup({
             disableClusteringAtZoom: 15,
             spiderfyOnMaxZoom: true,
@@ -1202,7 +1230,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             ]},
             {label: '<b>Thời tiết & Giao thông:</b>', children: [
                 {label: "Mật độ lưu thông", layer: layer_GoogleTraffic_1},
-                {label: "Lượng mưa", layer: layer_HydroEstimatorRainfall_4}
+                {label: "Lượng mưa", layer: layer_HydroEstimatorRainfall_4},
+                {label: "Himawari true color (Composite)", layer: layer_Himawari_TrueColor},
+                {label: "Himawari cloudtop (Hazards/Disasters)", layer: layer_Himawari_Cloudtop}
             ]},
             // Nhóm Dự báo 16 ngày đặt chính xác ngay dưới Thời tiết & Giao thông
             {
@@ -2468,6 +2498,7 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
                     map.fitBounds(layerGroup.getBounds(), { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true, duration: 1.2 }); 
                 }
                 refreshLayerTreeControl();
+                toggleLoading(false);
                 showToast(`Đã nạp thành công: ${layerName}`, "success");
             }
         }
