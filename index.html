@@ -888,6 +888,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         var layer_QuanLy_TuyenCayXanh = L.featureGroup();
         var layer_QuanLy_MangXanh = L.featureGroup();
         var layer_QuanLy_CongVien = L.featureGroup();
+        var layer_QuanLy_HuongTuyen = L.featureGroup();
 
         var layer_GiamSat_NamThu = L.featureGroup();
         var layer_GiamSat_MaiCanh = L.featureGroup();
@@ -1108,6 +1109,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             if (nameLower.includes('tuyến có cây xanh')) return { color: '#00c853', fillColor: '#69f0ae', weight: 4 };
             if (nameLower.includes('mảng xanh')) return { color: '#00b0ff', fillColor: '#80d8ff', weight: 3 };
             if (nameLower.includes('công viên')) return { color: '#d500f9', fillColor: '#ea80fc', weight: 3 };
+            if (nameLower.includes('hướng tuyến')) return { color: '#e91e63', fillColor: '#f48fb1', weight: 4 };
             
             if (nameLower.includes('nam + thu')) return { color: '#ff6d00', fillColor: '#ffab40', weight: 3 };
             if (nameLower.includes('mai + cảnh')) return { color: '#ffea00', fillColor: '#ffff8d', weight: 3 };
@@ -1261,7 +1263,8 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 {label: "0. Cây xanh", layer: layerCloudTreesCluster},
                 {label: "1. Tuyến có cây xanh", layer: layer_QuanLy_TuyenCayXanh},
                 {label: "2. Mảng xanh", layer: layer_QuanLy_MangXanh},
-                {label: "3. Công viên", layer: layer_QuanLy_CongVien}
+                {label: "3. Công viên", layer: layer_QuanLy_CongVien},
+                {label: "4. Hướng tuyến", layer: layer_QuanLy_HuongTuyen}
             ]},
             {label: '<b>Giám sát:</b>', children: [
                 {label: "1. GS Nam + Thu", layer: layer_GiamSat_NamThu},
@@ -2562,6 +2565,7 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
         loadLayerById('1RhWVXO4PCXSw2hCOOB9lUzQhhqFjdr5k', layer_QuanLy_TuyenCayXanh, '1. Tuyến có cây xanh');
         loadLayerById('1ywqat7_l1HEfLmqc_r2U_G94OyySx4oX', layer_QuanLy_MangXanh, '2. Mảng xanh');
         loadLayerById('15hnIvsTkpHNMHJVMM0i-gZFjPHyzhBV5', layer_QuanLy_CongVien, '3. Công viên');
+        loadLayerById('1sjQi27oNNZoKc3GUGCAnUzRGVMlS47p5', layer_QuanLy_HuongTuyen, '4. Hướng tuyến');
         loadLayerById('1ZLiimPod3Giu2Qy46v3V5A_kaBGrC3rK', layer_GiamSat_NamThu, '1. GS Nam + Thu');
         loadLayerById('1FdWpyXbNOCfblyf93Eu06nBdCb3HvUKP', layer_GiamSat_MaiCanh, '2. GS Mai + Cảnh');
         loadLayerById('1xTefl1RcqqGJFYAzXBwyo1WLEjSNRsnN', layer_GiamSat_Khoa, '3. GS Khoa');
