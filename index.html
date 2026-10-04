@@ -885,6 +885,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         });
         map.addLayer(layerCloudTreesCluster);
 
+        var layer_CanhBao_DiemNgap = L.featureGroup();
         var layer_QuanLy_TuyenCayXanh = L.featureGroup();
         var layer_QuanLy_MangXanh = L.featureGroup();
         var layer_QuanLy_CongVien = L.featureGroup();
@@ -1108,6 +1109,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             const nameLower = layerName.toLowerCase();
             if (nameLower.includes('tuyến có cây xanh')) return { color: '#00c853', fillColor: '#69f0ae', weight: 4 };
             if (nameLower.includes('mảng xanh')) return { color: '#00b0ff', fillColor: '#80d8ff', weight: 3 };
+            if (nameLower.includes('điểm ngập') || nameLower.includes('ngập')) return { color: '#d32f2f', fillColor: '#ff5252', weight: 3 };
             if (nameLower.includes('công viên')) return { color: '#d500f9', fillColor: '#ea80fc', weight: 3 };
             if (nameLower.includes('hướng tuyến')) return { color: '#e91e63', fillColor: '#f48fb1', weight: 4 };
             
@@ -1259,6 +1261,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         };
 
         var overlaysTree = [
+            {label: '<b>Cảnh báo:</b>', children: [
+                {label: "1. Điểm ngập", layer: layer_CanhBao_DiemNgap}
+            ]},
             {label: '<b>Quản lý:</b>', children: [
                 {label: "0. Cây xanh", layer: layerCloudTreesCluster},
                 {label: "1. Tuyến có cây xanh", layer: layer_QuanLy_TuyenCayXanh},
@@ -2562,6 +2567,7 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
 
         loadCloudTrees();
 
+        loadLayerById('1REWi0hi5N5gRT_2uKCciM1JPQKLXE08j', layer_CanhBao_DiemNgap, '1. Điểm ngập');
         loadLayerById('1RhWVXO4PCXSw2hCOOB9lUzQhhqFjdr5k', layer_QuanLy_TuyenCayXanh, '1. Tuyến có cây xanh');
         loadLayerById('1ywqat7_l1HEfLmqc_r2U_G94OyySx4oX', layer_QuanLy_MangXanh, '2. Mảng xanh');
         loadLayerById('15hnIvsTkpHNMHJVMM0i-gZFjPHyzhBV5', layer_QuanLy_CongVien, '3. Công viên');
