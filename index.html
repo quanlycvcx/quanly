@@ -723,7 +723,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
         <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
         
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuRWIozMKFbaB82wW1NqRvBGcF8_q_fSg"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=Ab8RN6KUInCXLIKeTCCDyjZgYKeXf9t8jWZ84gMmA9gM2yQGLQ"></script>
         
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -985,6 +985,40 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             });
         });
 
+        // Danh sách dữ liệu Hybas (Lưu vực & Thủy văn) từ file DS Hybas
+        const hybasLayersData = [
+            { stt: 1, name: 'Lưu vực sông Mekong', id: '1SzU3fY-ZFdz3AupRiLZzC6luHraGFB4m' },
+            { stt: 2, name: 'Lưu vực sông Đồng Nai', id: '1vhOMiwlaow8Yqrt9XnGJ7yEU8z21PwIS' },
+            { stt: 3, name: 'Các sông chính lưu vực Mekong', id: '1ZeGQCJ5wF-gz3egzR6TIovVCn_2PoiNM' },
+            { stt: 4, name: 'Thủy văn_VN dạng vùng', id: '1I-jDEPTWoNghYdJBkH61oIGXuYq8OCtp' },
+            { stt: 5, name: 'Thủy văn_VN dạng đường', id: '1YLJrD5-tc_x9XgFERpRQOHU0EhOkHsK_' },
+            { stt: 6, name: 'Nhà máy thủy điện', id: '1JGqjJhnE0AnoHftb8MO03B2JppvvGR8B' }
+        ];
+
+        var layerHybasGroups = {};
+        var treeHybasChildren = [];
+
+        hybasLayersData.forEach(item => {
+            var group = L.featureGroup();
+            layerHybasGroups[item.stt] = group;
+            group._isLoaded = false;
+            group._fileId = item.id;
+            group._layerName = item.name;
+
+            group.on('add', function() {
+                if (!group._isLoaded) {
+                    group._isLoaded = true;
+                    loadLayerById(group._fileId, group, group._layerName);
+                }
+            });
+
+            treeHybasChildren.push({
+                label: item.name,
+                layer: group
+            });
+        });
+
+
         function parseCloudCoordinate(coordStr) {
             if (!coordStr) return NaN;
             let normalized = coordStr.toString().replace(',', '.');
@@ -1080,6 +1114,13 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             if (nameLower.includes('khoa')) return { color: '#304ffe', fillColor: '#8c9eff', weight: 3 };
             if (nameLower.includes('không')) return { color: '#607d8b', fillColor: '#cfd8dc', weight: 3 };
             
+            // Màu sắc chuyên đề Lưu vực & Thủy văn Hybas
+            if (nameLower.includes('mekong') || nameLower.includes('mê kông')) return { color: '#0288d1', fillColor: '#29b6f6', weight: 3 };
+            if (nameLower.includes('đồng nai')) return { color: '#00838f', fillColor: '#4dd0e1', weight: 3 };
+            if (nameLower.includes('dạng vùng')) return { color: '#00acc1', fillColor: '#80deea', weight: 2 };
+            if (nameLower.includes('dạng đường')) return { color: '#1565c0', fillColor: '#64b5f6', weight: 3 };
+            if (nameLower.includes('thủy điện')) return { color: '#e65100', fillColor: '#ffa726', weight: 3 };
+
             return { color: '#00bcd4', fillColor: '#80deea', weight: 3 };
         }
 
@@ -1240,6 +1281,13 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 collapsed: true,
                 selectAllCheckbox: false,
                 children: tree16DaysChildren
+            },
+            // Nhóm Dữ liệu Hybas (Thủy văn) đặt chính xác ngay dưới Dự báo 16 ngày
+            {
+                label: '<b>Dữ liệu Hybas:</b>',
+                collapsed: true,
+                selectAllCheckbox: false,
+                children: treeHybasChildren
             },
             externalLayersNode, 
 			{label: '<b>Bản đồ nền:</b>', children: [
