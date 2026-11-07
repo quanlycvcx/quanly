@@ -541,7 +541,44 @@
             #streetview-modal .modal-content { height: 64vh; }
             .leaflet-popup-content { margin: 10px 12px; }
         }
-        </style>
+        
+        #search-suggestions-box {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            z-index: 2100;
+            max-height: 280px;
+            overflow-y: auto;
+            display: none;
+            box-sizing: border-box;
+            padding: 4px 0;
+        }
+        .search-suggest-item {
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s;
+        }
+        .search-suggest-item:last-child { border-bottom: none; }
+        .search-suggest-item:hover { background-color: rgba(22, 163, 74, 0.1); color: var(--primary-color); }
+        .search-suggest-icon { font-size: 15px; color: var(--accent-blue); flex-shrink: 0; }
+        .search-suggest-title { font-weight: 600; line-height: 1.3; }
+        .search-suggest-sub { font-size: 11.5px; color: #64748b; margin-top: 2px; }
+</style>
     </head>
     <body>
         <svg width="0" height="0" style="position: absolute;">
@@ -575,10 +612,11 @@
         </div>
 
         <div id="search-ui-container">
-            <input type="text" id="search-input" placeholder="Tìm kiếm địa điểm...">
+            <input type="text" id="search-input" placeholder="Tìm kiếm địa chỉ, tọa độ, địa danh..." autocomplete="off">
             <button type="button" id="main-search-clear" class="clear-btn">×</button>
             <button id="search-button">TÌM</button>
         </div>
+        <div id="search-suggestions-box"></div>
 
         <div class="info-box hidden" id="weather-info"></div>
 
@@ -2240,12 +2278,10 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
             if (Date.now() - (extState.lastDrawOrFeatureActionTime || 0) < 350) return;
             if (extState.streetViewActive) { loadStreetViewPanorama(latlng.lat, latlng.lng); return; }
 
-            toggleLoading(true); const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng.lat},${latlng.lng}&key=${extState.googleApiKey}&language=vi`;
-            let locationName = `Vị trí đã chọn`;
+            toggleLoading(true);
+            let locationName = `Vị trí đã chọn (${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)})`;
             try { 
-                const response = await fetch(url); 
-                const data = await response.json(); 
-                if (data.status === 'OK' && data.results.length > 0) locationName = data.results[0].formatted_address; 
+                locationName = await reverseGeocodeWithOSM(latlng.lat, latlng.lng);
             } catch (error) { 
                 console.error(error); 
             } finally { 
@@ -2316,48 +2352,250 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
 
         if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(); }
 
+        // ================= HỆ THỐNG PHÂN TÍCH TỌA ĐỘ VÀ GEOCODING ĐA TẦNG THÔNG MINH =================
         function parseDMSToDD(dmsStr) {
-            const dmsRegex = /(\d{1,3})\s*[°ºo0\*]?\s*(\d{1,2})\s*['’`]?\s*(\d{1,2}(?:\.\d+)?)\s*["”]?\s*([NSEW])/gi; let matches = []; let match;
+            const dmsRegex = /(\d{1,3})\s*[°ºo0\*]?\s*(\d{1,2})\s*['’`]?\s*(\d{1,2}(?:\.\d+)?)\s*["”]?\s*([NSEW])/gi; 
+            let matches = []; let match;
             while ((match = dmsRegex.exec(dmsStr)) !== null) {
                 const d = parseFloat(match[1]); const m = parseFloat(match[2]); const s = parseFloat(match[3]); const direction = match[4].toUpperCase();
                 let dd = d + (m / 60) + (s / 3600); if (direction === 'S' || direction === 'W') dd = -dd; matches.push(dd);
             }
-            if (matches.length >= 2) return { lat: matches[0], lng: matches[1] }; return null;
+            if (matches.length >= 2) return { lat: matches[0], lng: matches[1] }; 
+            return null;
         }
 
-        function parseCoordsFromUrl(urlStr) { const urlRegex = /([+-]?\d{1,2}\.\d+)\s*,\s*([+-]?\d{1,3}\.\d+)/; const match = urlStr.match(urlRegex); if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) }; return null; }
+        function parseCoordsFromUrl(urlStr) { 
+            const atMatch = urlStr.match(/@([+-]?\d{1,2}\.\d+),([+-]?\d{1,3}\.\d+)/);
+            if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+
+            const qMatch = urlStr.match(/[?&](?:q|ll)=([+-]?\d{1,2}\.\d+),([+-]?\d{1,3}\.\d+)/);
+            if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+
+            const genericMatch = urlStr.match(/([+-]?\d{1,2}\.\d{3,})\s*,\s*([+-]?\d{1,3}\.\d{3,})/);
+            if (genericMatch) return { lat: parseFloat(genericMatch[1]), lng: parseFloat(genericMatch[2]) };
+            return null; 
+        }
+
+        function parseDirectCoordinates(query) {
+            if (!query) return null;
+            const str = query.trim();
+
+            if (str.toLowerCase().includes('http') || str.toLowerCase().includes('maps') || str.toLowerCase().includes('goo.gl')) {
+                const c = parseCoordsFromUrl(str);
+                if (c) return { lat: c.lat, lng: c.lng, name: `Tọa độ từ liên kết: ${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}` };
+            }
+
+            const dms = parseDMSToDD(str);
+            if (dms) return { lat: dms.lat, lng: dms.lng, name: `Tọa độ DMS: ${dms.lat.toFixed(4)}°N, ${dms.lng.toFixed(4)}°E` };
+
+            const coordPairRegex = /^[(\[]?\s*([+-]?\d{1,3}(?:\.\d+)?)\s*[,;\s]+\s*([+-]?\d{1,3}(?:\.\d+)?)\s*[)\]]?$/;
+            const match = str.match(coordPairRegex);
+            if (match) {
+                let v1 = parseFloat(match[1]);
+                let v2 = parseFloat(match[2]);
+                if (!isNaN(v1) && !isNaN(v2)) {
+                    let lat = v1;
+                    let lng = v2;
+                    if (v1 > 50 && v2 < 50) {
+                        lat = v2;
+                        lng = v1;
+                    }
+                    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        return { lat: lat, lng: lng, name: `Tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}` };
+                    }
+                }
+            }
+            return null;
+        }
+
+        // ================= HỆ THỐNG GEOCODING & REVERSE GEOCODING THUẦN OPENSTREETMAP (OSM) =================
+        
+        // 1. Tìm kiếm địa chỉ bằng Nominatim OpenStreetMap (Nguồn chính thức)
+        async function geocodeWithNominatim(query, limit = 5) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&addressdetails=1&limit=${limit}`;
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'vi,en;q=0.9' } });
+                if (!resp.ok) return [];
+                const data = await resp.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    return data.map(item => ({
+                        lat: parseFloat(item.lat),
+                        lng: parseFloat(item.lon),
+                        name: item.display_name,
+                        source: 'OpenStreetMap'
+                    }));
+                }
+            } catch (e) {
+                console.warn("Lỗi tìm kiếm Nominatim OSM:", e);
+            }
+            return [];
+        }
+
+        // 2. Tìm kiếm địa chỉ dự phòng bằng Photon (Dữ liệu OpenStreetMap)
+        async function geocodeWithPhoton(query, limit = 5) {
+            try {
+                const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=${limit}&lang=default`;
+                const resp = await fetch(url);
+                if (!resp.ok) return [];
+                const data = await resp.json();
+                if (data && data.features && data.features.length > 0) {
+                    return data.features.map(f => {
+                        const p = f.properties;
+                        const nameParts = [p.name, p.street, p.district, p.city, p.country].filter(Boolean);
+                        return {
+                            lat: f.geometry.coordinates[1],
+                            lng: f.geometry.coordinates[0],
+                            name: nameParts.join(', ') || p.name,
+                            source: 'OSM-Photon'
+                        };
+                    });
+                }
+            } catch (e) {
+                console.warn("Lỗi tìm kiếm Photon OSM:", e);
+            }
+            return [];
+        }
+
+        // 3. Tra cứu ngược tọa độ sang địa chỉ (Reverse Geocoding) bằng OSM Nominatim
+        async function reverseGeocodeWithOSM(lat, lng) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+                const resp = await fetch(url, { headers: { 'Accept-Language': 'vi,en;q=0.9' } });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.display_name) {
+                        return data.display_name;
+                    }
+                }
+            } catch (e) {
+                console.warn("Lỗi Reverse Geocoding OSM:", e);
+            }
+            return `Tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        // 4. Hàm tổng hợp tìm kiếm OSM đa tầng: Tọa độ trực tiếp -> Nominatim OSM -> Photon OSM
+        async function unifiedGeocode(query, multiResults = false) {
+            if (!query || !query.trim()) return null;
+            const cleanQuery = query.trim();
+
+            // Ưu tiên 1: Nhận diện tọa độ số trực tiếp hoặc đường dẫn bản đồ
+            const directCoord = parseDirectCoordinates(cleanQuery);
+            if (directCoord) {
+                return multiResults ? [directCoord] : directCoord;
+            }
+
+            // Ưu tiên 2: Tìm kiếm qua máy chủ Nominatim OSM
+            const osmResults = await geocodeWithNominatim(cleanQuery, multiResults ? 6 : 1);
+            if (osmResults && osmResults.length > 0) {
+                return multiResults ? osmResults : osmResults[0];
+            }
+
+            // Ưu tiên 3: Dự phòng qua máy chủ Photon OSM
+            const photonResults = await geocodeWithPhoton(cleanQuery, multiResults ? 6 : 1);
+            if (photonResults && photonResults.length > 0) {
+                return multiResults ? photonResults : photonResults[0];
+            }
+
+            return multiResults ? [] : null;
+        }
+
+        function showSearchResultOnMap(lat, lng, displayName) {
+            const targetLatLng = L.latLng(lat, lng);
+            map.flyTo(targetLatLng, 16, { animate: true, duration: 1.2 });
+            
+            if (extState.searchMarker) map.removeLayer(extState.searchMarker);
+            const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", lat, lng, displayName, false);
+            extState.searchMarker = L.marker(targetLatLng).addTo(map).bindPopup(popupHtml).openPopup();
+            
+            hideSearchSuggestions();
+            getWeather(lat, lng, displayName);
+            showToast("Đã định vị thành công địa điểm!", "success");
+        }
+
+        function hideSearchSuggestions() {
+            $('#search-suggestions-box').hide().empty();
+        }
 
         async function execAddressSearch() {
-            const query = document.getElementById('search-input').value.trim(); if (!query) return; toggleLoading(true); let targetLatLng = null; let displayName = query;
-            if (query.toLowerCase().includes('http') || query.toLowerCase().includes('maps')) { const coords = parseCoordsFromUrl(query); if (coords) { targetLatLng = L.latLng(coords.lat, coords.lng); displayName = `Tọa độ từ URL: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`; } }
-            else { const coords = parseDMSToDD(query); if (coords) { targetLatLng = L.latLng(coords.lat, coords.lng); displayName = `Tọa độ DMS: ${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E`; } }
-            if (targetLatLng) { 
-                map.setView(targetLatLng, 15); 
-                if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
-                const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", targetLatLng.lat, targetLatLng.lng, displayName, false);
-                extState.searchMarker = L.marker(targetLatLng).addTo(map).bindPopup(popupHtml).openPopup(); 
-                toggleLoading(false); 
-                showToast("Đã định vị theo tọa độ thành công", "success"); 
-                getWeather(targetLatLng.lat, targetLatLng.lng, displayName); 
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                showToast("Vui lòng nhập địa chỉ, tên đường hoặc tọa độ để tìm kiếm.", "info");
+                return;
             }
-            else {
-                try {
-                    const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`); const data = await response.json();
-                    if (data.status === 'OK' && data.results.length > 0) { 
-                        const loc = data.results[0].geometry.location; 
-                        const addr = data.results[0].formatted_address; 
-                        const latlng = L.latLng(loc.lat, loc.lng); 
-                        map.setView(latlng, 14); 
-                        if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
-                        const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", loc.lat, loc.lng, addr, false);
-                        extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup(); 
-                        getWeather(loc.lat, loc.lng, addr); 
-                    }
-                    else { showToast('Không tìm thấy địa điểm', 'error'); }
-                } catch (e) { showToast('Lỗi kết nối tìm kiếm', 'error'); } finally { toggleLoading(false); }
+            toggleLoading(true);
+            hideSearchSuggestions();
+
+            try {
+                const res = await unifiedGeocode(query, false);
+                if (res && !isNaN(res.lat) && !isNaN(res.lng)) {
+                    showSearchResultOnMap(res.lat, res.lng, res.name || query);
+                } else {
+                    showToast("Không tìm thấy địa điểm. Hãy thử nhập tên cụ thể hơn hoặc kèm quận/huyện.", "error");
+                }
+            } catch (err) {
+                console.error("Lỗi tìm kiếm:", err);
+                showToast("Gặp sự cố khi kết nối tìm kiếm địa điểm.", "error");
+            } finally {
+                toggleLoading(false);
             }
         }
-        $('#search-button').click(debounce(execAddressSearch, 300)); $('#search-input').keypress((e) => { if (e.key === 'Enter') debounce(execAddressSearch, 300)(); });
+
+        const fetchSearchSuggestions = debounce(async function(keyword) {
+            if (!keyword || keyword.length < 2) {
+                hideSearchSuggestions();
+                return;
+            }
+
+            if (parseDirectCoordinates(keyword)) {
+                hideSearchSuggestions();
+                return;
+            }
+
+            try {
+                const results = await unifiedGeocode(keyword, true);
+                const box = $('#search-suggestions-box');
+                if (results && results.length > 0) {
+                    let html = '';
+                    results.slice(0, 5).forEach((item) => {
+                        const escapedName = item.name.replace(/'/g, "\\'");
+                        html += `
+                            <div class="search-suggest-item" onclick="showSearchResultOnMap(${item.lat}, ${item.lng}, '${escapedName}'); document.getElementById('search-input').value = '${escapedName}';">
+                                <span class="search-suggest-icon">📍</span>
+                                <div>
+                                    <div class="search-suggest-title">${item.name.split(',')[0]}</div>
+                                    <div class="search-suggest-sub">${item.name}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    box.html(html).show();
+                } else {
+                    box.hide().empty();
+                }
+            } catch (e) {
+                hideSearchSuggestions();
+            }
+        }, 300);
+
+        $('#search-button').click(debounce(execAddressSearch, 300));
+        $('#search-input').keypress((e) => { 
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                debounce(execAddressSearch, 100)(); 
+            }
+        });
+
+        $('#search-input').on('input', function() {
+            const val = $(this).val().trim();
+            $('#main-search-clear').toggle(val.length > 0);
+            fetchSearchSuggestions(val);
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#search-ui-container, #search-suggestions-box').length) {
+                hideSearchSuggestions();
+            }
+        });
 
         $('#custom-locate-btn').click(function(e) {
             e.preventDefault(); if (!navigator.geolocation) { showToast("Trình duyệt không hỗ trợ định vị.", "error"); return; } toggleLoading(true);
@@ -2424,12 +2662,13 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
                 const inlineLatLng = parseCoordStr(query); 
                 if (inlineLatLng) return inlineLatLng; 
                 if (fallbackCoord) return fallbackCoord;
-                
-                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`; 
-                const resp = await fetch(url); 
-                const data = await resp.json(); 
-                if (data.status !== 'OK') throw new Error('Lỗi Geocoding địa điểm: ' + query); 
-                return L.latLng(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
+
+                // Tận dụng hệ thống Geocoding thông minh đa tầng (Tọa độ -> Google SDK -> OSM -> Photon)
+                const geo = await unifiedGeocode(query, false);
+                if (geo && !isNaN(geo.lat) && !isNaN(geo.lng)) {
+                    return L.latLng(geo.lat, geo.lng);
+                }
+                throw new Error('Không thể tìm thấy tọa độ địa điểm: ' + query);
             };
 
             try {
@@ -2529,22 +2768,14 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
                 document.getElementById('attr-date').innerText = dateVal;
                 document.getElementById('ocrResultSection').style.display = 'block';
 
-                fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${extState.googleApiKey}&language=vi`)
-                .then(r => r.json())
-                .then(res => {
-                    if (res.status === 'OK' && res.results.length > 0) {
-                        addressVal = res.results[0].formatted_address;
-                    } else {
-                        addressVal = `Khu vực tọa độ (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-                    }
+                reverseGeocodeWithOSM(lat, lng).then(addressVal => {
                     extState.currentOcrData.address = addressVal;
                     document.getElementById('attr-address').innerText = addressVal;
                     updateOcrMarkerPopup();
-                })
-                .catch(() => {
-                    addressVal = "Không thể kết nối lấy địa chỉ.";
-                    extState.currentOcrData.address = addressVal;
-                    document.getElementById('attr-address').innerText = addressVal;
+                }).catch(() => {
+                    const fallbackAddr = `Khu vực tọa độ (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                    extState.currentOcrData.address = fallbackAddr;
+                    document.getElementById('attr-address').innerText = fallbackAddr;
                     updateOcrMarkerPopup();
                 });
 
