@@ -1245,6 +1245,97 @@
             text-overflow: ellipsis;
         }
 
+        /* === CSS QUYỀN RIÊNG TƯ & THỜI GIAN CHIA SẺ HÀNH TRÌNH / ĐỒNG BỘ GPS TIMEMARK === */
+        .privacy-duration-box {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+        .privacy-duration-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 6px;
+        }
+        .privacy-duration-pills {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .privacy-pill-btn {
+            background: #ffffff;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 6px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #15803d;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+        .privacy-pill-btn:hover {
+            background: #dcfce7;
+        }
+        .privacy-pill-btn.active {
+            background: #16a34a;
+            color: #ffffff;
+            border-color: #15803d;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.28);
+        }
+        .privacy-countdown-banner {
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1px dashed #4ade80;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11.5px;
+            color: #0f172a;
+        }
+        .btn-revoke-share {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 999px;
+            padding: 3px 9px;
+            font-size: 10.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-revoke-share:hover {
+            background: #fecaca;
+        }
+        #track-share-privacy-badge {
+            margin-top: 5px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            font-size: 10.5px;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tm-gps-live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-right: 4px;
+            animation: pulseTrackDot 1s infinite;
+        }
+
         @media (max-width: 767px) {
             html, body, #map { height: 100dvh; }
             .leaflet-top.leaflet-right { top: 64px !important; }
@@ -1424,6 +1515,10 @@
                     <span class="tracking-pulse-dot" id="track-status-dot"></span>
                     <span id="track-bg-status">Chạy nền iOS/Android: Bật</span>
                     <span id="track-gps-accuracy" style="margin-left:auto; font-size:10px; font-weight:700; color:#16a34a;">● GPS Tốt</span>
+                </div>
+                <div id="track-share-privacy-badge">
+                    <span id="track-share-privacy-text">🔒 Đang chia sẻ: 60:00</span>
+                    <button type="button" class="btn-revoke-share" onclick="revokeActiveJourneyShare()">Dừng chia sẻ</button>
                 </div>
 
                 <div class="tracking-btn-group">
@@ -1672,10 +1767,30 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
         <!-- Modal Chia sẻ Hành trình & Vị trí Tức thời (Live Location & Full Journey Sharing) -->
         <div id="share-journey-modal" class="modal-overlay">
-            <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-content" style="max-width: 495px;">
                 <button class="modal-close-btn" onclick="$('#share-journey-modal').removeClass('visible')">×</button>
                 <h3 style="display:flex; align-items:center; gap:8px; color:#0f172a;">📤 Chia sẻ Hành trình & Vị trí</h3>
-                <p style="font-size: 12px; color: #64748b; margin: -4px 0 8px 0;">Gửi vị trí tức thời đang di chuyển hoặc chia sẻ toàn bộ tuyến hành trình kèm biểu đồ độ dốc cho người khác.</p>
+                <p style="font-size: 12px; color: #64748b; margin: -4px 0 8px 0;">Gửi vị trí tức thời hoặc chia sẻ cả hành trình kèm giới hạn thời gian tự hủy để bảo vệ quyền riêng tư.</p>
+
+                <!-- Khung Thiết lập Thời gian Chia sẻ (Bảo đảm Quyền riêng tư Người dùng) -->
+                <div class="privacy-duration-box">
+                    <div class="privacy-duration-header">
+                        <span>🛡️ Thời gian cho phép chia sẻ (Quyền riêng tư):</span>
+                        <span id="share-privacy-selected-label" style="color:#15803d;">1 Giờ</span>
+                    </div>
+                    <div class="privacy-duration-pills">
+                        <button type="button" class="privacy-pill-btn" data-min="15" onclick="setSharePrivacyDuration(15)">⏱️ 15 Phút</button>
+                        <button type="button" class="privacy-pill-btn" data-min="30" onclick="setSharePrivacyDuration(30)">⏱️ 30 Phút</button>
+                        <button type="button" class="privacy-pill-btn active" data-min="60" onclick="setSharePrivacyDuration(60)">⏱️ 1 Giờ</button>
+                        <button type="button" class="privacy-pill-btn" data-min="180" onclick="setSharePrivacyDuration(180)">⏱️ 3 Giờ</button>
+                        <button type="button" class="privacy-pill-btn" data-min="480" onclick="setSharePrivacyDuration(480)">⏱️ 8 Giờ</button>
+                        <button type="button" class="privacy-pill-btn" data-min="0" onclick="setSharePrivacyDuration(0)">♾️ Không giới hạn</button>
+                    </div>
+                    <div class="privacy-countdown-banner">
+                        <span id="share-expiry-countdown-text">🔒 Liên kết sẽ tự động khóa sau: <b>60 phút</b></span>
+                        <button type="button" class="btn-revoke-share" id="btn-stop-sharing-now" onclick="revokeActiveJourneyShare()" title="Ngắt chia sẻ và khóa phiên hiện tại ngay lập tức">🛑 Thu hồi / Dừng</button>
+                    </div>
+                </div>
 
                 <div class="share-mode-tabs">
                     <button type="button" class="share-mode-tab-btn active" id="tab-btn-share-live" onclick="switchShareJourneyTab('live')">
@@ -1689,7 +1804,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 <!-- TAB 1: CHIA SẺ VỊ TRÍ TỨC THỜI (LIVE / INSTANT LOCATION) -->
                 <div id="share-tab-live-content">
                     <div class="live-beacon-switch-bar">
-                        <span>🔴 Tự động cập nhật link vị trí khi di chuyển</span>
+                        <span>🔴 Tự động cập nhật link vị trí trong thời gian chia sẻ</span>
                         <input type="checkbox" id="chk-live-beacon-auto" checked style="width:17px; height:17px; accent-color:#e91e63; cursor:pointer;">
                     </div>
 
@@ -1705,10 +1820,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             <span>Đã đi: <b id="share-live-dist">0.00 m</b></span>
                         </div>
 
-                        <div style="margin-top:10px; font-size:11.5px; font-weight:600; color:#334155;">Liên kết mở trực tiếp trên bản đồ Cây Xanh 2:</div>
+                        <div style="margin-top:10px; font-size:11.5px; font-weight:600; color:#334155;">Liên kết mở trực tiếp trên bản đồ Cây Xanh 2 (Có gắn hạn bảo mật):</div>
                         <div class="share-url-box">
                             <input type="text" id="share-live-url-input" readonly>
-                            <button type="button" class="btn-action btn-blue" onclick="copyShareInputUrl('share-live-url-input', 'Đã sao chép liên kết Vị trí tức thời!')" style="padding:6px 12px; font-size:11.5px;">Sao chép</button>
+                            <button type="button" class="btn-action btn-blue" onclick="activateShareSessionTimer(); copyShareInputUrl('share-live-url-input', 'Đã sao chép liên kết Vị trí tức thời (Có hạn bảo mật)!')" style="padding:6px 12px; font-size:11.5px;">Sao chép</button>
                         </div>
                     </div>
 
@@ -1739,12 +1854,12 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             <div>⛰️ Leo dốc: <b id="share-full-elev">+0 m</b></div>
                         </div>
 
-                        <div style="margin-top:10px; font-size:11.5px; font-weight:600; color:#334155;">Liên kết tái hiện toàn bộ Hành trình & Biểu đồ độ dốc:</div>
+                        <div style="margin-top:10px; font-size:11.5px; font-weight:600; color:#334155;">Liên kết tái hiện toàn bộ Hành trình & Biểu đồ độ dốc (Có gắn hạn bảo mật):</div>
                         <div class="share-url-box">
                             <input type="text" id="share-full-url-input" readonly>
-                            <button type="button" class="btn-action btn-blue" onclick="copyShareInputUrl('share-full-url-input', 'Đã sao chép liên kết Cả hành trình!')" style="padding:6px 12px; font-size:11.5px;">Sao chép</button>
+                            <button type="button" class="btn-action btn-blue" onclick="activateShareSessionTimer(); copyShareInputUrl('share-full-url-input', 'Đã sao chép liên kết Cả hành trình (Có hạn bảo mật)!')" style="padding:6px 12px; font-size:11.5px;">Sao chép</button>
                         </div>
-                        <div style="font-size:10.5px; color:#64748b; margin-top:4px;">💡 Người nhận mở link này sẽ thấy ngay toàn bộ tuyến đường đã đi và biểu đồ độ dốc trên bản đồ.</div>
+                        <div style="font-size:10.5px; color:#64748b; margin-top:4px;">💡 Khi hết thời gian cho phép chia sẻ, liên kết sẽ tự động đóng quyền xem để bảo vệ lộ trình riêng tư của bạn.</div>
                     </div>
 
                     <div class="share-actions-stack">
@@ -4168,11 +4283,109 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         }
 
         
-        // ================= HỆ THỐNG CHIA SẺ VỊ TRÍ TỨC THỜI & CHIA SẺ CẢ HÀNH TRÌNH (LIVE BEACON & FULL ROUTE SHARE) =================
+        // ================= HỆ THỐNG CHIA SẺ VỊ TRÍ TỨC THỜI & CHIA SẺ CẢ HÀNH TRÌNH (KÈM THỜI HẠN BẢO MẬT QUYỀN RIÊNG TƯ) =================
         let sharedIncomingLayerGroup = L.featureGroup().addTo(map);
+
+        const sharePrivacyState = {
+            durationMinutes: 60, // Mặc định 60 phút (1 giờ)
+            isSharingActive: false,
+            shareStartedAt: 0,
+            shareExpiresAt: 0, // 0 = Không giới hạn
+            countdownTimer: null,
+            receiverExpiryTimer: null
+        };
 
         function getBaseAppUrl() {
             return window.location.origin + window.location.pathname;
+        }
+
+        function formatPrivacyDurationLabel(minutes) {
+            if (!minutes || minutes <= 0) return 'Không giới hạn';
+            if (minutes < 60) return `${minutes} Phút`;
+            const hrs = minutes / 60;
+            return `${hrs} Giờ`;
+        }
+
+        function getShareExpirationTimestamp() {
+            if (sharePrivacyState.isSharingActive && sharePrivacyState.shareExpiresAt > Date.now()) {
+                return sharePrivacyState.shareExpiresAt;
+            }
+            if (!sharePrivacyState.durationMinutes || sharePrivacyState.durationMinutes <= 0) {
+                return 0;
+            }
+            return Date.now() + sharePrivacyState.durationMinutes * 60000;
+        }
+
+        window.setSharePrivacyDuration = function(minutes) {
+            sharePrivacyState.durationMinutes = Number(minutes) || 0;
+            $('.privacy-pill-btn').removeClass('active');
+            $(`.privacy-pill-btn[data-min="${sharePrivacyState.durationMinutes}"]`).addClass('active');
+            $('#share-privacy-selected-label').text(formatPrivacyDurationLabel(sharePrivacyState.durationMinutes));
+
+            if (sharePrivacyState.isSharingActive) {
+                sharePrivacyState.shareStartedAt = Date.now();
+                sharePrivacyState.shareExpiresAt = sharePrivacyState.durationMinutes > 0
+                    ? (Date.now() + sharePrivacyState.durationMinutes * 60000)
+                    : 0;
+                updateSharePrivacyCountdownUI();
+            } else {
+                if (sharePrivacyState.durationMinutes > 0) {
+                    $('#share-expiry-countdown-text').html(`🔒 Liên kết sẽ tự động khóa sau: <b>${formatPrivacyDurationLabel(sharePrivacyState.durationMinutes)}</b>`);
+                } else {
+                    $('#share-expiry-countdown-text').html(`♾️ Chế độ: <b>Không giới hạn thời gian</b> (Chỉ tắt khi bấm Thu hồi)`);
+                }
+            }
+            refreshShareModalData();
+        };
+
+        window.activateShareSessionTimer = function() {
+            sharePrivacyState.isSharingActive = true;
+            sharePrivacyState.shareStartedAt = Date.now();
+            sharePrivacyState.shareExpiresAt = sharePrivacyState.durationMinutes > 0
+                ? (Date.now() + sharePrivacyState.durationMinutes * 60000)
+                : 0;
+
+            $('#track-share-privacy-badge').css('display', 'flex');
+            updateSharePrivacyCountdownUI();
+
+            if (sharePrivacyState.countdownTimer) clearInterval(sharePrivacyState.countdownTimer);
+            sharePrivacyState.countdownTimer = setInterval(updateSharePrivacyCountdownUI, 1000);
+            refreshShareModalData();
+        };
+
+        window.revokeActiveJourneyShare = function() {
+            sharePrivacyState.isSharingActive = false;
+            sharePrivacyState.shareExpiresAt = 0;
+            if (sharePrivacyState.countdownTimer) {
+                clearInterval(sharePrivacyState.countdownTimer);
+                sharePrivacyState.countdownTimer = null;
+            }
+            $('#chk-live-beacon-auto').prop('checked', false);
+            $('#track-share-privacy-badge').hide();
+            const lbl = formatPrivacyDurationLabel(sharePrivacyState.durationMinutes);
+            $('#share-expiry-countdown-text').html(`🛑 Đã dừng phiên chia sẻ. Chọn lại thời hạn (Hiện tại: <b>${lbl}</b>)`);
+            showToast("🛑 Đã dừng chia sẻ vị trí & hành trình để bảo vệ quyền riêng tư!", "info");
+        };
+
+        function updateSharePrivacyCountdownUI() {
+            if (!sharePrivacyState.isSharingActive) return;
+            if (sharePrivacyState.shareExpiresAt > 0) {
+                const remainMs = sharePrivacyState.shareExpiresAt - Date.now();
+                if (remainMs <= 0) {
+                    revokeActiveJourneyShare();
+                    showToast("⏰ Đã hết thời gian chia sẻ hành trình! Hệ thống đã tự động ngắt chia sẻ.", "info");
+                    return;
+                }
+                const remainSec = Math.ceil(remainMs / 1000);
+                const timeStr = formatTrackingDuration(remainSec);
+                const expClock = new Date(sharePrivacyState.shareExpiresAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                $('#share-expiry-countdown-text').html(`⏳ Đang chia sẻ · Tự khóa sau: <b style="color:#16a34a;">${timeStr}</b> (lúc ${expClock})`);
+                $('#track-share-privacy-text').html(`🔒 Chia sẻ còn: <b>${timeStr}</b>`);
+            } else {
+                const elapsedSec = Math.floor((Date.now() - sharePrivacyState.shareStartedAt) / 1000);
+                $('#share-expiry-countdown-text').html(`🟢 Đang chia sẻ không giới hạn (${formatTrackingDuration(elapsedSec)})`);
+                $('#track-share-privacy-text').html(`🔒 Đang chia sẻ (${formatTrackingDuration(elapsedSec)})`);
+            }
         }
 
         window.copyShareInputUrl = function(inputId, toastMsg) {
@@ -4196,13 +4409,12 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             refreshShareModalData();
         };
 
-        // Nén danh sách điểm hành trình sang chuỗi Base64URL gọn nhẹ để nhúng trực tiếp vào Link chia sẻ
-        function encodeTrackForShareUrl() {
+        // Nén danh sách điểm hành trình + thời hạn bảo mật (exp) sang chuỗi Base64URL gọn nhẹ
+        function encodeTrackForShareUrl(expTimestamp = 0) {
             const pts = extState.trackingPoints || [];
             if (pts.length === 0 && extState.userGPSPosition) {
                 return '';
             }
-            // Lấy mẫu tối đa 90 điểm đại diện dọc theo toàn tuyến để URL luôn ngắn gọn, mở tức thì trên Zalo/SMS
             const maxSample = 90;
             const step = pts.length > maxSample ? (pts.length - 1) / (maxSample - 1) : 1;
             const sampled = [];
@@ -4227,6 +4439,8 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 mg: Number((extState.trackingMaxGrade || 0).toFixed(1)),
                 c: Math.round(extState.trackingCalories || 0),
                 ts: extState.trackingStartEpoch || Date.now(),
+                exp: expTimestamp || 0,
+                dur: sharePrivacyState.durationMinutes || 0,
                 p: sampled
             };
             try {
@@ -4295,8 +4509,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             $('#share-live-dist').text(distFormatted);
             $('#share-live-timestamp').text(new Date(loc.ts).toLocaleTimeString('vi-VN'));
 
+            const expTimestamp = getShareExpirationTimestamp();
             const baseUrl = getBaseAppUrl();
-            const liveParams = new URLSearchParams({
+            const liveParamsObj = {
                 share_mode: 'live',
                 lat: latFixed,
                 lng: lngFixed,
@@ -4305,7 +4520,12 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 dist: Math.round(loc.dist || 0),
                 act: extState.activityType || 'survey',
                 ts: Date.now()
-            });
+            };
+            if (expTimestamp > 0) {
+                liveParamsObj.exp = expTimestamp;
+                liveParamsObj.dur = sharePrivacyState.durationMinutes;
+            }
+            const liveParams = new URLSearchParams(liveParamsObj);
             const liveShareUrl = `${baseUrl}?${liveParams.toString()}`;
             $('#share-live-url-input').val(liveShareUrl);
 
@@ -4327,8 +4547,8 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             $('#share-full-elev').text(`+${eleGain} m`);
 
             if (ptsCount >= 2) {
-                const encodedTrack = encodeTrackForShareUrl();
-                const fullShareUrl = `${baseUrl}?share_mode=track&d=${encodeURIComponent(encodedTrack)}`;
+                const encodedTrack = encodeTrackForShareUrl(expTimestamp);
+                const fullShareUrl = `${baseUrl}?share_mode=track&d=${encodeURIComponent(encodedTrack)}${expTimestamp > 0 ? '&exp=' + expTimestamp : ''}`;
                 $('#share-full-url-input').val(fullShareUrl);
             } else {
                 $('#share-full-url-input').val(liveShareUrl);
@@ -4336,7 +4556,6 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         }
 
         function openShareJourneyModal(preferredTab = 'live') {
-            // Nếu chưa có tọa độ GPS thì lấy nhanh vị trí hiện tại
             if (!extState.userGPSPosition && (!extState.trackingPoints || extState.trackingPoints.length === 0) && navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
@@ -4356,8 +4575,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         $('#btn-open-share-track, #btn-quick-share-track').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const defaultTab = (extState.trackingPoints && extState.trackingPoints.length >= 5) ? 'live' : 'live';
-            openShareJourneyModal(defaultTab);
+            openShareJourneyModal('live');
         });
 
         $('#btn-share-finished-journey').click(function(e) {
@@ -4374,10 +4592,16 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
         // Nút Gửi Vị trí Tức thời qua Web Share API (Zalo, Messenger, SMS...)
         $('#btn-native-share-live').click(async function() {
+            window.activateShareSessionTimer();
             refreshShareModalData();
             const loc = getLatestUserCoordinatesForShare();
             const liveUrl = $('#share-live-url-input').val();
             const gmapsUrl = `https://www.google.com/maps?q=${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}`;
+            const expiryNote = sharePrivacyState.shareExpiresAt > 0
+                ? `🔒 Thời hạn chia sẻ: ${formatPrivacyDurationLabel(sharePrivacyState.durationMinutes)} (Tự khóa lúc ${new Date(sharePrivacyState.shareExpiresAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})
+`
+                : `🔓 Thời hạn chia sẻ: Không giới hạn
+`;
             const shareText =
                 `📍 [VỊ TRÍ TỨC THỜI] Tôi đang di chuyển thực địa!
 ` +
@@ -4385,11 +4609,12 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 ` +
                 `- Tốc độ: ${(loc.speed || 0).toFixed(1)} km/h | Cao độ: ${(loc.ele || 0).toFixed(1)} m
 ` +
-                `- Quãng đường đã đi: $('#share-live-dist').text()
+                `- Quãng đường đã đi: ${$('#share-live-dist').text()}
 ` +
+                expiryNote +
                 `- Xem trực tiếp trên WebGIS Cây Xanh 2: ${liveUrl}
 ` +
-                `- Xem trên Google Maps: ${gmapsUrl}`.replace("$('#share-live-dist').text()", $('#share-live-dist').text());
+                `- Xem trên Google Maps: ${gmapsUrl}`;
 
             if (navigator.share) {
                 try {
@@ -4398,11 +4623,11 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         text: shareText,
                         url: liveUrl
                     });
-                    showToast("Đã chia sẻ vị trí tức thời thành công!", "success");
+                    showToast("Đã chia sẻ vị trí tức thời kèm thời hạn bảo mật!", "success");
                 } catch (err) {}
             } else {
                 navigator.clipboard.writeText(shareText).then(() => {
-                    showToast("Đã sao chép toàn bộ thông tin & link vị trí tức thời vào bộ nhớ tạm!", "success");
+                    showToast("Đã sao chép thông tin & link vị trí tức thời (Có hạn bảo mật)!", "success");
                 });
             }
         });
@@ -4415,6 +4640,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
         // Nút Gửi tín hiệu Tọa độ Khẩn cấp (SOS)
         $('#btn-sos-share-live').click(async function() {
+            window.activateShareSessionTimer();
             refreshShareModalData();
             const loc = getLatestUserCoordinatesForShare();
             const liveUrl = $('#share-live-url-input').val();
@@ -4445,8 +4671,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             }
         });
 
-        // Nút Chia sẻ Link Cả Hành trình (Full Journey Link)
+        // Nút Chia sẻ Link Cả Hành trình (Full Journey Link kèm thời hạn bảo mật)
         $('#btn-native-share-full-link').click(async function() {
+            window.activateShareSessionTimer();
             refreshShareModalData();
             const fullUrl = $('#share-full-url-input').val();
             const actTitle = $('#share-full-act-title').text();
@@ -4454,6 +4681,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             const timeStr = $('#share-full-time').text();
             const paceStr = $('#share-full-pace').text();
             const elevStr = $('#share-full-elev').text();
+            const expiryNote = sharePrivacyState.shareExpiresAt > 0
+                ? `🔒 Liên kết có hiệu lực trong: ${formatPrivacyDurationLabel(sharePrivacyState.durationMinutes)} (Tự khóa lúc ${new Date(sharePrivacyState.shareExpiresAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })})
+`
+                : '';
 
             const msg =
                 `🏃‍♂️ [CHIA SẺ HÀNH TRÌNH] ${actTitle}
@@ -4462,6 +4693,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 ` +
                 `🚀 Pace TB: ${paceStr} | ⛰️ Leo dốc: ${elevStr}
 ` +
+                expiryNote +
                 `👉 Nhấn vào liên kết dưới đây để xem toàn bộ tuyến hành trình và biểu đồ độ dốc trên bản đồ:
 ${fullUrl}`;
 
@@ -4472,16 +4704,16 @@ ${fullUrl}`;
                         text: msg,
                         url: fullUrl
                     });
-                    showToast("Đã chia sẻ liên kết cả hành trình thành công!", "success");
+                    showToast("Đã chia sẻ liên kết cả hành trình kèm thời hạn bảo mật!", "success");
                 } catch (e) {}
             } else {
                 navigator.clipboard.writeText(msg).then(() => {
-                    showToast("Đã sao chép thông tin & liên kết cả hành trình vào bộ nhớ tạm!", "success");
+                    showToast("Đã sao chép thông tin & liên kết cả hành trình (Có hạn bảo mật)!", "success");
                 });
             }
         });
 
-        // Nút Đính kèm gửi trực tiếp Tệp GPX hoặc KML qua ứng dụng di động (Zalo, Telegram, AirDrop, Email...)
+        // Nút Đính kèm gửi trực tiếp Tệp GPX hoặc KML qua ứng dụng di động
         async function shareTrackAsFileAttachment(format = 'gpx') {
             const pts = extState.trackingPoints;
             if (!pts || pts.length < 2) {
@@ -4550,7 +4782,6 @@ ${fullUrl}`;
                     return;
                 } catch (e) {}
             }
-            // Fallback tải tệp xuống nếu trình duyệt máy tính không hỗ trợ đính kèm file trực tiếp
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
@@ -4575,7 +4806,6 @@ ${fullUrl}`;
             canvas.height = 1080;
             const ctx = canvas.getContext('2d');
 
-            // Nền Gradient sang trọng
             const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
             bgGrad.addColorStop(0, '#0f172a');
             bgGrad.addColorStop(0.55, '#1e293b');
@@ -4583,7 +4813,6 @@ ${fullUrl}`;
             ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Header
             ctx.fillStyle = '#4ade80';
             ctx.font = 'bold 28px system-ui, sans-serif';
             ctx.fillText('🌿 HỆ THỐNG CÂY XANH 2 · FITNESS & SURVEY TRACKER', 45, 58);
@@ -4594,7 +4823,6 @@ ${fullUrl}`;
             const dateStr = (extState.trackingStartTime || new Date()).toLocaleString('vi-VN');
             ctx.fillText(`${actText}   |   🕒 ${dateStr}`, 45, 92);
 
-            // Khung bản đồ mô phỏng hình học tuyến hành trình (Route Map Preview Box)
             const mapBox = { x: 45, y: 118, w: 810, h: 390 };
             ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -4604,7 +4832,6 @@ ${fullUrl}`;
             ctx.fill();
             ctx.stroke();
 
-            // Lưới tọa độ mờ bên trong khung tuyến
             ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
             ctx.lineWidth = 1;
             for (let gx = mapBox.x + 60; gx < mapBox.x + mapBox.w; gx += 60) {
@@ -4614,7 +4841,6 @@ ${fullUrl}`;
                 ctx.beginPath(); ctx.moveTo(mapBox.x, gy); ctx.lineTo(mapBox.x + mapBox.w, gy); ctx.stroke();
             }
 
-            // Tính min/max lat-lng để chuẩn hóa vẽ đường hành trình
             let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
             pts.forEach(p => {
                 if (p.lat < minLat) minLat = p.lat;
@@ -4637,7 +4863,6 @@ ${fullUrl}`;
                 };
             };
 
-            // Vẽ tuyến đường phát sáng
             ctx.save();
             ctx.shadowColor = '#e91e63';
             ctx.shadowBlur = 14;
@@ -4654,7 +4879,6 @@ ${fullUrl}`;
             ctx.stroke();
             ctx.restore();
 
-            // Điểm đầu (Xanh) & Điểm cuối (Đỏ)
             const startXY = toXY(pts[0]);
             const endXY = toXY(pts[pts.length - 1]);
             ctx.fillStyle = '#22c55e';
@@ -4668,7 +4892,6 @@ ${fullUrl}`;
             ctx.fillStyle = '#ffffff';
             ctx.fillText('KẾT THÚC', endXY.x + 14, endXY.y + 5);
 
-            // 6 Ô Thống kê Chỉ số Hành trình
             const distText = (extState.trackingTotalDistance >= 1000)
                 ? (extState.trackingTotalDistance / 1000).toFixed(2) + ' km'
                 : extState.trackingTotalDistance.toFixed(1) + ' m';
@@ -4714,7 +4937,6 @@ ${fullUrl}`;
                 ctx.fillText(st.val, cx + 18, cy + 74);
             });
 
-            // Khung Biểu đồ Độ cao & Độ dốc trên Thẻ ảnh
             const chartBox = { x: 45, y: 775, w: 810, h: 230 };
             ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -4781,13 +5003,44 @@ ${fullUrl}`;
             }, 'image/png');
         });
 
-        // 7. Chế độ Người Nhận: Tự động đọc và hiển thị Vị trí tức thời hoặc Cả hành trình khi mở Link được chia sẻ
+        // 7. Chế độ Người Nhận: Kiểm tra thời hạn bảo mật (exp) trước khi hiển thị Vị trí tức thời hoặc Cả hành trình
+        function enforceReceiverShareExpiryWatcher(expTs) {
+            if (!expTs || expTs <= 0) return;
+            if (sharePrivacyState.receiverExpiryTimer) clearInterval(sharePrivacyState.receiverExpiryTimer);
+            sharePrivacyState.receiverExpiryTimer = setInterval(() => {
+                const remainMs = expTs - Date.now();
+                if (remainMs <= 0) {
+                    clearInterval(sharePrivacyState.receiverExpiryTimer);
+                    sharePrivacyState.receiverExpiryTimer = null;
+                    sharedIncomingLayerGroup.clearLayers();
+                    $('#save-kml-modal').removeClass('visible');
+                    map.closePopup();
+                    showToast("🔒 Liên kết chia sẻ vị trí/hành trình đã hết thời hạn hiệu lực để bảo vệ quyền riêng tư!", "error");
+                } else {
+                    const remainSec = Math.ceil(remainMs / 1000);
+                    $('.receiver-share-Remaining-txt').text(formatTrackingDuration(remainSec));
+                }
+            }, 1000);
+        }
+
         function checkIncomingSharedJourneyOrLocation() {
             const params = new URLSearchParams(window.location.search);
             const shareMode = params.get('share_mode');
             if (!shareMode) return false;
 
             sharedIncomingLayerGroup.clearLayers();
+
+            // Kiểm tra thời hạn hiệu lực (exp) trên URL
+            const urlExp = parseInt(params.get('exp') || '0', 10);
+            if (urlExp > 0 && Date.now() > urlExp) {
+                const expDateStr = new Date(urlExp).toLocaleString('vi-VN');
+                showToast(`🔒 Liên kết chia sẻ đã hết hạn lúc ${expDateStr} (Bảo vệ quyền riêng tư).`, "error");
+                alert(`🔒 THÔNG BÁO QUYỀN RIÊNG TƯ
+
+Liên kết chia sẻ vị trí / hành trình này đã hết thời hạn hiệu lực vào lúc ${expDateStr}.
+Dữ liệu vị trí đã được đóng tự động để bảo đảm quyền riêng tư của người chia sẻ.`);
+                return true;
+            }
 
             if (shareMode === 'live') {
                 const lat = parseFloat(params.get('lat'));
@@ -4801,6 +5054,13 @@ ${fullUrl}`;
                 const ts = parseInt(params.get('ts') || Date.now(), 10);
                 const timeStr = new Date(ts).toLocaleString('vi-VN');
 
+                let expiryBadgeHtml = `<div style="font-size:11px; color:#15803d; background:#dcfce7; padding:3px 7px; border-radius:6px; margin-top:4px;">♾️ Chia sẻ không giới hạn thời gian</div>`;
+                if (urlExp > 0) {
+                    const remSec = Math.max(0, Math.ceil((urlExp - Date.now()) / 1000));
+                    expiryBadgeHtml = `<div style="font-size:11px; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:3px 7px; border-radius:6px; margin-top:4px;">⏳ Tự khóa sau: <b class="receiver-share-Remaining-txt">${formatTrackingDuration(remSec)}</b></div>`;
+                    enforceReceiverShareExpiryWatcher(urlExp);
+                }
+
                 const liveIcon = L.divIcon({
                     className: '',
                     html: `<div class="shared-live-pulse-marker"></div>`,
@@ -4813,6 +5073,7 @@ ${fullUrl}`;
                     <div class="share-popup-box">
                         <b style="color:#0284c7; font-size:14px;">📡 Vị trí Tức thời được chia sẻ</b><br>
                         <span style="font-size:11.5px; color:#64748b;">Cập nhật lúc: ${timeStr}</span>
+                        ${expiryBadgeHtml}
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; margin:6px 0; font-size:12px;">
                             📍 <b>Tọa độ:</b> ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
                             🚀 <b>Tốc độ:</b> ${spd} km/h | ⛰️ <b>Cao độ:</b> ${ele} m<br>
@@ -4837,7 +5098,21 @@ ${fullUrl}`;
                 const decoded = decodeTrackFromShareUrl(encoded);
                 if (!decoded || !Array.isArray(decoded.p) || decoded.p.length < 2) return false;
 
-                // Khôi phục dữ liệu vào extState để hiển thị biểu đồ độ dốc và cho phép tải GPX/KML
+                const effectiveExp = decoded.exp || urlExp || 0;
+                if (effectiveExp > 0 && Date.now() > effectiveExp) {
+                    const expDateStr = new Date(effectiveExp).toLocaleString('vi-VN');
+                    showToast(`🔒 Liên kết hành trình đã hết hạn lúc ${expDateStr}.`, "error");
+                    alert(`🔒 THÔNG BÁO QUYỀN RIÊNG TƯ
+
+Liên kết chia sẻ hành trình này đã hết thời hạn hiệu lực vào lúc ${expDateStr}.
+Hành trình đã được ẩn tự động để bảo vệ quyền riêng tư của người dùng.`);
+                    return true;
+                }
+
+                if (effectiveExp > 0) {
+                    enforceReceiverShareExpiryWatcher(effectiveExp);
+                }
+
                 extState.activityType = decoded.a || 'survey';
                 extState.trackingTotalDistance = decoded.d || 0;
                 extState.trackingElapsedSeconds = decoded.t || 0;
@@ -4881,17 +5156,21 @@ ${fullUrl}`;
                 const avgPaceStr = formatPaceMinKm(avgSpd);
                 const maxGradeStr = (extState.trackingMaxGrade >= 0 ? '+' : '') + extState.trackingMaxGrade.toFixed(1) + '%';
 
+                const expNoticeHtml = effectiveExp > 0
+                    ? `<br><span style="color:#b45309; font-size:11px;">⏳ Tự khóa sau: <b class="receiver-share-Remaining-txt">${formatTrackingDuration(Math.ceil((effectiveExp - Date.now()) / 1000))}</b></span>`
+                    : '';
+
                 sharedPoly.bindPopup(
                     `<b>🛣️ Hành trình được chia sẻ</b><br>` +
                     `Quãng đường: <b>${distText}</b> | Thời gian: <b>${timeText}</b><br>` +
-                    `Pace TB: <b>${avgPaceStr}/km</b> | Leo dốc: <b>+${extState.trackingElevationGain}m</b><br>` +
+                    `Pace TB: <b>${avgPaceStr}/km</b> | Leo dốc: <b>+${extState.trackingElevationGain}m</b>` +
+                    expNoticeHtml +
                     `<button type="button" class="btn-action btn-blue" style="margin-top:6px; width:100%; padding:5px 10px; border-radius:999px; font-size:11.5px;" onclick="$('#save-kml-modal').addClass('visible'); setTimeout(() => window.switchSummaryProfileChart('elevation'), 150);">📊 Xem Biểu đồ Độ dốc & Tải GPX/KML</button>`
                 );
 
                 const pad = getAdaptiveBoundsPadding();
                 map.fitBounds(sharedPoly.getBounds(), { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true });
 
-                // Điền dữ liệu vào Modal Tổng kết & Biểu đồ Độ dốc để người nhận xem ngay
                 $('#sum-track-dist').text(distText);
                 $('#sum-track-time').text(timeText);
                 $('#sum-track-pace').text(`${avgPaceStr}/km`);
@@ -5852,15 +6131,22 @@ ${fullUrl}`;
             }
         });
 
-        // ================= HỆ THỐNG CHỤP ẢNH HIỆN TRƯỜNG TIMEMARK CAMERA =================
+        // ================= HỆ THỐNG CHỤP ẢNH HIỆN TRƯỜNG TIMEMARK CAMERA (ĐỒNG BỘ GPS LIÊN TỤC NHƯ ĐỒNG HỒ THIẾT BỊ) =================
         const timemarkCamState = {
             stream: null,
             facingMode: 'environment',
             clockInterval: null,
+            gpsWatchId: null,
+            gpsPollInterval: null,
             lat: null,
             lng: null,
             accuracy: null,
             altitude: null,
+            lastGeocodedLat: null,
+            lastGeocodedLng: null,
+            lastGeocodeTime: 0,
+            lastGpsFixTime: 0,
+            isFetchingGps: false,
             address: 'Đang xác định địa chỉ hiện trường...',
             capturedBase64: '',
             capturedBlob: null,
@@ -5882,56 +6168,143 @@ ${fullUrl}`;
             $('#tm-live-time').text(`${hh}:${mm}:${ss}`);
             $('#tm-live-date').text(`${dd}/${mo}/${yyyy}`);
             $('#tm-live-weekday').text(weekdays[now.getDay()]);
+
+            // Hiển thị nhịp đồng bộ GPS tức thời theo từng giây giống như đồng hồ thiết bị
+            if (timemarkCamState.lat !== null && timemarkCamState.lng !== null) {
+                const altText = (timemarkCamState.altitude !== null && timemarkCamState.altitude !== undefined && !isNaN(timemarkCamState.altitude))
+                    ? ` | Cao: ${timemarkCamState.altitude.toFixed(1)}m`
+                    : '';
+                const accText = (timemarkCamState.accuracy !== null && timemarkCamState.accuracy !== undefined && !isNaN(timemarkCamState.accuracy))
+                    ? ` (±${Math.round(timemarkCamState.accuracy)}m)`
+                    : '';
+                $('#tm-live-gps-label').html(
+                    `<span class="tm-gps-live-dot"></span>GPS: ${timemarkCamState.lat.toFixed(6)}°N, ${timemarkCamState.lng.toFixed(6)}°E${accText}${altText} <span style="color:#4ade80; font-size:9.5px;">[${hh}:${mm}:${ss}]</span>`
+                );
+            }
         }
 
-        async function refreshTimemarkLiveLocation() {
-            $('#tm-live-gps-label').text('GPS: Đang lấy tín hiệu vệ tinh...');
-            const applyCoords = async (lat, lng, acc, alt) => {
-                timemarkCamState.lat = lat;
-                timemarkCamState.lng = lng;
-                timemarkCamState.accuracy = acc;
-                timemarkCamState.altitude = alt;
-                extState.userGPSPosition = { lat, lng };
+        async function applyLiveTimemarkPosition(lat, lng, acc, alt, forceReverseGeocode = false) {
+            if (isNaN(lat) || isNaN(lng)) return;
+            timemarkCamState.lat = lat;
+            timemarkCamState.lng = lng;
+            timemarkCamState.accuracy = acc;
+            timemarkCamState.altitude = (alt !== null && alt !== undefined && !isNaN(alt)) ? alt : extState.trackingCurrentEle;
+            timemarkCamState.lastGpsFixTime = Date.now();
+            extState.userGPSPosition = { lat, lng };
 
-                const altText = (alt !== null && alt !== undefined && !isNaN(alt)) ? ` | Cao độ: ${alt.toFixed(1)}m` : '';
-                const accText = (acc !== null && acc !== undefined && !isNaN(acc)) ? ` (±${Math.round(acc)}m)` : '';
-                $('#tm-live-gps-label').text(`GPS: ${lat.toFixed(6)}°N, ${lng.toFixed(6)}°E${accText}${altText}`);
+            updateTimemarkLiveClock();
 
+            // Nếu đang mở từ Lưu Hành Trình, tự động cập nhật Lý trình & Độ dốc thời gian thực lên ghi chú đóng dấu
+            if (timemarkCamState.openedFromTracking && extState.isTracking) {
+                const curDistStr = extState.trackingTotalDistance >= 1000
+                    ? (extState.trackingTotalDistance / 1000).toFixed(2) + 'km'
+                    : Math.round(extState.trackingTotalDistance || 0) + 'm';
+                const curEleStr = (timemarkCamState.altitude !== null && timemarkCamState.altitude !== undefined)
+                    ? timemarkCamState.altitude.toFixed(1) + 'm'
+                    : '5.0m';
+                const curGradeStr = (extState.trackingCurrentGrade >= 0 ? '+' : '') + (extState.trackingCurrentGrade || 0).toFixed(1) + '%';
+                const nextPhotoNum = (extState.trackingPhotos ? extState.trackingPhotos.length : 0) + 1;
+                const currentNoteVal = $('#tm-note-input').val() || '';
+                if (currentNoteVal.startsWith('Mốc ảnh #')) {
+                    $('#tm-note-input').val(`Mốc ảnh #${nextPhotoNum} | Lý trình: ${curDistStr} | Cao: ${curEleStr} (${curGradeStr})`).trigger('input');
+                }
+            }
+
+            // Chỉ phân giải lại địa chỉ OSM khi di chuyển > 8 mét hoặc sau mỗi 8 giây (hoặc khi ép làm mới) để vừa tức thời vừa mượt
+            let movedDist = 999;
+            if (timemarkCamState.lastGeocodedLat !== null && timemarkCamState.lastGeocodedLng !== null) {
+                movedDist = L.latLng(timemarkCamState.lastGeocodedLat, timemarkCamState.lastGeocodedLng).distanceTo(L.latLng(lat, lng));
+            }
+            const elapsedGeo = Date.now() - (timemarkCamState.lastGeocodeTime || 0);
+            if (forceReverseGeocode || movedDist >= 8 || elapsedGeo >= 8000 || !timemarkCamState.address || timemarkCamState.address.includes('Đang xác định')) {
+                timemarkCamState.lastGeocodedLat = lat;
+                timemarkCamState.lastGeocodedLng = lng;
+                timemarkCamState.lastGeocodeTime = Date.now();
                 try {
                     const addr = await reverseGeocodeWithOSM(lat, lng);
                     timemarkCamState.address = addr;
                     $('#tm-live-addr-label').text(addr);
                 } catch (e) {
-                    timemarkCamState.address = `Khu vực tọa độ (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
-                    $('#tm-live-addr-label').text(timemarkCamState.address);
+                    if (!timemarkCamState.address || timemarkCamState.address.includes('Đang xác định')) {
+                        timemarkCamState.address = `Khu vực tọa độ (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                        $('#tm-live-addr-label').text(timemarkCamState.address);
+                    }
                 }
-            };
+            }
+        }
 
+        function pollDeviceGpsOnceForTimemark(forceGeocode = false) {
+            if (!navigator.geolocation || timemarkCamState.isFetchingGps) return;
+            timemarkCamState.isFetchingGps = true;
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    timemarkCamState.isFetchingGps = false;
+                    applyLiveTimemarkPosition(
+                        pos.coords.latitude,
+                        pos.coords.longitude,
+                        pos.coords.accuracy,
+                        pos.coords.altitude,
+                        forceGeocode
+                    );
+                },
+                () => {
+                    timemarkCamState.isFetchingGps = false;
+                    if (extState.userGPSPosition) {
+                        applyLiveTimemarkPosition(extState.userGPSPosition.lat, extState.userGPSPosition.lng, null, extState.trackingCurrentEle, forceGeocode);
+                    } else if (timemarkCamState.lat === null) {
+                        const c = map.getCenter();
+                        applyLiveTimemarkPosition(c.lat, c.lng, null, null, forceGeocode);
+                    }
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 4500 }
+            );
+        }
+
+        function startProactiveTimemarkGpsSync() {
+            stopProactiveTimemarkGpsSync();
+            $('#tm-live-gps-label').html('<span class="tm-gps-live-dot"></span>GPS: Đang đồng bộ vệ tinh thời gian thực...');
+
+            // 1. Lấy ngay tọa độ tức thì khi vừa bật Camera
+            pollDeviceGpsOnceForTimemark(true);
+
+            // 2. Đăng ký watchPosition độ chính xác cao liên tục từ phần cứng GPS thiết bị
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
+                timemarkCamState.gpsWatchId = navigator.geolocation.watchPosition(
                     (pos) => {
-                        applyCoords(
+                        applyLiveTimemarkPosition(
                             pos.coords.latitude,
                             pos.coords.longitude,
                             pos.coords.accuracy,
-                            pos.coords.altitude
+                            pos.coords.altitude,
+                            false
                         );
                     },
-                    () => {
-                        if (extState.userGPSPosition) {
-                            applyCoords(extState.userGPSPosition.lat, extState.userGPSPosition.lng, null, extState.trackingCurrentEle);
-                        } else {
-                            const c = map.getCenter();
-                            applyCoords(c.lat, c.lng, null, null);
-                            showToast("Đang dùng tọa độ tâm bản đồ do chưa bật quyền GPS.", "info");
-                        }
-                    },
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
+                    () => {},
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
                 );
-            } else {
-                const c = map.getCenter();
-                applyCoords(c.lat, c.lng, null, null);
             }
+
+            // 3. Vòng lặp chủ động lấy lại tọa độ GPS mỗi 2 giây (giống cơ chế lấy thời gian thiết bị) để đảm bảo tọa độ luôn tươi mới nhất
+            timemarkCamState.gpsPollInterval = setInterval(() => {
+                if (!$('#timemark-camera-modal').hasClass('visible')) return;
+                pollDeviceGpsOnceForTimemark(false);
+            }, 2000);
+        }
+
+        function stopProactiveTimemarkGpsSync() {
+            if (timemarkCamState.gpsWatchId !== null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(timemarkCamState.gpsWatchId);
+                timemarkCamState.gpsWatchId = null;
+            }
+            if (timemarkCamState.gpsPollInterval) {
+                clearInterval(timemarkCamState.gpsPollInterval);
+                timemarkCamState.gpsPollInterval = null;
+            }
+            timemarkCamState.isFetchingGps = false;
+        }
+
+        async function refreshTimemarkLiveLocation() {
+            pollDeviceGpsOnceForTimemark(true);
         }
 
         async function startTimemarkVideoStream() {
@@ -5984,21 +6357,25 @@ ${fullUrl}`;
             updateTimemarkLiveClock();
             if (timemarkCamState.clockInterval) clearInterval(timemarkCamState.clockInterval);
             timemarkCamState.clockInterval = setInterval(updateTimemarkLiveClock, 1000);
-            refreshTimemarkLiveLocation();
+            startProactiveTimemarkGpsSync();
             startTimemarkVideoStream();
         };
 
         window.closeTimemarkCameraModal = function() {
             stopTimemarkVideoStream();
+            stopProactiveTimemarkGpsSync();
             if (timemarkCamState.clockInterval) {
                 clearInterval(timemarkCamState.clockInterval);
                 timemarkCamState.clockInterval = null;
             }
+            timemarkCamState.openedFromTracking = false;
             $('#timemark-camera-modal').removeClass('visible');
         };
 
         $('#custom-timemark-cam-btn').click(function(e) {
             e.preventDefault();
+            timemarkCamState.openedFromTracking = false;
+            $('#btn-tm-pin-map').html('📍 Ghim lên Bản đồ');
             openTimemarkCameraModal();
         });
 
@@ -6008,8 +6385,8 @@ ${fullUrl}`;
         });
 
         $('#btn-tm-refresh-gps').click(function() {
-            refreshTimemarkLiveLocation();
-            showToast("Đang cập nhật lại tọa độ GPS & địa chỉ hiện trường...", "info");
+            pollDeviceGpsOnceForTimemark(true);
+            showToast("📡 Đã đồng bộ tức thì tọa độ GPS & địa chỉ hiện trường!", "success");
         });
 
         $('#tm-project-input').on('input', function() {
