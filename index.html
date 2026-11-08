@@ -479,7 +479,7 @@
             position: absolute; top: 75px; right: 12px; z-index: 2000;
             background: var(--surface-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             padding: 12px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
-            width: 260px; font-size: 13px; color: #1e293b; border: 2px solid #e91e63;
+            width: 265px; font-size: 13px; color: #1e293b; border: 2px solid #e91e63;
         }
         .tracking-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -502,6 +502,16 @@
 
         #tracking-control-panel p { margin: 5px 0; display: flex; justify-content: space-between; font-weight: 500; }
         #tracking-control-panel p span { font-weight: 700; color: var(--accent-blue); }
+        .tracking-bg-badge {
+            margin-top: 6px; padding: 4px 8px; border-radius: 6px; background: #fdf2f8; border: 1px solid #fbcfe8;
+            color: #be185d; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px;
+        }
+        .tracking-pulse-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: #e91e63; display: inline-block;
+            animation: pulseTrackDot 1.2s infinite; flex-shrink: 0;
+        }
+        @keyframes pulseTrackDot { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } 100% { transform: scale(1); opacity: 1; } }
+
         .tracking-btn-group { display: flex; gap: 8px; margin-top: 10px; }
         .tracking-btn-group button {
             flex: 1; padding: 7px 10px; border: none; border-radius: 999px; font-weight: 600; font-size: 11px; cursor: pointer; color: white;
@@ -537,7 +547,7 @@
             .info-box { top: 62px; left: 3%; width: 94%; max-width: none; max-height: 52vh; }
             .modal-content { padding: 18px; width: 94%; max-height: 82vh; }
             #route-summary-modal { top: 62px; width: 90%; padding: 14px; }
-            #tracking-control-panel { top: 62px; right: 10px; width: 230px; padding: 10px; }
+            #tracking-control-panel { top: 62px; right: 10px; width: 235px; padding: 10px; }
             #streetview-modal .modal-content { height: 64vh; }
             .leaflet-popup-content { margin: 10px 12px; }
         }
@@ -631,6 +641,10 @@
                 <p>Quãng đường: <span id="track-dist">0.00 m</span></p>
                 <p>Thời gian: <span id="track-time">00:00</span></p>
                 <p>Tốc độ: <span id="track-speed">0.0 km/h</span></p>
+                <div class="tracking-bg-badge">
+                    <span class="tracking-pulse-dot" id="track-status-dot"></span>
+                    <span id="track-bg-status">Chạy nền iOS/Android: Bật</span>
+                </div>
                 <div class="tracking-btn-group">
                     <button class="btn-pause-tracking" id="btn-pause-track">Tạm dừng</button>
                     <button class="btn-stop-tracking" id="btn-finish-track">Kết thúc & Lưu</button>
@@ -1583,15 +1597,25 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 address: ""
             },
 
+            // Trạng thái nâng cao cho Lưu dấu Hành trình Thực địa GPS (Hỗ trợ chạy nền iOS & Android)
             isTracking: false,
             isTrackingPaused: false,
             trackingWatchId: null,
             trackingPoints: [],
             trackingPolyline: null,
+            trackingCurrentPosMarker: null,
             trackingStartTime: null,
+            trackingStartEpoch: 0,
+            trackingPausedAccumulatedMs: 0,
+            trackingPauseStartedAt: 0,
             trackingTimerInterval: null,
+            trackingBackupPollInterval: null,
             trackingElapsedSeconds: 0,
-            trackingTotalDistance: 0
+            trackingTotalDistance: 0,
+            trackingWakeLock: null,
+            trackingAudioCtx: null,
+            trackingAudioElement: null,
+            trackingLastFixTimestamp: 0
         };
 
         $(function() {
@@ -1852,6 +1876,412 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             hideDrawHelperUI();
         });
 
+        // ================= HỆ THỐNG LƯU DẤU HÀNH TRÌNH THỰC ĐỊA GPS ĐA NỀN TẢNG (iOS & ANDROID CHẠY NGẦM) =================
+        const TRACKING_SESSION_STORAGE_KEY = 'cxcs2_active_gps_tracking_session_v2';
+
+        // 1. Giữ sáng màn hình (Screen Wake Lock API) khi ứng dụng đang mở
+        async function requestTrackingWakeLock() {
+            if ('wakeLock' in navigator && extState.isTracking && !extState.isTrackingPaused) {
+                try {
+                    if (extState.trackingWakeLock) {
+                        await extState.trackingWakeLock.release().catch(() => {});
+                    }
+                    extState.trackingWakeLock = await navigator.wakeLock.request('screen');
+                    extState.trackingWakeLock.addEventListener('release', () => {
+                        extState.trackingWakeLock = null;
+                    });
+                } catch (err) {
+                    console.log("WakeLock không khả dụng hoặc đang ở chế độ tiết kiệm pin:", err);
+                }
+            }
+        }
+
+        async function releaseTrackingWakeLock() {
+            if (extState.trackingWakeLock) {
+                try {
+                    await extState.trackingWakeLock.release();
+                } catch (e) {}
+                extState.trackingWakeLock = null;
+            }
+        }
+
+        // 2. Tạo WAV im lặng dạng Data URI + Web Audio Oscillator giúp duy trì tiến trình nền trên iOS Safari & Android Chrome
+        function createSilentWavDataUri() {
+            const sampleRate = 8000;
+            const numSamples = sampleRate * 2; // 2 giây lặp vô tận
+            const buffer = new ArrayBuffer(44 + numSamples * 2);
+            const view = new DataView(buffer);
+            const writeString = (v, offset, str) => {
+                for (let i = 0; i < str.length; i++) v.setUint8(offset + i, str.charCodeAt(i));
+            };
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + numSamples * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, numSamples * 2, true);
+            // Điền tín hiệu biên độ cực nhỏ (=1) để iOS/Android không coi là luồng rỗng và không đóng băng JS/GPS
+            for (let i = 0; i < numSamples; i++) {
+                view.setInt16(44 + i * 2, (i % 2 === 0) ? 1 : -1, true);
+            }
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return 'data:audio/wav;base64,' + btoa(binary);
+        }
+
+        function startMobileBackgroundKeepAlive() {
+            try {
+                // Khởi chạy HTML5 Audio loop (Rất quan trọng cho iOS Safari và Android khi tắt màn hình / chuyển qua Zalo, Camera...)
+                if (!extState.trackingAudioElement) {
+                    const audio = new Audio(createSilentWavDataUri());
+                    audio.loop = true;
+                    audio.volume = 0.01;
+                    audio.setAttribute('playsinline', '');
+                    audio.setAttribute('webkit-playsinline', '');
+                    extState.trackingAudioElement = audio;
+                }
+                extState.trackingAudioElement.play().catch(e => console.log("Audio keep-alive:", e));
+
+                // Khởi chạy Web Audio API dự phòng
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    if (!extState.trackingAudioCtx) {
+                        extState.trackingAudioCtx = new AudioCtx();
+                        const osc = extState.trackingAudioCtx.createOscillator();
+                        const gain = extState.trackingAudioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1, extState.trackingAudioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.0001, extState.trackingAudioCtx.currentTime);
+                        osc.connect(gain);
+                        gain.connect(extState.trackingAudioCtx.destination);
+                        osc.start();
+                    }
+                    if (extState.trackingAudioCtx.state === 'suspended') {
+                        extState.trackingAudioCtx.resume();
+                    }
+                }
+
+                // Tích hợp MediaSession giúp hệ điều hành ưu tiên giữ tiến trình nền cho trang Web
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: 'Đang lưu dấu hành trình GPS thực địa',
+                        artist: 'Hệ thống Cây xanh 2',
+                        album: 'Quản lý Công viên Cây xanh'
+                    });
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            } catch (err) {
+                console.warn("Không thể khởi tạo bộ giữ tiến trình nền:", err);
+            }
+        }
+
+        function stopMobileBackgroundKeepAlive() {
+            try {
+                if (extState.trackingAudioElement) {
+                    extState.trackingAudioElement.pause();
+                    extState.trackingAudioElement.currentTime = 0;
+                }
+                if (extState.trackingAudioCtx && extState.trackingAudioCtx.state === 'running') {
+                    extState.trackingAudioCtx.suspend();
+                }
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'none';
+                }
+            } catch (e) {}
+        }
+
+        // 3. Tự động lưu trạng thái hành trình vào LocalStorage để không mất dữ liệu nếu trình duyệt tự reload khi mở app nặng khác
+        function persistTrackingSession() {
+            if (!extState.isTracking) {
+                try { localStorage.removeItem(TRACKING_SESSION_STORAGE_KEY); } catch (e) {}
+                return;
+            }
+            try {
+                const payload = {
+                    isTracking: extState.isTracking,
+                    isTrackingPaused: extState.isTrackingPaused,
+                    trackingStartEpoch: extState.trackingStartEpoch,
+                    trackingPausedAccumulatedMs: extState.trackingPausedAccumulatedMs,
+                    trackingPauseStartedAt: extState.trackingPauseStartedAt,
+                    trackingTotalDistance: extState.trackingTotalDistance,
+                    trackingPoints: extState.trackingPoints,
+                    savedAt: Date.now()
+                };
+                localStorage.setItem(TRACKING_SESSION_STORAGE_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn("Không thể lưu tạm hành trình vào LocalStorage:", e);
+            }
+        }
+
+        function clearPersistedTrackingSession() {
+            try { localStorage.removeItem(TRACKING_SESSION_STORAGE_KEY); } catch (e) {}
+        }
+
+        function formatTrackingDuration(totalSeconds) {
+            totalSeconds = Math.max(0, Math.floor(totalSeconds));
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            const mStr = mins < 10 ? "0" + mins : mins;
+            const sStr = secs < 10 ? "0" + secs : secs;
+            if (hrs > 0) {
+                const hStr = hrs < 10 ? "0" + hrs : hrs;
+                return `${hStr}:${mStr}:${sStr}`;
+            }
+            return `${mStr}:${sStr}`;
+        }
+
+        function updateTrackingTimerUI() {
+            if (!extState.isTracking) return;
+            let now = Date.now();
+            let currentPauseDuration = (extState.isTrackingPaused && extState.trackingPauseStartedAt > 0)
+                ? (now - extState.trackingPauseStartedAt)
+                : 0;
+            let activeMs = now - extState.trackingStartEpoch - extState.trackingPausedAccumulatedMs - currentPauseDuration;
+            extState.trackingElapsedSeconds = Math.max(0, Math.floor(activeMs / 1000));
+            $('#track-time').text(formatTrackingDuration(extState.trackingElapsedSeconds));
+        }
+
+        function updateTrackingDistanceUI() {
+            let distDisplay = extState.trackingTotalDistance >= 1000 
+                ? (extState.trackingTotalDistance / 1000).toFixed(2) + " km" 
+                : extState.trackingTotalDistance.toFixed(1) + " m";
+            $('#track-dist').text(distDisplay);
+        }
+
+        // Xử lý điểm GPS thu nhận được (kể cả khi đang chạy ngầm hoặc vừa mở lại màn hình)
+        function handleIncomingTrackingPosition(position) {
+            if (!extState.isTracking || extState.isTrackingPaused) return;
+            const coords = position.coords;
+            if (!coords || isNaN(coords.latitude) || isNaN(coords.longitude)) return;
+
+            // Lọc nhiễu nếu sai số GPS quá lớn (> 80m) trừ khi là điểm khởi đầu
+            if (extState.trackingPoints.length > 0 && coords.accuracy && coords.accuracy > 80) {
+                return;
+            }
+
+            const lat = coords.latitude;
+            const lng = coords.longitude;
+            const accuracy = coords.accuracy || 0;
+            const nowTs = position.timestamp || Date.now();
+            const newLatLng = L.latLng(lat, lng);
+
+            extState.userGPSPosition = { lat, lng };
+            extState.trackingLastFixTimestamp = Date.now();
+
+            // Tính tốc độ từ cảm biến GPS hoặc suy diễn từ quãng đường/thời gian
+            let speedKmh = (coords.speed !== null && coords.speed !== undefined && coords.speed >= 0)
+                ? (coords.speed * 3.6)
+                : 0;
+
+            if (extState.trackingPoints.length > 0) {
+                const lastPtObj = extState.trackingPoints[extState.trackingPoints.length - 1];
+                const lastLatLng = L.latLng(lastPtObj.lat, lastPtObj.lng);
+                const distStep = lastLatLng.distanceTo(newLatLng);
+                const timeDiffSec = Math.max(1, (nowTs - (lastPtObj.ts || nowTs)) / 1000);
+
+                if (speedKmh === 0 && distStep > 2.5 && timeDiffSec > 0) {
+                    const calcSpeed = (distStep / timeDiffSec) * 3.6;
+                    if (calcSpeed < 150) speedKmh = calcSpeed;
+                }
+
+                // Ngưỡng lọc thông minh: di chuyển > 2m để tránh trôi tọa độ khi đứng yên
+                const minMoveThreshold = (accuracy > 25) ? Math.min(8, accuracy * 0.25) : 2.0;
+                if (distStep >= minMoveThreshold) {
+                    extState.trackingTotalDistance += distStep;
+                    extState.trackingPoints.push({ lat: lat, lng: lng, ts: nowTs });
+                    extState.trackingPolyline.addLatLng(newLatLng);
+                    if (!document.hidden) {
+                        map.panTo(newLatLng, { animate: true });
+                    }
+                    persistTrackingSession();
+                }
+            } else {
+                extState.trackingPoints.push({ lat: lat, lng: lng, ts: nowTs });
+                extState.trackingPolyline.addLatLng(newLatLng);
+                if (!document.hidden) {
+                    map.setView(newLatLng, 17);
+                }
+                persistTrackingSession();
+            }
+
+            // Cập nhật chấm tròn vị trí hiện tại trên đường hành trình
+            if (!extState.trackingCurrentPosMarker) {
+                extState.trackingCurrentPosMarker = L.circleMarker(newLatLng, {
+                    radius: 7,
+                    fillColor: '#e91e63',
+                    color: '#ffffff',
+                    weight: 2.5,
+                    opacity: 1,
+                    fillOpacity: 1
+                }).addTo(map);
+            } else {
+                extState.trackingCurrentPosMarker.setLatLng(newLatLng);
+            }
+
+            $('#track-speed').text(speedKmh.toFixed(1) + " km/h");
+            updateTrackingDistanceUI();
+            updateTrackingTimerUI();
+        }
+
+        function attachGeolocationWatcher() {
+            if (!navigator.geolocation) return;
+            if (extState.trackingWatchId !== null) {
+                navigator.geolocation.clearWatch(extState.trackingWatchId);
+                extState.trackingWatchId = null;
+            }
+            extState.trackingWatchId = navigator.geolocation.watchPosition(
+                handleIncomingTrackingPosition,
+                (error) => {
+                    console.warn("Cảnh báo tín hiệu GPS:", error);
+                    if (error.code === error.PERMISSION_DENIED) {
+                        showToast("Vui lòng cấp quyền Vị trí (GPS) cho trình duyệt để lưu hành trình.", "error");
+                    }
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+            );
+        }
+
+        function startOrResumeTrackingProcess(restoredSession = null) {
+            extState.isTracking = true;
+            if (restoredSession) {
+                extState.isTrackingPaused = !!restoredSession.isTrackingPaused;
+                extState.trackingStartEpoch = restoredSession.trackingStartEpoch || Date.now();
+                extState.trackingStartTime = new Date(extState.trackingStartEpoch);
+                extState.trackingPausedAccumulatedMs = restoredSession.trackingPausedAccumulatedMs || 0;
+                extState.trackingPauseStartedAt = restoredSession.trackingPauseStartedAt || 0;
+                extState.trackingTotalDistance = restoredSession.trackingTotalDistance || 0;
+                extState.trackingPoints = Array.isArray(restoredSession.trackingPoints) ? restoredSession.trackingPoints : [];
+            } else {
+                extState.isTrackingPaused = false;
+                extState.trackingPoints = [];
+                extState.trackingTotalDistance = 0;
+                extState.trackingElapsedSeconds = 0;
+                extState.trackingPausedAccumulatedMs = 0;
+                extState.trackingPauseStartedAt = 0;
+                extState.trackingStartEpoch = Date.now();
+                extState.trackingStartTime = new Date(extState.trackingStartEpoch);
+            }
+
+            $('#custom-start-tracking-btn').addClass('btn-active');
+            $('#tracking-control-panel').show();
+
+            if (extState.isTrackingPaused) {
+                $('#btn-pause-track').text("Tiếp tục").css("background-color", "#28a745");
+                $('#track-bg-status').text("Trạng thái: Đang tạm dừng");
+                $('#track-status-dot').css("background", "#f59e0b");
+            } else {
+                $('#btn-pause-track').text("Tạm dừng").css("background-color", "#f59e0b");
+                $('#track-bg-status').text("Chạy nền iOS/Android: Bật");
+                $('#track-status-dot').css("background", "#e91e63");
+                startMobileBackgroundKeepAlive();
+                requestTrackingWakeLock();
+            }
+
+            if (extState.trackingPolyline) {
+                map.removeLayer(extState.trackingPolyline);
+            }
+            const initialLatLngs = extState.trackingPoints.map(p => L.latLng(p.lat, p.lng));
+            extState.trackingPolyline = L.polyline(initialLatLngs, {
+                color: '#e91e63',
+                weight: 5,
+                opacity: 0.9
+            }).addTo(map);
+
+            if (initialLatLngs.length > 0) {
+                const lastLL = initialLatLngs[initialLatLngs.length - 1];
+                if (!extState.trackingCurrentPosMarker) {
+                    extState.trackingCurrentPosMarker = L.circleMarker(lastLL, {
+                        radius: 7, fillColor: '#e91e63', color: '#ffffff', weight: 2.5, opacity: 1, fillOpacity: 1
+                    }).addTo(map);
+                } else {
+                    extState.trackingCurrentPosMarker.setLatLng(lastLL);
+                }
+                map.setView(lastLL, 17);
+            }
+
+            updateTrackingDistanceUI();
+            updateTrackingTimerUI();
+
+            if (extState.trackingTimerInterval) clearInterval(extState.trackingTimerInterval);
+            extState.trackingTimerInterval = setInterval(() => {
+                if (extState.isTracking && !extState.isTrackingPaused) {
+                    updateTrackingTimerUI();
+                }
+            }, 1000);
+
+            // Bộ kiểm tra định kỳ (Heartbeat Polling) để tự động làm mới watchPosition nếu thiết bị di động vừa ngủ dậy
+            if (extState.trackingBackupPollInterval) clearInterval(extState.trackingBackupPollInterval);
+            extState.trackingBackupPollInterval = setInterval(() => {
+                if (!extState.isTracking || extState.isTrackingPaused) return;
+                if (extState.trackingAudioElement && extState.trackingAudioElement.paused) {
+                    extState.trackingAudioElement.play().catch(() => {});
+                }
+                if (Date.now() - extState.trackingLastFixTimestamp > 8000 && navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        handleIncomingTrackingPosition,
+                        () => {},
+                        { enableHighAccuracy: true, maximumAge: 0, timeout: 7000 }
+                    );
+                }
+            }, 4000);
+
+            attachGeolocationWatcher();
+            persistTrackingSession();
+        }
+
+        // Tự động đồng bộ lại GPS và WakeLock khi người dùng bật lại màn hình hoặc chuyển từ ứng dụng khác về trình duyệt
+        document.addEventListener('visibilitychange', () => {
+            if (!extState.isTracking) return;
+            if (document.visibilityState === 'visible') {
+                updateTrackingTimerUI();
+                if (!extState.isTrackingPaused) {
+                    requestTrackingWakeLock();
+                    startMobileBackgroundKeepAlive();
+                    attachGeolocationWatcher();
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                                handleIncomingTrackingPosition(pos);
+                                if (extState.trackingPoints.length > 0) {
+                                    const lastPt = extState.trackingPoints[extState.trackingPoints.length - 1];
+                                    map.panTo([lastPt.lat, lastPt.lng], { animate: true });
+                                }
+                            },
+                            () => {},
+                            { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
+                        );
+                    }
+                }
+            } else {
+                // Khi chuyển sang ứng dụng khác hoặc khóa màn hình: lưu ngay trạng thái hiện tại
+                persistTrackingSession();
+            }
+        });
+
+        window.addEventListener('pagehide', () => {
+            if (extState.isTracking) {
+                persistTrackingSession();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            if (extState.isTracking && !extState.isTrackingPaused) {
+                updateTrackingTimerUI();
+                requestTrackingWakeLock();
+            }
+        });
+
         $('#custom-start-tracking-btn').click(function(e) {
             e.preventDefault();
             if (!navigator.geolocation) {
@@ -1859,87 +2289,40 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 return;
             }
             if (extState.isTracking) {
-                showToast("Hành trình đang được ghi nhận.", "info");
+                $('#tracking-control-panel').show().removeClass('minimized');
+                $('#btn-minimize-track').text("_");
+                showToast("Hành trình đang được ghi nhận liên tục.", "info");
                 return;
             }
 
-            extState.isTracking = true;
-            extState.isTrackingPaused = false;
-            extState.trackingPoints = [];
-            extState.trackingTotalDistance = 0;
-            extState.trackingElapsedSeconds = 0;
-            extState.trackingStartTime = new Date();
-
-            $('#custom-start-tracking-btn').addClass('btn-active');
-            $('#tracking-control-panel').show();
-            $('#btn-pause-track').text("Tạm dừng");
-
-            if (extState.trackingPolyline) {
-                map.removeLayer(extState.trackingPolyline);
-            }
-            extState.trackingPolyline = L.polyline([], {
-                color: '#e91e63',
-                weight: 5,
-                opacity: 0.85
-            }).addTo(map);
-
-            if (extState.trackingTimerInterval) clearInterval(extState.trackingTimerInterval);
-            extState.trackingTimerInterval = setInterval(() => {
-                if (!extState.isTrackingPaused) {
-                    extState.trackingElapsedSeconds++;
-                    let mins = Math.floor(extState.trackingElapsedSeconds / 60);
-                    let secs = extState.trackingElapsedSeconds % 60;
-                    let timeStr = (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-                    $('#track-time').text(timeStr);
-                }
-            }, 1000);
-
-            extState.trackingWatchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    if (!extState.isTracking || extState.isTrackingPaused) return;
-                    let lat = position.coords.latitude;
-                    let lng = position.coords.longitude;
-                    let speed = position.coords.speed ? position.coords.speed * 3.6 : 0;
-                    let newLatLng = L.latLng(lat, lng);
-
-                    $('#track-speed').text(speed.toFixed(1) + " km/h");
-
-                    let pts = extState.trackingPolyline.getLatLngs();
-                    if (pts.length > 0) {
-                        let lastPt = pts[pts.length - 1];
-                        let distStep = lastPt.distanceTo(newLatLng);
-                        if (distStep > 2) {
-                            extState.trackingTotalDistance += distStep;
-                            extState.trackingPolyline.addLatLng(newLatLng);
-                            map.panTo(newLatLng);
-                        }
-                    } else {
-                        extState.trackingPolyline.addLatLng(newLatLng);
-                        map.setView(newLatLng, 17);
-                    }
-
-                    let distDisplay = extState.trackingTotalDistance >= 1000 
-                        ? (extState.trackingTotalDistance / 1000).toFixed(2) + " km" 
-                        : extState.trackingTotalDistance.toFixed(1) + " m";
-                    $('#track-dist').text(distDisplay);
-                },
-                (error) => {
-                    console.error("Lỗi GPS tracking:", error);
-                    showToast("Mất tín hiệu định vị GPS thực địa.", "error");
-                },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-            );
-
-            showToast("Đã bắt đầu lưu dấu hành trình thực địa!", "success");
+            startOrResumeTrackingProcess(null);
+            showToast("Đã bắt đầu lưu dấu hành trình! Hỗ trợ chạy nền khi tắt màn hình hoặc chuyển ứng dụng.", "success");
         });
 
         $('#btn-pause-track').click(function() {
+            if (!extState.isTracking) return;
             extState.isTrackingPaused = !extState.isTrackingPaused;
             if (extState.isTrackingPaused) {
+                extState.trackingPauseStartedAt = Date.now();
                 $(this).text("Tiếp tục").css("background-color", "#28a745");
+                $('#track-bg-status').text("Trạng thái: Đang tạm dừng");
+                $('#track-status-dot').css("background", "#f59e0b");
+                releaseTrackingWakeLock();
+                stopMobileBackgroundKeepAlive();
+                persistTrackingSession();
                 showToast("Đã tạm dừng ghi nhận hành trình.", "info");
             } else {
-                $(this).text("Tạm dừng").css("background-color", "#ff9800");
+                if (extState.trackingPauseStartedAt > 0) {
+                    extState.trackingPausedAccumulatedMs += (Date.now() - extState.trackingPauseStartedAt);
+                    extState.trackingPauseStartedAt = 0;
+                }
+                $(this).text("Tạm dừng").css("background-color", "#f59e0b");
+                $('#track-bg-status').text("Chạy nền iOS/Android: Bật");
+                $('#track-status-dot').css("background", "#e91e63");
+                startMobileBackgroundKeepAlive();
+                requestTrackingWakeLock();
+                attachGeolocationWatcher();
+                persistTrackingSession();
                 showToast("Đã tiếp tục ghi nhận hành trình.", "success");
             }
         });
@@ -1955,10 +2338,28 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 clearInterval(extState.trackingTimerInterval);
                 extState.trackingTimerInterval = null;
             }
+            if (extState.trackingBackupPollInterval) {
+                clearInterval(extState.trackingBackupPollInterval);
+                extState.trackingBackupPollInterval = null;
+            }
+
+            releaseTrackingWakeLock();
+            stopMobileBackgroundKeepAlive();
+            clearPersistedTrackingSession();
+
+            updateTrackingTimerUI();
+            const finalDistText = $('#track-dist').text();
+            const finalTimeText = $('#track-time').text();
 
             extState.isTracking = false;
+            extState.isTrackingPaused = false;
             $('#tracking-control-panel').hide();
             $('#custom-start-tracking-btn').removeClass('btn-active');
+
+            if (extState.trackingCurrentPosMarker) {
+                map.removeLayer(extState.trackingCurrentPosMarker);
+                extState.trackingCurrentPosMarker = null;
+            }
 
             let pts = extState.trackingPolyline ? extState.trackingPolyline.getLatLngs() : [];
             if (pts.length < 2) {
@@ -1967,7 +2368,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 return;
             }
 
-            extState.trackingPolyline.bindPopup(`<b>Hành trình thực địa GPS</b><br>Quãng đường: ${$('#track-dist').text()}<br>Thời gian: ${$('#track-time').text()}`);
+            extState.trackingPolyline.bindPopup(`<b>Hành trình thực địa GPS</b><br>Quãng đường: ${finalDistText}<br>Thời gian: ${finalTimeText}<br>Số điểm mốc: ${pts.length}`);
             drawnItems.addLayer(extState.trackingPolyline);
             $('#custom-export-kml-btn').show();
 
@@ -1976,14 +2377,33 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             let defaultName = "HanhTrinhGPS_" + new Date().toISOString().slice(0,10).replace(/-/g,'');
             $('#kml-filename').val(defaultName);
             $('#kml-description').val(`Thời gian bắt đầu: ${extState.trackingStartTime.toLocaleString('vi-VN')}
-Tổng quãng đường: ${$('#track-dist').text()}
-Thời gian di chuyển: ${$('#track-time').text()}`);
+Tổng quãng đường: ${finalDistText}
+Thời gian di chuyển: ${finalTimeText}
+Tổng số điểm tọa độ GPS: ${pts.length}`);
             
             $('#btn-confirm-save-drive').off('click').on('click', executeSaveDrawingsToDrive); 
             $('#save-kml-modal').addClass('visible');
 
             showToast("Đã hoàn tất ghi nhận hành trình!", "success");
         });
+
+        // Tự động kiểm tra và khôi phục phiên lưu hành trình nếu trình duyệt bị tải lại giữa chừng
+        function checkAndRestoreActiveTrackingSession() {
+            try {
+                const raw = localStorage.getItem(TRACKING_SESSION_STORAGE_KEY);
+                if (!raw) return;
+                const session = JSON.parse(raw);
+                // Chỉ khôi phục các phiên trong vòng 24 giờ gần nhất
+                if (session && session.isTracking && (Date.now() - (session.savedAt || 0) < 86400000)) {
+                    startOrResumeTrackingProcess(session);
+                    showToast(`Đã tự động khôi phục hành trình đang lưu (${session.trackingPoints ? session.trackingPoints.length : 0} điểm GPS)!`, "info");
+                } else {
+                    clearPersistedTrackingSession();
+                }
+            } catch (e) {
+                console.warn("Lỗi khôi phục phiên hành trình:", e);
+            }
+        }
 
         $('#custom-export-kml-btn').click(function(e) {
             e.preventDefault(); if (drawnItems.getLayers().length === 0) { showToast("Không tìm thấy dữ liệu tự vẽ nào để xuất.", "error"); return; }
@@ -2400,7 +2820,7 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
                         lat = v2;
                         lng = v1;
                     }
-                    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                    if (lat >= -90 && lat <= 90 && lng >= -180 && lng >= -180) {
                         return { lat: lat, lng: lng, name: `Tọa độ: ${lat.toFixed(6)}, ${lng.toFixed(6)}` };
                     }
                 }
@@ -2663,7 +3083,6 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
                 if (inlineLatLng) return inlineLatLng; 
                 if (fallbackCoord) return fallbackCoord;
 
-                // Tận dụng hệ thống Geocoding thông minh đa tầng (Tọa độ -> Google SDK -> OSM -> Photon)
                 const geo = await unifiedGeocode(query, false);
                 if (geo && !isNaN(geo.lat) && !isNaN(geo.lng)) {
                     return L.latLng(geo.lat, geo.lng);
@@ -3246,7 +3665,12 @@ Thời gian di chuyển: ${$('#track-time').text()}`);
         });
 
         $(document).ready(function() {
-            setTimeout(checkAndPromptInitialLocation, 800);
+            setTimeout(() => {
+                checkAndRestoreActiveTrackingSession();
+                if (!extState.isTracking) {
+                    checkAndPromptInitialLocation();
+                }
+            }, 800);
         });
 
         loadCloudTrees();
