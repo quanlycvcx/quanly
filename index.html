@@ -1401,6 +1401,316 @@
         .search-suggest-icon { font-size: 15px; color: var(--accent-blue); flex-shrink: 0; }
         .search-suggest-title { font-weight: 600; line-height: 1.3; }
         .search-suggest-sub { font-size: 11.5px; color: #64748b; margin-top: 2px; }
+
+        /* =========================================================
+           BỔ SUNG: HỆ THỐNG CHUYỂN ĐỔI 3 CHẾ ĐỘ NGƯỜI DÙNG (ROLE SWITCHER)
+           (1. 👷 Hiện trường - 2. 💻 Quản lý GIS - 3. 🏃 Thể thao & Cộng đồng)
+           ========================================================= */
+        #role-switcher {
+            position: fixed;
+            top: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2050;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 4px;
+            border-radius: 999px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 96vw;
+            overflow-x: auto;
+        }
+        .role-btn {
+            border: none;
+            background: transparent;
+            color: #cbd5e1;
+            padding: 6px 13px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+        .role-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .role-btn.active[data-target-role="worker"] {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.45);
+        }
+        .role-btn.active[data-target-role="gis"] {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.45);
+        }
+        .role-btn.active[data-target-role="fitness"] {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.45);
+        }
+
+        /* Đẩy nhẹ các bảng phía trên xuống để không đè lên thanh Role Switcher */
+        .leaflet-top.leaflet-right,
+        .leaflet-top.leaflet-left {
+            top: 106px !important;
+        }
+        .info-box,
+        #route-summary-modal,
+        #tracking-control-panel {
+            top: 106px;
+        }
+        #draw-edit-overlay-container {
+            top: 104px;
+        }
+
+        /* --- QUY TẮC ẨN/HIỆN THEO TỪNG CHẾ ĐỘ (DATA-ROLE TRÊN BODY) --- */
+        /* 1. CHẾ ĐỘ CÔNG NHÂN HIỆN TRƯỜNG (worker) */
+        body[data-role="worker"] .ui-gis-only,
+        body[data-role="worker"] .ui-fitness-only {
+            display: none !important;
+        }
+        /* Tương phản cao ngoài nắng cho Công nhân */
+        body[data-role="worker"] #tracking-control-panel {
+            background: #ffffff !important;
+            border: 2.5px solid #0f172a !important;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35) !important;
+        }
+        body[data-role="worker"] .fitness-val {
+            font-size: 18px !important;
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+        body[data-role="worker"] #right-controls-container,
+        body[data-role="worker"] #support-controls-container {
+            bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+
+        /* 2. CHẾ ĐỘ QUẢN LÝ GIS (gis) */
+        body[data-role="gis"] .ui-worker-bar {
+            display: none !important;
+        }
+
+        /* 3. CHẾ ĐỘ THỂ THAO & CỘNG ĐỒNG (fitness) */
+        body[data-role="fitness"] .ui-gis-only,
+        body[data-role="fitness"] .ui-worker-bar {
+            display: none !important;
+        }
+
+        /* =========================================================
+           THANH 3 NÚT LỚN ĐÁY MÀN HÌNH DÀNH CHO CÔNG NHÂN HIỆN TRƯỜNG
+           ========================================================= */
+        .ui-worker-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 4500;
+            display: grid;
+            grid-template-columns: 1fr 1.25fr 1fr;
+            gap: 8px;
+            padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 2.5px solid #0f172a;
+            box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.22);
+        }
+        .worker-action-btn {
+            min-height: 58px;
+            border: 2px solid #0f172a;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, filter 0.15s;
+            touch-action: manipulation;
+        }
+        .worker-action-btn:active {
+            transform: scale(0.96);
+        }
+        .worker-action-btn .w-icon {
+            font-size: 21px;
+            line-height: 1;
+        }
+        .worker-action-btn .w-label {
+            font-size: 11.5px;
+            letter-spacing: 0.2px;
+            text-align: center;
+        }
+        .worker-btn-start {
+            background: #dcfce7;
+            color: #14532d;
+            border-color: #15803d;
+        }
+        .worker-btn-start.is-recording {
+            background: #fef08a;
+            color: #713f12;
+            border-color: #ca8a04;
+            animation: pulseWorkerRec 2s infinite;
+        }
+        @keyframes pulseWorkerRec {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+        }
+        .worker-btn-camera {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: #ffffff;
+            border-color: #9a3412;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4);
+        }
+        .worker-btn-pocket {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #0f172a;
+        }
+
+        /* =========================================================
+           CẢI TIẾN CAMERA TIMEMARK: NHÃN CHỌN NHANH, GIỌNG NÓI & KHÓA GPS
+           ========================================================= */
+        .tm-quick-tags-wrap {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 2px;
+        }
+        .tm-tag-chip {
+            border: 1.5px solid #cbd5e1;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 6px 11px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+        }
+        .tm-tag-chip:hover {
+            background: #e2e8f0;
+        }
+        .tm-tag-chip.active {
+            background: #16a34a;
+            color: #ffffff;
+            border-color: #15803d;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+        }
+        .tm-tag-chip.tag-danger.active {
+            background: #dc2626;
+            border-color: #991b1b;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+        }
+        .btn-tm-shutter.gps-pending {
+            background: #94a3b8 !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            opacity: 0.75;
+        }
+        .tm-note-voice-wrap {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .btn-voice-note {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+        .btn-voice-note.listening {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #f87171;
+            animation: pulse-orange 1s infinite;
+        }
+
+        /* =========================================================
+           BẢNG TRÍCH XUẤT HÀNG LOẠT (BATCH OCR) & NGHIỆM THU SPLIT-VIEW
+           ========================================================= */
+        .batch-ocr-box {
+            margin-top: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+        }
+        .batch-ocr-table-wrap {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            margin-top: 8px;
+        }
+        .batch-ocr-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+        .batch-ocr-table th {
+            background: #f1f5f9;
+            color: #334155;
+            padding: 6px 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .batch-ocr-table td {
+            padding: 6px 8px;
+            border-top: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        @media (max-width: 767px) {
+            #role-switcher {
+                top: 54px;
+                padding: 3px;
+            }
+            .role-btn {
+                padding: 5px 10px;
+                font-size: 11.5px;
+            }
+            .leaflet-top.leaflet-right,
+            .leaflet-top.leaflet-left {
+                top: 96px !important;
+            }
+            .info-box,
+            #route-summary-modal,
+            #tracking-control-panel {
+                top: 96px;
+            }
+            #draw-edit-overlay-container {
+                top: 94px;
+            }
+        }
+
 </style>
     </head>
     <body>
@@ -1425,6 +1735,35 @@
         </svg>
 
         <div id="map"></div>
+
+        <!-- THANH CHUYỂN ĐỔI 3 CHẾ ĐỘ NGƯỜI DÙNG (HIỆN TRƯỜNG - QUẢN LÝ GIS - THỂ THAO) -->
+        <div id="role-switcher" aria-label="Chuyển đổi chế độ người dùng">
+            <button type="button" class="role-btn" data-target-role="worker" title="Giao diện tối giản, chữ to ngoài nắng cho Công nhân hiện trường">
+                👷 <span>Hiện trường</span>
+            </button>
+            <button type="button" class="role-btn active" data-target-role="gis" title="Đầy đủ công cụ Quản lý GIS, Kho bản đồ KMZ, Đo vẽ & Trích xuất hàng loạt">
+                💻 <span>Quản lý GIS</span>
+            </button>
+            <button type="button" class="role-btn" data-target-role="fitness" title="Chế độ Thể thao & Cộng đồng: Đo Pace, Calo, Độ dốc & Phản ánh sự cố">
+                🏃 <span>Thể thao</span>
+            </button>
+        </div>
+
+        <!-- THANH 3 NÚT THAO TÁC 1 CHẠM DƯỚI ĐÁY MÀN HÌNH (CHỈ HIỆN Ở CHẾ ĐỘ CÔNG NHÂN HIỆN TRƯỜNG) -->
+        <div class="ui-worker-bar" id="worker-bottom-bar" style="display: none;">
+            <button type="button" id="btn-worker-quick-start" class="worker-action-btn worker-btn-start">
+                <span class="w-icon" id="worker-start-icon">▶️</span>
+                <span class="w-label" id="worker-start-label">BẮT ĐẦU TUYẾN</span>
+            </button>
+            <button type="button" id="btn-worker-quick-cam" class="worker-action-btn worker-btn-camera">
+                <span class="w-icon">📸</span>
+                <span class="w-label">CHỤP TIMEMARK</span>
+            </button>
+            <button type="button" id="btn-worker-quick-pocket" class="worker-action-btn worker-btn-pocket">
+                <span class="w-icon">🔒</span>
+                <span class="w-label">KHÓA BỎ TÚI</span>
+            </button>
+        </div>
 
         <div id="draw-edit-overlay-container" style="display: none;">
             <span id="draw-mode-label">CHẾ ĐỘ VẼ:</span>
@@ -1476,11 +1815,11 @@
                         <span class="fitness-label">THỜI GIAN</span>
                         <span class="fitness-val" id="track-time">00:00</span>
                     </div>
-                    <div class="fitness-card">
+                    <div class="fitness-card ui-fitness-only">
                         <span class="fitness-label" id="label-pace-metric">PACE TB</span>
                         <span class="fitness-val" id="track-pace">--:-- <small>/km</small></span>
                     </div>
-                    <div class="fitness-card">
+                    <div class="fitness-card ui-fitness-only">
                         <span class="fitness-label">TIÊU HAO CALO</span>
                         <span class="fitness-val" id="track-calories">0 <small>kcal</small></span>
                     </div>
@@ -1492,7 +1831,7 @@
                 </div>
 
                 <!-- Biểu đồ Độ cao & Độ dốc trực tiếp (Live Elevation & Slope Profile + Điểm mốc chụp ảnh) -->
-                <div class="fitness-elevation-box">
+                <div class="fitness-elevation-box ui-fitness-only">
                     <div class="fitness-elevation-header">
                         <span>⛰️ Cao độ: <b id="track-cur-ele">-- m</b></span>
                         <span class="grade-badge" id="track-cur-grade">Độ dốc: 0.0%</span>
@@ -1560,10 +1899,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.2L6 8.3V13h2V9.6l1.8-.7z"/></svg>
             </button>
 
-            <button id="custom-draw-marker-btn" title="Đánh Dấu Điểm Vị Trí">
+            <button id="custom-draw-marker-btn" class="ui-gis-only" title="Đánh Dấu Điểm Vị Trí">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
             </button>
-            <button id="custom-draw-line-btn" title="Đo Khoảng Cách / Vẽ Tuyến Đường">
+            <button id="custom-draw-line-btn" class="ui-gis-only" title="Đo Khoảng Cách / Vẽ Tuyến Đường">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="4" y1="20" x2="20" y2="4" stroke-width="2.5"></line>
                     <circle cx="4" cy="20" r="2.5" fill="currentColor"></circle>
@@ -1573,7 +1912,7 @@
                     <line x1="14" y1="8" x2="16" y2="10" stroke-width="2"></line>
                 </svg>
             </button>
-            <button id="custom-draw-poly-btn" title="Đo Diện Tích / Vẽ Vùng">
+            <button id="custom-draw-poly-btn" class="ui-gis-only" title="Đo Diện Tích / Vẽ Vùng">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 3 21 8.5 18 20.5 6 20.5 3 8.5" fill="rgba(22, 163, 74, 0.25)"></polygon>
                     <circle cx="12" cy="3" r="2" fill="currentColor"></circle>
@@ -1605,19 +1944,19 @@
             <button id="custom-directions-btn" title="Tìm đường đi ngắn nhất">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71 11.29l-9-9a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/></svg>
             </button>
-            <button id="custom-streetview-btn" title="Kích hoạt Google Street View 360°">
+            <button id="custom-streetview-btn" class="ui-gis-only" title="Kích hoạt Google Street View 360°">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <circle cx="12" cy="4" r="2.2"/>
                     <path d="M15 8h-6c-.6 0-1.2.5-1.2 1.2v3.6c0 .6.4 1 1 1h.6v6.2c0 .6.4 1 1 1s1-.4 1-1v-4.8h1.2v4.8c0 .6.4 1 1 1s1-.4 1-1v-6.2h.6c.6 0 1-.4 1-1V9.2c0-.7-.6-1.2-1.2-1.2z"/>
                     <path d="M4.5 16.5c-.3 0-.6.2-.8.5-.8 1.4-.8 3.1 0 4.5.3.5.9.7 1.4.4.5-.3.7-.9.4-1.4-.4-.8-.4-1.8 0-2.6.3-.5.1-1.1-.4-1.4h-.6zm15 0c-.5.3-.7.9-.4 1.4.4.8.4 1.8 0 2.6-.3.5-.1 1.1.4 1.4.5.3 1.1.1 1.4-.4.8-1.4.8-3.1 0-4.5-.3-.5-.9-.7-1.4-.5z" opacity="0.65"/>
                 </svg>
             </button>
-            <button id="custom-image-ocr-btn" title="Trích xuất tọa độ từ ảnh Timemark">
+            <button id="custom-image-ocr-btn" class="ui-gis-only" title="Trích xuất tọa độ từ ảnh Timemark">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v4.1a6.97 6.97 0 0 0-2-.1c-.34 0-.67.03-1 .08V6H4v12h7.08c.18.72.48 1.39.88 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5c.34 0 .67-.03 1-.08A6.98 6.98 0 0 1 12 12c0-1.93.78-3.68 2.05-4.95A4.96 4.96 0 0 0 12 7zm6 5a4 4 0 0 0-4 4c0 3 4 7 4 7s4-4 4-7a4 4 0 0 0-4-4zm0 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                 </svg>
             </button>
-            <button id="custom-browse-drive-btn" title="Mở danh mục bản đồ Google Drive" style="background-color: #fff; color: #1a73e8;">
+            <button id="custom-browse-drive-btn" class="ui-gis-only" title="Mở danh mục bản đồ Google Drive" style="background-color: #fff; color: #1a73e8;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M7.71 3.5L1.15 15l3.43 6 6.55-11.5z" fill="#0066DA"/>
                     <path d="M9.73 15L6.3 21h13.12l3.43-6z" fill="#00AC47"/>
@@ -1625,7 +1964,7 @@
                     <path d="M14.7 3.5h6.58L17.85 9H11.43z" fill="#FFBA00"/>
                 </svg>
             </button>
-            <a href="#" id="custom-upload-kmz-btn" title="Tải lên tệp KML hoặc KMZ cục bộ">
+            <a href="#" id="custom-upload-kmz-btn" class="ui-gis-only" title="Tải lên tệp KML hoặc KMZ cục bộ">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
                 </svg>
@@ -1859,6 +2198,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             <input type="text" id="share-full-url-input" readonly>
                             <button type="button" class="btn-action btn-blue" onclick="activateShareSessionTimer(); copyShareInputUrl('share-full-url-input', 'Đã sao chép liên kết Cả hành trình (Có hạn bảo mật)!')" style="padding:6px 12px; font-size:11.5px;">Sao chép</button>
                         </div>
+                        <div style="margin-top:8px; padding:6px 10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; display:flex; align-items:center; justify-content:space-between; font-size:11.5px; color:#1e3a8a; font-weight:600;">
+                            <span>🏠 Ẩn điểm đầu & điểm cuối (Bán kính 200m bảo vệ nhà riêng)</span>
+                            <input type="checkbox" id="chk-privacy-trim-ends" style="width:16px; height:16px; accent-color:#1d4ed8; cursor:pointer;">
+                        </div>
                         <div style="font-size:10.5px; color:#64748b; margin-top:4px;">💡 Khi hết thời gian cho phép chia sẻ, liên kết sẽ tự động đóng quyền xem để bảo vệ lộ trình riêng tư của bạn.</div>
                     </div>
 
@@ -1958,7 +2301,16 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     </div>
                 </div>
 
-                <!-- Thanh nút bấm chụp ảnh (Khi đang ở chế độ ngắm) -->
+                <!-- Cụm nút chọn nhanh Nhãn trạng thái hiện trường 1 chạm (Tag Chips) -->
+                <div class="tm-quick-tags-wrap" id="tm-quick-tags-bar">
+                    <button type="button" class="tm-tag-chip active" data-stamp="KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG">🔍 Khảo sát</button>
+                    <button type="button" class="tm-tag-chip" data-stamp="HIỆN TRƯỜNG: TRƯỚC KHI CẮT TỈA / XỬ LÝ">✂️ Trước xử lý</button>
+                    <button type="button" class="tm-tag-chip" data-stamp="NGHIỆM THU: SAU KHI HOÀN THÀNH">✅ Sau xử lý</button>
+                    <button type="button" class="tm-tag-chip tag-danger" data-stamp="CẢNH BÁO: SỰ CỐ CÂY XANH KHẨN CẤP">⚠️ Sự cố khẩn</button>
+                    <button type="button" class="tm-tag-chip" data-stamp="PHẢN ÁNH CỘNG ĐỒNG & CHECK-IN CÔNG VIÊN">🌿 Cộng đồng</button>
+                </div>
+
+                <!-- Thanh nút bấm chụp ảnh (Có khóa thông minh chờ hội tụ GPS) -->
                 <div class="tm-shutter-bar" id="tm-shutter-controls">
                     <button type="button" class="btn-tm-shutter" id="btn-tm-take-photo">
                         📸 CHỤP ẢNH ĐÓNG DẤU
@@ -1998,21 +2350,43 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <input type="text" id="tm-project-input" value="KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG" placeholder="Nhập tên dự án / công tác...">
                     </div>
                     <div class="full-col">
-                        <label for="tm-note-input">✍️ Ghi chú hiện trường (Mã số cây, tình trạng, người thực hiện):</label>
-                        <input type="text" id="tm-note-input" placeholder="Ví dụ: Cây sao đen MS-102 - Bình thường - NV: Minh Khoa">
+                        <label for="tm-note-input">✍️ Ghi chú hiện trường (Bấm 🎙️ để đọc giọng nói tiếng Việt):</label>
+                        <div class="tm-note-voice-wrap">
+                            <input type="text" id="tm-note-input" placeholder="Ví dụ: Cây sao đen MS-102 - Nghiêng 30 độ - NV: Minh Khoa">
+                            <button type="button" class="btn-voice-note" id="btn-tm-voice-note" title="Nhập ghi chú bằng giọng nói tiếng Việt">🎙️ Đọc</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="ocr-modal" class="modal-overlay">
-            <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-content" style="max-width: 540px;">
                 <button class="modal-close-btn" onclick="toggleOcrModal(false)">×</button>
-                <h3>Trích xuất dữ liệu ảnh Timemark</h3>
+                <h3>Trích xuất dữ liệu ảnh Timemark (Đơn lẻ & Hàng loạt)</h3>
                 
                 <div class="dropzone" id="dropzone">
-                    <p>Kéo thả hình ảnh mốc vào đây hoặc nhấp để duyệt file</p>
-                    <input type="file" id="fileInput" accept="image/*" style="display:none">
+                    <p>📂 Kéo thả 1 hoặc NHIỀU hình ảnh Timemark vào đây (hoặc nhấp để chọn nhiều ảnh)</p>
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+                </div>
+
+                <!-- Khung kết quả xử lý hàng loạt (Batch OCR Table & Xuất CSV/KMZ) -->
+                <div id="batchOcrResultSection" class="batch-ocr-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:#0f172a;">
+                        <span>📊 Đã trích xuất hàng loạt: <b id="batch-ocr-count" style="color:#16a34a;">0</b> ảnh Timemark</span>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" id="btn-export-batch-csv" class="btn-action btn-green" style="padding:5px 10px; font-size:11px;">📊 Xuất CSV (Excel)</button>
+                            <button type="button" id="btn-export-batch-kmz" class="btn-action btn-orange" style="padding:5px 10px; font-size:11px;">📦 Tải KMZ Gộp</button>
+                        </div>
+                    </div>
+                    <div class="batch-ocr-table-wrap">
+                        <table class="batch-ocr-table">
+                            <thead>
+                                <tr><th>#</th><th>Tên ảnh</th><th>Ngày giờ</th><th>Tọa độ GPS</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="batch-ocr-tbody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div id="ocrResultSection" style="display:none;">
@@ -2021,6 +2395,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <div class="btn-ocr-group">
                             <button id="copyCoordsBtn" class="btn-action btn-gray">Sao chép chuỗi</button>
                             <a id="mapsLink" href="#" target="_blank" class="btn-action btn-blue">Xem trên Maps</a>
+                            <button id="btn-ocr-open-streetview" type="button" class="btn-action" style="background:#7c3aed; color:white;">🏙️ Đối chiếu Street View</button>
                             <button id="saveOcrKmzDriveBtn" class="btn-action btn-green">Lưu Kho KMZ</button>
                             <button id="downloadOcrKmzLocalBtn" class="btn-action btn-orange">Tải KMZ về máy</button>
                         </div>
@@ -2110,6 +2485,14 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                                 <div style="font-size: 12px; color: #64748b;">Không cần cấp quyền GPS, bản đồ sẽ mở tại khung nhìn quản lý trung tâm TP.HCM / Thủ Đức.</div>
                             </div>
                         </label>
+                    </div>
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
+                        <div style="font-weight: 700; font-size: 12.5px; color: #166534; margin-bottom: 6px;">👤 Chọn giao diện phù hợp với vai trò của bạn:</div>
+                        <select id="init-role-select" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #86efac; font-size: 13px; font-weight: 600; color: #0f172a; background: #ffffff; outline: none;">
+                            <option value="gis">💻 Cán bộ Kỹ thuật / Quản lý GIS (Đầy đủ công cụ bản đồ)</option>
+                            <option value="worker">👷 Công nhân Hiện trường / Duy tu (Chữ to, 3 nút lớn 1 chạm)</option>
+                            <option value="fitness">🏃 Thể thao & Cộng đồng (Đo Pace, Calo, Độ dốc & Phản ánh)</option>
+                        </select>
                     </div>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #475569; cursor: pointer;">
                         <input type="checkbox" id="chk-remember-loc-choice" checked style="accent-color: var(--primary-color); width: 16px; height: 16px;">
@@ -4411,9 +4794,16 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
         // Nén danh sách điểm hành trình + thời hạn bảo mật (exp) sang chuỗi Base64URL gọn nhẹ
         function encodeTrackForShareUrl(expTimestamp = 0) {
-            const pts = extState.trackingPoints || [];
+            let pts = (extState.trackingPoints || []).slice();
             if (pts.length === 0 && extState.userGPSPosition) {
                 return '';
+            }
+            // Bảo vệ quyền riêng tư: Cắt ẩn 200m đầu và 200m cuối nếu người dùng bật tùy chọn
+            const trimEnds = document.getElementById('chk-privacy-trim-ends') && document.getElementById('chk-privacy-trim-ends').checked;
+            const totalD = extState.trackingTotalDistance || 0;
+            if (trimEnds && totalD > 500 && pts.length > 4) {
+                const filtered = pts.filter(p => (p.dist || 0) >= 200 && (p.dist || 0) <= (totalD - 200));
+                if (filtered.length >= 2) pts = filtered;
             }
             const maxSample = 90;
             const step = pts.length > maxSample ? (pts.length - 1) / (maxSample - 1) : 1;
@@ -7071,6 +7461,7 @@ ${photoPlacemarksKml}</Document>
                         <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${data.lat}, ${data.lng})">📋 Link</button>
                         <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${data.lat}, ${data.lng})">📍 Maps</button>
                         <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${data.lat}, ${data.lng}, false)">🚗 Dẫn đường</button>
+                        <button class="btn-share-action" style="background:#7c3aed; color:white;" onclick="loadStreetViewPanorama(${data.lat}, ${data.lng})">🏙️ Street View</button>
                     </div>
                 </div>
             `;
@@ -7474,6 +7865,10 @@ ${photoPlacemarksKml}</Document>
         $('#btn-confirm-loc-modal').click(function() {
             const selectedChoice = $('input[name="initLocChoice"]:checked').val();
             const remember = $('#chk-remember-loc-choice').is(':checked');
+            const selectedRole = $('#init-role-select').val();
+            if (selectedRole && typeof window.applyUserRole === 'function') {
+                window.applyUserRole(selectedRole, false);
+            }
 
             if (remember) {
                 try {
@@ -7560,6 +7955,448 @@ ${photoPlacemarksKml}</Document>
         setupLazyDriveLayer('1FdWpyXbNOCfblyf93Eu06nBdCb3HvUKP', layer_GiamSat_MaiCanh, '2. GS Mai + Cảnh');
         setupLazyDriveLayer('1xTefl1RcqqGJFYAzXBwyo1WLEjSNRsnN', layer_GiamSat_Khoa, '3. GS Khoa');
         setupLazyDriveLayer('1I17cM14OpuxsOnMKYrLy69Es6CX4cb9_', layer_GiamSat_Khong, '4. GS không');
+
+        // =========================================================================
+        // BỔ SUNG MỚI: HỆ THỐNG PHÂN QUYỀN 3 NHÓM NGƯỜI DÙNG, KHÓA CHỜ GPS TIMEMARK,
+        // NHẬP GHI CHÚ GIỌNG NÓI, TRÍCH XUẤT HÀNG LOẠT (BATCH OCR) & THẺ ẢNH WORKOUT
+        // =========================================================================
+        (function() {
+            const ROLE_STORAGE_KEY = 'cxcs2_active_user_role_v1';
+            const DEFAULT_ROLE = 'gis';
+            let gpsLockTimeout = null;
+            let isTimemarkGpsLocked = false;
+            window.batchOcrItems = [];
+
+            // 1. Hàm chuyển đổi 3 chế độ người dùng: 'worker' | 'gis' | 'fitness'
+            window.applyUserRole = function(role, showNotification = true) {
+                const validRoles = ['worker', 'gis', 'fitness'];
+                const targetRole = validRoles.includes(role) ? role : DEFAULT_ROLE;
+
+                document.body.setAttribute('data-role', targetRole);
+                try { localStorage.setItem(ROLE_STORAGE_KEY, targetRole); } catch (e) {}
+
+                // Cập nhật nút active trên thanh chuyển đổi
+                document.querySelectorAll('#role-switcher .role-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-target-role') === targetRole);
+                });
+
+                // Đồng bộ dropdown trong Modal khởi tạo
+                const initRoleSelect = document.getElementById('init-role-select');
+                if (initRoleSelect) initRoleSelect.value = targetRole;
+
+                // Ẩn/Hiện thanh 3 nút lớn đáy màn hình của Công nhân
+                const workerBar = document.getElementById('worker-bottom-bar');
+                if (workerBar) {
+                    workerBar.style.display = (targetRole === 'worker') ? 'grid' : 'none';
+                }
+
+                // Tự động tối ưu thông số theo từng nhóm người dùng
+                const actSelect = document.getElementById('track-activity-type');
+                if (targetRole === 'worker') {
+                    if (actSelect && actSelect.value !== 'survey') {
+                        actSelect.value = 'survey';
+                        $(actSelect).trigger('change');
+                    }
+                    if (!extState.autoPauseEnabled) {
+                        $('#btn-autopause-toggle').click();
+                    }
+                    if (showNotification) {
+                        showToast("👷 Đã bật Chế độ Hiện trường: Chữ to ngoài nắng & Thanh thao tác 1 chạm!", "success");
+                    }
+                } else if (targetRole === 'gis') {
+                    if (showNotification) {
+                        showToast("💻 Đã bật Chế độ Quản lý GIS: Mở khóa toàn bộ công cụ bản đồ & Batch OCR!", "info");
+                    }
+                } else if (targetRole === 'fitness') {
+                    if (actSelect && actSelect.value === 'survey') {
+                        actSelect.value = 'running';
+                        $(actSelect).trigger('change');
+                    }
+                    if (showNotification) {
+                        showToast("🏃 Đã bật Chế độ Thể thao & Cộng đồng: Đo Pace, Calo, Độ dốc & Check-in!", "success");
+                    }
+                }
+
+                syncWorkerBottomBarState();
+                if (window.map && typeof window.map.invalidateSize === 'function') {
+                    setTimeout(() => window.map.invalidateSize(), 200);
+                }
+            };
+
+            // Đồng bộ trạng thái nút Bắt đầu / Kết thúc trên Thanh công nhân
+            function syncWorkerBottomBarState() {
+                const btnStart = document.getElementById('btn-worker-quick-start');
+                const iconEl = document.getElementById('worker-start-icon');
+                const labelEl = document.getElementById('worker-start-label');
+                if (!btnStart || !iconEl || !labelEl) return;
+
+                if (extState.isTracking) {
+                    btnStart.classList.add('is-recording');
+                    iconEl.textContent = '⏹️';
+                    labelEl.textContent = 'KẾT THÚC CA';
+                } else {
+                    btnStart.classList.remove('is-recording');
+                    iconEl.textContent = '▶️';
+                    labelEl.textContent = 'BẮT ĐẦU TUYẾN';
+                }
+            }
+
+            // Gắn sự kiện cho Thanh 3 nút lớn của Công nhân Hiện trường
+            $('#btn-worker-quick-start').click(function(e) {
+                e.preventDefault();
+                if (!extState.isTracking) {
+                    $('#track-activity-type').val('survey').trigger('change');
+                    if (!extState.autoPauseEnabled) $('#btn-autopause-toggle').click();
+                    $('#custom-start-tracking-btn').click();
+                } else {
+                    $('#btn-finish-track').click();
+                }
+                setTimeout(syncWorkerBottomBarState, 150);
+            });
+
+            $('#btn-worker-quick-cam').click(function(e) {
+                e.preventDefault();
+                if (extState.isTracking) {
+                    $('#btn-quick-cam-track').click();
+                } else {
+                    $('#custom-timemark-cam-btn').click();
+                }
+            });
+
+            $('#btn-worker-quick-pocket').click(function(e) {
+                e.preventDefault();
+                if (!extState.isTracking) {
+                    $('#track-activity-type').val('survey').trigger('change');
+                    $('#custom-start-tracking-btn').click();
+                    setTimeout(() => {
+                        syncWorkerBottomBarState();
+                        $('#btn-lock-track').click();
+                    }, 300);
+                } else {
+                    $('#btn-lock-track').click();
+                }
+            });
+
+            // Theo dõi sự kiện Bắt đầu / Kết thúc hành trình để cập nhật thanh Công nhân
+            $('#custom-start-tracking-btn, #btn-finish-track').on('click', function() {
+                setTimeout(syncWorkerBottomBarState, 200);
+            });
+
+            // 2. Cụm nút chọn nhanh Nhãn trạng thái (Tag Chips) trong Camera Timemark
+            $(document).on('click', '.tm-tag-chip', function() {
+                $('.tm-tag-chip').removeClass('active');
+                $(this).addClass('active');
+                const stampText = $(this).attr('data-stamp') || 'KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG';
+                $('#tm-project-input').val(stampText).trigger('input');
+                if (navigator.vibrate) navigator.vibrate(30);
+            });
+
+            // 3. Khóa nút chụp thông minh (3 giây đầu) cho đến khi GPS hội tụ
+            function setTimemarkShutterReady(isReady, statusText) {
+                const shutterBtn = $('#btn-tm-take-photo');
+                isTimemarkGpsLocked = isReady;
+                if (isReady) {
+                    shutterBtn.removeClass('gps-pending').prop('disabled', false);
+                    shutterBtn.html('📸 CHỤP ẢNH ĐÓNG DẤU');
+                    if (navigator.vibrate) navigator.vibrate(40);
+                } else {
+                    shutterBtn.addClass('gps-pending').prop('disabled', true);
+                    shutterBtn.html(statusText || '⏳ Đang lấy tọa độ GPS (Đứng yên 3s)...');
+                }
+            }
+
+            // Bọc hàm openTimemarkCameraModal để kích hoạt khóa chờ hội tụ GPS
+            const origOpenTimemarkModal = window.openTimemarkCameraModal;
+            window.openTimemarkCameraModal = function() {
+                if (typeof origOpenTimemarkModal === 'function') origOpenTimemarkModal();
+                setTimemarkShutterReady(false, '⏳ Đang lấy tọa độ GPS (Chờ 2-3 giây)...');
+                if (gpsLockTimeout) clearTimeout(gpsLockTimeout);
+
+                // Mở khóa ngay khi timemarkCamState nhận được tọa độ GPS hợp lệ hoặc sau tối đa 3.2 giây
+                const checkInterval = setInterval(() => {
+                    if (!$('#timemark-camera-modal').hasClass('visible')) {
+                        clearInterval(checkInterval);
+                        return;
+                    }
+                    if (timemarkCamState.lat !== null && timemarkCamState.lng !== null && (Date.now() - timemarkCamState.lastGpsFixTime < 15000)) {
+                        clearInterval(checkInterval);
+                        if (gpsLockTimeout) clearTimeout(gpsLockTimeout);
+                        setTimemarkShutterReady(true);
+                    }
+                }, 400);
+
+                gpsLockTimeout = setTimeout(() => {
+                    clearInterval(checkInterval);
+                    setTimemarkShutterReady(true);
+                }, 3200);
+            };
+
+            // 4. Tính năng Nhập ghi chú hiện trường bằng Giọng nói tiếng Việt (Voice-to-Text)
+            $('#btn-tm-voice-note').click(function() {
+                const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRec) {
+                    showToast("Trình duyệt trên thiết bị này chưa hỗ trợ nhận diện giọng nói trực tiếp. Hãy dùng mic trên bàn phím điện thoại.", "info");
+                    $('#tm-note-input').focus();
+                    return;
+                }
+                const btn = $(this);
+                if (btn.hasClass('listening')) return;
+
+                const recognition = new SpeechRec();
+                recognition.lang = 'vi-VN';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                btn.addClass('listening').text('🛑 Đang nghe...');
+                showToast("🎙️ Hãy đọc ghi chú hiện trường (VD: Cây sao đen số 12 sâu bệnh)...", "info");
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    const curVal = $('#tm-note-input').val().trim();
+                    const combined = curVal ? (curVal + ' - ' + transcript) : transcript;
+                    $('#tm-note-input').val(combined).trigger('input');
+                    showToast("✅ Đã chuyển giọng nói thành ghi chú trên ảnh!", "success");
+                };
+                recognition.onerror = function() {
+                    showToast("Không nghe rõ giọng nói, vui lòng thử lại.", "error");
+                };
+                recognition.onend = function() {
+                    btn.removeClass('listening').text('🎙️ Đọc');
+                };
+                recognition.start();
+            });
+
+            // 5. Nút Đối chiếu Google Street View trực tiếp từ kết quả OCR Timemark
+            $('#btn-ocr-open-streetview').click(function() {
+                const data = extState.currentOcrData;
+                if (!data || !data.lat || !data.lng) {
+                    showToast("Chưa có tọa độ mốc ảnh để mở Street View.", "error");
+                    return;
+                }
+                toggleOcrModal(false);
+                loadStreetViewPanorama(data.lat, data.lng);
+            });
+
+            // 6. Nâng cấp Trích xuất dữ liệu ảnh Timemark Hàng loạt (Batch OCR Processing + Xuất CSV & KMZ gộp)
+            async function processSingleFileForBatchOcr(file) {
+                return new Promise((resolve) => {
+                    if (!file.type.startsWith('image/')) { resolve(null); return; }
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const base64 = e.target.result;
+                        const img = new Image();
+                        img.onload = async function() {
+                            const canvas = document.getElementById('helperCanvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const d = imageData.data;
+                            for (let i = 0; i < d.length; i += 4) {
+                                let avg = (d[i] + d[i+1] + d[i+2]) / 3;
+                                let v = (avg > 180) ? 255 : 0;
+                                d[i] = d[i+1] = d[i+2] = v;
+                            }
+                            ctx.putImageData(imageData, 0, 0);
+                            try {
+                                const worker = await Tesseract.createWorker(['vie', 'eng']);
+                                const { data: { text } } = await worker.recognize(canvas.toDataURL());
+                                await worker.terminate();
+
+                                const cleanText = text.replace(/,/g, '.');
+                                const latMatch = cleanText.match(/(\d{1,2}\.\d{4,10})\s?[°o0\*]?\s?N/i);
+                                const lngMatch = cleanText.match(/(\d{2,3}\.\d{4,10})\s?[°o0\*]?\s?E/i);
+                                if (latMatch && lngMatch) {
+                                    const lat = parseFloat(latMatch[1]);
+                                    const lng = parseFloat(lngMatch[1]);
+                                    const timeMatch = text.match(/\b\d{1,2}:\d{2}\b/);
+                                    const dateMatch = text.match(/\b\d{2}\/\d{2}\/\d{4}\b/) || text.match(/\b\d{4}-\d{2}-\d{2}\b/);
+                                    const addr = await reverseGeocodeWithOSM(lat, lng).catch(() => `Tọa độ (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+                                    resolve({
+                                        imgName: file.name.replace(/\.[^/.]+$/, ""),
+                                        base64: base64,
+                                        lat: lat,
+                                        lng: lng,
+                                        time: timeMatch ? timeMatch[0] : "Không rõ",
+                                        date: dateMatch ? dateMatch[0] : new Date().toLocaleDateString('vi-VN'),
+                                        address: addr
+                                    });
+                                } else {
+                                    resolve(null);
+                                }
+                            } catch (err) {
+                                resolve(null);
+                            }
+                        };
+                        img.src = base64;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function renderBatchOcrTable() {
+                const items = window.batchOcrItems || [];
+                if (items.length === 0) {
+                    $('#batchOcrResultSection').hide();
+                    return;
+                }
+                $('#batch-ocr-count').text(items.length);
+                let tbody = '';
+                items.forEach((it, idx) => {
+                    tbody += `
+                        <tr>
+                            <td><b>${idx + 1}</b></td>
+                            <td>${it.imgName}</td>
+                            <td>${it.time} ${it.date}</td>
+                            <td style="font-family:Consolas,monospace; color:#1d4ed8;">${it.lat.toFixed(5)}, ${it.lng.toFixed(5)}</td>
+                            <td>
+                                <button type="button" class="btn-action btn-blue" style="padding:3px 7px; font-size:10.5px;" onclick="focusBatchOcrItem(${idx})">📍 Xem</button>
+                            </td>
+                        </tr>`;
+                });
+                $('#batch-ocr-tbody').html(tbody);
+                $('#batchOcrResultSection').show();
+            }
+
+            window.focusBatchOcrItem = function(idx) {
+                const item = window.batchOcrItems[idx];
+                if (!item) return;
+                extState.currentOcrData = item;
+                document.getElementById('attr-imgname').innerText = item.imgName;
+                document.getElementById('displayCoords').innerText = `${item.lat.toFixed(6)}, ${item.lng.toFixed(6)}`;
+                document.getElementById('mapsLink').href = `http://maps.google.com/?q=${item.lat},${item.lng}`;
+                document.getElementById('attr-gps').innerText = `${item.lat.toFixed(6)}°N, ${item.lng.toFixed(6)}°E`;
+                document.getElementById('attr-time').innerText = item.time;
+                document.getElementById('attr-date').innerText = item.date;
+                document.getElementById('attr-address').innerText = item.address;
+                document.getElementById('ocrResultSection').style.display = 'block';
+                map.flyTo([item.lat, item.lng], 17, { animate: true, duration: 1.0 });
+            };
+
+            async function handleMultipleOcrFiles(fileList) {
+                if (!fileList || fileList.length === 0) return;
+                if (fileList.length === 1) {
+                    handleOcrImageFile(fileList[0]);
+                    return;
+                }
+                toggleLoading(true);
+                showToast(`🔍 Đang trích xuất hàng loạt ${fileList.length} ảnh Timemark...`, "info");
+                const bounds = L.latLngBounds();
+                const orangeIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+                });
+
+                for (let i = 0; i < fileList.length; i++) {
+                    const res = await processSingleFileForBatchOcr(fileList[i]);
+                    if (res) {
+                        window.batchOcrItems.push(res);
+                        const m = L.marker([res.lat, res.lng], { icon: orangeIcon }).addTo(drawnItems);
+                        extState.currentOcrData = res;
+                        extState.ocrMarker = m;
+                        updateOcrMarkerPopup();
+                        bounds.extend([res.lat, res.lng]);
+                    }
+                }
+                toggleLoading(false);
+                $('#custom-export-kml-btn').show();
+                renderBatchOcrTable();
+                if (window.batchOcrItems.length > 0) {
+                    window.focusBatchOcrItem(window.batchOcrItems.length - 1);
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
+                    showToast(`✅ Đã trích xuất & ghim thành công ${window.batchOcrItems.length} ảnh Timemark lên bản đồ!`, "success");
+                } else {
+                    showToast("Không tìm thấy tọa độ N/E hợp lệ trong các ảnh đã chọn.", "error");
+                }
+            }
+
+            // Ghi đè sự kiện chọn nhiều file hoặc kéo thả nhiều ảnh vào #dropzone
+            const fileInputEl = document.getElementById('fileInput');
+            const dropzoneEl = document.getElementById('dropzone');
+            if (fileInputEl) {
+                fileInputEl.onchange = function(e) {
+                    if (e.target.files && e.target.files.length > 0) {
+                        handleMultipleOcrFiles(Array.from(e.target.files));
+                    }
+                };
+            }
+            if (dropzoneEl) {
+                dropzoneEl.addEventListener('drop', function(e) {
+                    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 1) {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        dropzoneEl.classList.remove('dragover');
+                        handleMultipleOcrFiles(Array.from(e.dataTransfer.files));
+                    }
+                }, true);
+            }
+
+            // Xuất bảng Batch OCR ra file CSV (Mở bằng Excel hỗ trợ tiếng Việt UTF-8 BOM)
+            $('#btn-export-batch-csv').click(function() {
+                const items = window.batchOcrItems || [];
+                if (items.length === 0) return;
+                let csv = "\uFEFFSTT,Tên Ảnh,Giờ chụp,Ngày chụp,Vĩ độ (Lat),Kinh độ (Lng),Địa chỉ hiện trường,Link Google Maps\n";
+                items.forEach((it, idx) => {
+                    const safeAddr = (it.address || '').replace(/"/g, '""');
+                    const gmap = `https://www.google.com/maps?q=${it.lat},${it.lng}`;
+                    csv += `${idx + 1},"${it.imgName}","${it.time}","${it.date}",${it.lat.toFixed(6)},${it.lng.toFixed(6)},"${safeAddr}","${gmap}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `BaoCao_Timemark_HangLoat_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("📊 Đã tải bảng tổng hợp CSV (Mở bằng Excel)!", "success");
+            });
+
+            // Xuất toàn bộ ảnh Batch OCR thành 1 gói KMZ duy nhất
+            $('#btn-export-batch-kmz').click(async function() {
+                const items = window.batchOcrItems || [];
+                if (items.length === 0) return;
+                const zip = new JSZip();
+                let placemarks = '';
+                items.forEach((it, idx) => {
+                    const imgFile = `timemark_batch_${idx + 1}.jpg`;
+                    if (it.base64 && it.base64.includes(',')) {
+                        zip.file(`images/${imgFile}`, it.base64.split(',')[1], { base64: true });
+                    }
+                    const descHtml = `<div style="font-family:Arial,sans-serif;padding:5px;max-width:300px;"><h3 style="color:#e65100;margin:0 0 6px 0;">📍 ${it.imgName}</h3><p><b>Vị trí:</b> ${it.address}</p><p><b>Thời gian:</b> ${it.time} - ${it.date}</p><p><b>Tọa độ:</b> ${it.lat.toFixed(6)}, ${it.lng.toFixed(6)}</p><div style="margin-top:8px;text-align:center;"><img src="images/${imgFile}" style="width:100%;max-width:260px;border-radius:6px;"/></div></div>`;
+                    placemarks += `<Placemark><name>${it.imgName}</name><description><![CDATA[${descHtml}]]></description><Point><coordinates>${it.lng},${it.lat},0</coordinates></Point></Placemark>\n`;
+                });
+                const kml = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Goi_Anh_Timemark_HangLoat</name>${placemarks}</Document></kml>`;
+                zip.file("doc.kml", kml);
+                const blob = await zip.generateAsync({ type: "blob" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Timemark_HangLoat_${items.length}Anh_${new Date().toISOString().slice(0,10)}.kmz`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast(`📦 Đã đóng gói ${items.length} ảnh Timemark thành 1 tệp KMZ!`, "success");
+            });
+
+            // Khởi tạo Role khi tải trang (Đọc từ ?mode=worker|gis|fitness hoặc LocalStorage)
+            $(document).ready(function() {
+                const params = new URLSearchParams(window.location.search);
+                const urlMode = params.get('mode');
+                let savedRole = DEFAULT_ROLE;
+                try {
+                    savedRole = urlMode || localStorage.getItem(ROLE_STORAGE_KEY) || DEFAULT_ROLE;
+                } catch (e) {}
+                window.applyUserRole(savedRole, !!urlMode);
+
+                document.querySelectorAll('#role-switcher .role-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        window.applyUserRole(this.getAttribute('data-target-role'), true);
+                    });
+                });
+            });
+        })();
+
         </script>
     </body>
 </html>
