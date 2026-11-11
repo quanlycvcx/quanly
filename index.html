@@ -1711,6 +1711,833 @@
             }
         }
 
+
+        /* =========================================================
+           BỔ SUNG: HỆ THỐNG THỜI TIẾT THÔNG MINH 3 NHÓM NGƯỜI DÙNG
+           (Live Weather Pill, Cảnh báo Gió giật/An toàn, Timeline Player 16 Ngày, UV/AQI)
+           ========================================================= */
+        #live-weather-pill {
+            position: fixed;
+            top: 102px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2040;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 5px 14px;
+            border-radius: 999px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.16);
+            border: 1.5px solid #cbd5e1;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            cursor: pointer;
+            white-space: nowrap;
+            max-width: 95vw;
+            overflow-x: auto;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+        #live-weather-pill:hover {
+            transform: translateX(-50%) translateY(-1px);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.22);
+        }
+        #live-weather-pill.hazard-safe { border-color: #22c55e; background: rgba(240, 253, 244, 0.96); }
+        #live-weather-pill.hazard-caution { border-color: #f59e0b; background: rgba(255, 251, 235, 0.97); }
+        #live-weather-pill.hazard-danger {
+            border-color: #dc2626;
+            background: rgba(254, 242, 242, 0.98);
+            animation: pulseHazardPill 1.6s infinite;
+        }
+        @keyframes pulseHazardPill {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45); }
+            50% { box-shadow: 0 0 0 7px rgba(220, 38, 38, 0); }
+        }
+        .wp-sep { color: #cbd5e1; font-weight: 400; }
+        .wp-badge {
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 800;
+        }
+        .wp-badge.safe { background: #dcfce7; color: #15803d; }
+        .wp-badge.caution { background: #fef3c7; color: #b45309; }
+        .wp-badge.danger { background: #fee2e2; color: #b91c1c; }
+
+        /* Thanh Cảnh báo An toàn Lao động & Rủi ro Cây xanh (Safety Banner) */
+        #weather-safety-alert-banner {
+            position: fixed;
+            top: 138px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2045;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(185, 28, 28, 0.45);
+            font-size: 12px;
+            font-weight: 700;
+            width: 92%;
+            max-width: 480px;
+            box-sizing: border-box;
+            border: 1.5px solid #fecaca;
+        }
+        #weather-safety-alert-banner.caution-mode {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border-color: #fde68a;
+        }
+
+        /* Điều chỉnh vị trí các bảng khi có thêm Weather Pill */
+        .leaflet-top.leaflet-right,
+        .leaflet-top.leaflet-left {
+            top: 140px !important;
+        }
+        .info-box,
+        #route-summary-modal,
+        #tracking-control-panel {
+            top: 140px;
+        }
+        #draw-edit-overlay-container {
+            top: 138px;
+        }
+
+        /* Khối Thông tin Thời tiết Thích ứng theo 3 Nhóm trong #weather-info */
+        .weather-role-card {
+            margin: 8px 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .weather-role-worker {
+            background: #fffbeb;
+            border: 1.5px solid #fcd34d;
+            color: #78350f;
+        }
+        .weather-role-gis {
+            background: #eff6ff;
+            border: 1.5px solid #93c5fd;
+            color: #1e3a8a;
+        }
+        .weather-role-fitness {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            color: #14532d;
+        }
+        .weather-metrics-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin: 8px 0;
+        }
+        .wm-mini-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+        .wm-mini-box .lbl {
+            display: block;
+            font-size: 9.5px;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .wm-mini-box .val {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* =========================================================
+           TRÌNH PHÁT DỰ BÁO 16 NGÀY (64 MỐC KMZ TIMELINE PLAYER) & LEGEND
+           ========================================================= */
+        #forecast-16d-player {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3500;
+            width: 92%;
+            max-width: 520px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: none;
+            box-sizing: border-box;
+        }
+        .f16-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+        .f16-time-badge {
+            background: #2563eb;
+            color: #ffffff;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 800;
+            font-family: 'Consolas', monospace;
+        }
+        .f16-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .f16-btn {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .f16-btn:hover { background: #334155; }
+        .f16-btn.playing { background: #16a34a; border-color: #22c55e; }
+        .f16-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #334155;
+            border-radius: 4px;
+            outline: none;
+        }
+        .f16-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #38bdf8;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .f16-legend-bar {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10.5px;
+            color: #cbd5e1;
+        }
+        .rain-gradient-bar {
+            flex: 1;
+            height: 7px;
+            margin: 0 8px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #bae6fd 0%, #38bdf8 20%, #22c55e 45%, #facc15 70%, #ef4444 90%, #a855f7 100%);
+        }
+
+        @media (max-width: 767px) {
+            #live-weather-pill {
+                top: 90px;
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+            #weather-safety-alert-banner {
+                top: 124px;
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+            .leaflet-top.leaflet-right,
+            .leaflet-top.leaflet-left {
+                top: 126px !important;
+            }
+            .info-box,
+            #route-summary-modal,
+            #tracking-control-panel {
+                top: 126px;
+            }
+            #draw-edit-overlay-container {
+                top: 124px;
+            }
+        }
+
+
+        /* =========================================================
+           BỔ SUNG: NHÓM 4 - ĐO ĐẠC THỰC ĐỊA & BIÊN TẬP GIS CHUYÊN NGHIỆP
+           (Field Surveying, Styling, Symbology, Vertex Editing, Attribute Table)
+           ========================================================= */
+        .role-btn.active[data-target-role="survey"] {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(109, 40, 217, 0.45);
+        }
+        body[data-role="survey"] .ui-worker-bar,
+        body[data-role="survey"] .ui-fitness-only {
+            display: none !important;
+        }
+        body[data-role="worker"] .ui-survey-only,
+        body[data-role="fitness"] .ui-survey-only {
+            display: none !important;
+        }
+        body[data-role="survey"] #right-controls-container,
+        body[data-role="survey"] #support-controls-container {
+            bottom: calc(95px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+
+        /* Thanh Dock Đo đạc Thực địa dưới đáy màn hình (Surveyor Dock) */
+        .ui-survey-dock {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4400;
+            width: 96%;
+            max-width: 780px;
+            background: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #f8fafc;
+            border: 1.5px solid rgba(167, 139, 250, 0.45);
+            border-radius: 18px;
+            padding: 8px 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            display: none;
+            box-sizing: border-box;
+        }
+        body[data-role="survey"] .ui-survey-dock {
+            display: block;
+        }
+        .survey-dock-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            overflow-x: auto;
+        }
+        .survey-style-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11.5px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .survey-color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+        }
+        .survey-color-swatch.active {
+            transform: scale(1.22);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 2px #7c3aed;
+        }
+        .survey-select-mini {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            border-radius: 7px;
+            padding: 3px 7px;
+            font-size: 11.5px;
+            font-weight: 600;
+            outline: none;
+        }
+        .survey-tools-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .survey-tool-btn {
+            flex: 1;
+            min-width: 68px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 11px;
+            padding: 7px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            white-space: nowrap;
+            transition: all 0.15s;
+            touch-action: manipulation;
+        }
+        .survey-tool-btn:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+        .survey-tool-btn.active {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #ffffff;
+            border-color: #c4b5fd;
+            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.45);
+        }
+        .survey-tool-btn.gps-btn {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            border-color: #7dd3fc;
+        }
+        .survey-tool-btn.attr-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: #ffffff;
+            border-color: #6ee7b7;
+        }
+        .survey-tool-btn .s-ico {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* Ký hiệu Điểm GIS tùy chỉnh (Custom SVG/Emoji Point Symbology) */
+        .gis-custom-point-pin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 4px;
+            transform: rotate(-45deg);
+            border: 2px solid #ffffff;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+        }
+        .gis-custom-point-pin span {
+            transform: rotate(45deg);
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        /* Nhãn cố định trên bản đồ cho đối tượng GIS (Permanent Feature Label) */
+        .leaflet-tooltip.gis-feature-label {
+            background: rgba(15, 23, 42, 0.86);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        /* Bảng thuộc tính & Danh sách đối tượng GIS (Attribute Table Modal) */
+        .gis-attr-table-wrap {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            margin-top: 10px;
+            background: #ffffff;
+        }
+        .gis-attr-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .gis-attr-table th {
+            background: #f1f5f9;
+            color: #1e293b;
+            padding: 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .gis-attr-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .gis-color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.25);
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        .style-preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .style-preset-chip {
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 6px 8px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s;
+        }
+        .style-preset-chip:hover, .style-preset-chip.active {
+            background: #ede9fe;
+            border-color: #7c3aed;
+            color: #5b21b6;
+        }
+
+
+        /* =========================================================================
+           BỔ SUNG: HỆ THỐNG CHỐNG CHỒNG LẤN (ANTI-COLLISION) & TỐI ƯU DI ĐỘNG TOÀN DIỆN
+           ========================================================================= */
+        :root {
+            --dynamic-top-offset: 138px;
+            --dynamic-bottom-offset: 24px;
+            --dynamic-player-bottom: 20px;
+        }
+
+        /* 1. Ẩn nút Locate trùng lặp của Leaflet (Đã có nút #custom-locate-btn chuyên dụng) */
+        .leaflet-control-locate {
+            display: none !important;
+        }
+
+        /* 2. Đảm bảo Hộp gợi ý tìm kiếm luôn nổi trên mọi thanh công cụ Header */
+        #search-suggestions-box {
+            z-index: 5200 !important;
+        }
+
+        /* 3. Đồng bộ vị trí Top của các công cụ Bản đồ & Bảng nổi theo biến động thực tế */
+        .leaflet-top.leaflet-left,
+        .leaflet-top.leaflet-right {
+            top: var(--dynamic-top-offset, 138px) !important;
+            transition: top 0.2s ease;
+        }
+        .leaflet-top.leaflet-right {
+            z-index: 3200 !important;
+        }
+        .leaflet-control-layers-expanded {
+            max-height: calc(100dvh - var(--dynamic-top-offset, 138px) - var(--dynamic-bottom-offset, 24px) - 20px) !important;
+            max-width: 84vw !important;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        .info-box,
+        #route-summary-modal,
+        #tracking-control-panel {
+            top: var(--dynamic-top-offset, 138px) !important;
+            transition: top 0.2s ease, opacity 0.2s ease;
+        }
+
+        /* 4. Khi đang ở Chế độ Vẽ (is-drawing-active): Tạm ẩn Weather Pill để Thanh điều khiển vẽ thế chỗ gọn gàng */
+        body.is-drawing-active #live-weather-pill,
+        body.is-drawing-active #weather-safety-alert-banner {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        #draw-edit-overlay-container {
+            top: 100px !important;
+            z-index: 4600 !important;
+        }
+
+        /* 5. Nâng cấp Bảng Lưu Hành Trình khi Thu nhỏ (.minimized) thành Viên thuốc trạng thái siêu gọn */
+        .track-mini-summary {
+            display: none;
+            font-family: 'Consolas', monospace;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #0f172a;
+            background: #fce7f3;
+            border: 1px solid #f9a8d4;
+            padding: 2px 7px;
+            border-radius: 999px;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+        #tracking-control-panel.minimized {
+            width: auto !important;
+            max-width: 94vw !important;
+            padding: 6px 10px !important;
+            border-radius: 999px !important;
+            background: rgba(255, 255, 255, 0.97) !important;
+            box-shadow: 0 4px 16px rgba(233, 30, 99, 0.28) !important;
+        }
+        #tracking-control-panel.minimized .tracking-header {
+            margin-bottom: 0 !important;
+            border-bottom: none !important;
+            padding-bottom: 0 !important;
+            gap: 6px;
+        }
+        #tracking-control-panel.minimized .tracking-header h4 {
+            font-size: 12px !important;
+            white-space: nowrap;
+        }
+        #tracking-control-panel.minimized .track-mini-summary {
+            display: inline-block;
+        }
+
+        /* 6. Chống trùng lặp nút vẽ ở cột trái khi đang ở chế độ Đo đạc Thực địa (survey) */
+        body[data-role="survey"] #custom-draw-marker-btn,
+        body[data-role="survey"] #custom-draw-line-btn,
+        body[data-role="survey"] #custom-draw-poly-btn {
+            display: none !important;
+        }
+
+        /* 7. Đồng bộ vị trí Đáy (Bottom) cho 2 cột công cụ Trái/Phải, Trình phát 16 ngày & Toast */
+        #right-controls-container,
+        #support-controls-container {
+            bottom: calc(var(--dynamic-bottom-offset, 24px) + env(safe-area-inset-bottom, 0px)) !important;
+            max-height: calc(100dvh - var(--dynamic-top-offset, 138px) - var(--dynamic-bottom-offset, 24px) - 18px) !important;
+            overflow-y: auto;
+            overflow-x: visible;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 3px;
+            box-sizing: border-box;
+            transition: bottom 0.22s ease, opacity 0.2s ease, transform 0.2s ease;
+        }
+        #right-controls-container::-webkit-scrollbar,
+        #support-controls-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        #forecast-16d-player {
+            bottom: calc(var(--dynamic-player-bottom, 20px) + env(safe-area-inset-bottom, 0px)) !important;
+            z-index: 4450 !important;
+            transition: bottom 0.22s ease;
+        }
+
+        #toast-notification {
+            bottom: calc(var(--dynamic-bottom-offset, 24px) + 12px + env(safe-area-inset-bottom, 0px)) !important;
+            z-index: 7500 !important;
+        }
+
+        /* 8. Nút Thu gọn / Mở rộng Thanh Dock Đo đạc Thực địa (#surveyor-bottom-dock) */
+        .survey-dock-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #c4b5fd;
+        }
+        .btn-collapse-survey-dock {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        #surveyor-bottom-dock.dock-collapsed .survey-dock-top,
+        #surveyor-bottom-dock.dock-collapsed .survey-tools-row {
+            display: none !important;
+        }
+        #surveyor-bottom-dock.dock-collapsed {
+            width: auto !important;
+            max-width: 92vw !important;
+            padding: 6px 14px !important;
+            border-radius: 999px !important;
+        }
+        #surveyor-bottom-dock.dock-collapsed .survey-dock-header-bar {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+            border-bottom: none !important;
+            gap: 12px;
+        }
+
+        /* 9. Nút "👁️ Chế độ Bản đồ Thoáng" (Clean Map View Toggle) */
+        #btn-clean-map-toggle {
+            position: fixed;
+            top: calc(var(--dynamic-top-offset, 138px) + 74px);
+            left: 10px;
+            z-index: 1500;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(203, 213, 225, 0.9);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            color: #334155;
+            transition: top 0.2s ease, background 0.15s, transform 0.15s;
+            touch-action: manipulation;
+        }
+        #btn-clean-map-toggle.active {
+            background: #0f172a;
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+        body.clean-map-mode #right-controls-container,
+        body.clean-map-mode #support-controls-container {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: scale(0.92);
+        }
+
+        /* 10. TỐI ƯU HÓA ĐẶC BIỆT CHO THIẾT BỊ DI ĐỘNG (MOBILE RESPONSIVE <= 767px) */
+        @media (max-width: 767px) {
+            #search-ui-container {
+                top: 8px !important;
+                width: 95% !important;
+                padding: 3px 5px 3px 12px !important;
+            }
+            #search-suggestions-box {
+                top: 50px !important;
+                width: 95% !important;
+            }
+            /* Thanh chuyển 4 chế độ vừa khít 100% chiều ngang điện thoại không cần cuộn */
+            #role-switcher {
+                top: 50px !important;
+                width: 95% !important;
+                justify-content: space-between !important;
+                padding: 3px !important;
+                gap: 2px !important;
+            }
+            .role-btn {
+                flex: 1 1 auto;
+                justify-content: center;
+                padding: 5px 6px !important;
+                font-size: 11px !important;
+                gap: 3px !important;
+            }
+            #live-weather-pill {
+                top: 85px !important;
+                max-width: 95vw !important;
+                padding: 4px 10px !important;
+                font-size: 10.8px !important;
+                gap: 5px !important;
+            }
+            #draw-edit-overlay-container {
+                top: 85px !important;
+                width: 96% !important;
+                padding: 5px 8px !important;
+                gap: 4px !important;
+            }
+            #draw-edit-overlay-container span {
+                font-size: 11px !important;
+            }
+            .btn-draw-helper {
+                padding: 5px 9px !important;
+                font-size: 11px !important;
+            }
+
+            /* Nút công cụ 2 bên gọn gàng, không che bản đồ trên màn hình nhỏ */
+            #right-controls-container {
+                right: 8px !important;
+                gap: 7px !important;
+            }
+            #support-controls-container {
+                left: 8px !important;
+                gap: 7px !important;
+            }
+            #right-controls-container a, #right-controls-container button,
+            #support-controls-container a, #support-controls-container button {
+                width: 39px !important;
+                height: 39px !important;
+                font-size: 15px !important;
+            }
+            #right-controls-container svg, #support-controls-container svg {
+                width: 19px !important;
+                height: 19px !important;
+            }
+            #support-controls-container .support-row {
+                gap: 6px !important;
+            }
+
+            /* Bảng thông tin Thời tiết, Lộ trình & Lưu hành trình chuẩn khung di động */
+            .info-box,
+            #route-summary-modal {
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 92vw !important;
+                max-width: 400px !important;
+                max-height: calc(100dvh - var(--dynamic-top-offset, 125px) - var(--dynamic-bottom-offset, 24px) - 20px) !important;
+                z-index: 3300 !important;
+            }
+            #tracking-control-panel:not(.minimized) {
+                right: 4vw !important;
+                left: auto !important;
+                width: 92vw !important;
+                max-width: 340px !important;
+                max-height: calc(100dvh - var(--dynamic-top-offset, 125px) - var(--dynamic-bottom-offset, 24px) - 16px) !important;
+                z-index: 3350 !important;
+            }
+            #tracking-control-panel.minimized {
+                right: 8px !important;
+                left: auto !important;
+                z-index: 3100 !important;
+            }
+
+            /* Tối ưu khung ngắm Camera Timemark trên điện thoại để nút Chụp luôn hiện ngay không cần cuộn */
+            .tm-cam-viewport {
+                height: clamp(185px, 31dvh, 250px) !important;
+            }
+            #timemark-camera-modal .modal-content {
+                padding: 14px 14px !important;
+                max-height: 92dvh !important;
+            }
+            .tm-shutter-bar {
+                position: sticky;
+                bottom: 0;
+                background: #ffffff;
+                padding: 6px 0 2px 0;
+                z-index: 10;
+            }
+
+            /* Nút đóng Modal luôn dính ở góc trên khi cuộn nội dung dài */
+            .modal-close-btn {
+                position: sticky !important;
+                top: 0 !important;
+                float: right;
+                z-index: 30;
+                margin-top: -6px;
+                margin-right: -6px;
+            }
+        }
+
 </style>
     </head>
     <body>
@@ -1736,10 +2563,13 @@
 
         <div id="map"></div>
 
-        <!-- THANH CHUYỂN ĐỔI 3 CHẾ ĐỘ NGƯỜI DÙNG (HIỆN TRƯỜNG - QUẢN LÝ GIS - THỂ THAO) -->
+        <!-- THANH CHUYỂN ĐỔI 4 CHẾ ĐỘ NGƯỜI DÙNG (HIỆN TRƯỜNG - ĐO ĐẠC THỰC ĐỊA - QUẢN LÝ GIS - THỂ THAO) -->
         <div id="role-switcher" aria-label="Chuyển đổi chế độ người dùng">
             <button type="button" class="role-btn" data-target-role="worker" title="Giao diện tối giản, chữ to ngoài nắng cho Công nhân hiện trường">
                 👷 <span>Hiện trường</span>
+            </button>
+            <button type="button" class="role-btn" data-target-role="survey" title="Bộ công cụ Đo đạc Thực địa chuyên sâu: Vẽ Điểm/Đường/Vùng/Chữ nhật/Tròn, Kiểu dáng GIS, Sửa đỉnh & Bảng thuộc tính">
+                📐 <span>Đo đạc</span>
             </button>
             <button type="button" class="role-btn active" data-target-role="gis" title="Đầy đủ công cụ Quản lý GIS, Kho bản đồ KMZ, Đo vẽ & Trích xuất hàng loạt">
                 💻 <span>Quản lý GIS</span>
@@ -1747,6 +2577,128 @@
             <button type="button" class="role-btn" data-target-role="fitness" title="Chế độ Thể thao & Cộng đồng: Đo Pace, Calo, Độ dốc & Phản ánh sự cố">
                 🏃 <span>Thể thao</span>
             </button>
+        </div>
+
+        <!-- NÚT BẬT/TẮT CHẾ ĐỘ BẢN ĐỒ THOÁNG (ẨN/HIỆN NHANH CÁC NÚT NỔI 2 BÊN TRÊN DI ĐỘNG) -->
+        <button type="button" id="btn-clean-map-toggle" onclick="toggleCleanMapMode()" title="Ẩn/Hiện các nút công cụ nổi hai bên để xem bản đồ rộng rãi">
+            👁️
+        </button>
+
+        <!-- VIÊN THUỐC THỜI TIẾT TRỰC TIẾP (LIVE WEATHER PILL) CHO CẢ 3 NHÓM NGƯỜI DÙNG -->
+        <div id="live-weather-pill" class="hazard-safe" onclick="toggleWeatherInfo()" title="Nhấn để mở chi tiết Dự báo thời tiết, Gió giật, Tia UV & Chất lượng không khí">
+            <span id="wp-temp-icon">⛅ --°C</span>
+            <span class="wp-sep">|</span>
+            <span id="wp-rain-prob">🌧️ Mưa: --%</span>
+            <span class="wp-sep">|</span>
+            <span id="wp-wind-gust">💨 Gió: -- m/s</span>
+            <span class="wp-sep ui-fitness-only">|</span>
+            <span id="wp-uv-aqi" class="ui-fitness-only">☀️ UV: -- · AQI: --</span>
+            <span id="wp-safety-badge" class="wp-badge safe">🟢 An toàn</span>
+        </div>
+
+        <!-- THANH CẢNH BÁO AN TOÀN LAO ĐỘNG & RỦI RO CÂY XANH TỰ ĐỘNG -->
+        <div id="weather-safety-alert-banner">
+            <span id="weather-safety-alert-text">⚠️ CẢNH BÁO THỜI TIẾT NGUY HIỂM: Gió giật mạnh / Mưa dông lớn!</span>
+            <button type="button" onclick="document.getElementById('weather-safety-alert-banner').style.display='none'" style="background:rgba(0,0,0,0.25); color:#fff; border:none; border-radius:999px; padding:3px 8px; font-size:11px; cursor:pointer; flex-shrink:0;">Đóng</button>
+        </div>
+
+        <!-- TRÌNH PHÁT TỰ ĐỘNG 64 LỚP KMZ DỰ BÁO 16 NGÀY (TIMELINE PLAYER DÀNH CHO QUẢN LÝ GIS) -->
+        <div id="forecast-16d-player">
+            <div class="f16-header">
+                <span>🌧️ Dự báo Mưa & Khí tượng 16 Ngày (GFS)</span>
+                <span class="f16-time-badge" id="f16-current-label">+6h (Đang chờ)</span>
+                <button type="button" onclick="close16DayForecastPlayer()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; line-height:1;">×</button>
+            </div>
+            <div class="f16-controls-row">
+                <button type="button" class="f16-btn" id="btn-f16-play" onclick="togglePlay16DayForecast()">▶️ Phát</button>
+                <button type="button" class="f16-btn" onclick="step16DayForecast(-1)" title="Lùi 6 giờ">⏮ -6h</button>
+                <input type="range" class="f16-slider" id="f16-timeline-slider" min="0" max="63" value="0" oninput="onSlide16DayForecast(this.value)">
+                <button type="button" class="f16-btn" onclick="step16DayForecast(1)" title="Tiến 6 giờ">+6h ⏭</button>
+                <button type="button" class="f16-btn" id="btn-f16-speed" onclick="cycle16DaySpeed()" title="Tốc độ phát">1x</button>
+            </div>
+            <div class="f16-legend-bar">
+                <span>Mưa nhẹ</span>
+                <div class="rain-gradient-bar"></div>
+                <span>Mưa rất to / Dông bão</span>
+                <span id="f16-preload-status" style="margin-left:8px; color:#38bdf8;">● Sẵn sàng</span>
+            </div>
+        </div>
+
+        <!-- THANH CÔNG CỤ ĐO ĐẠC THỰC ĐỊA & BIÊN TẬP HÌNH HỌC GIS CHUYÊN SÂU (SURVEYOR DOCK) -->
+        <div class="ui-survey-dock" id="surveyor-bottom-dock">
+            <div class="survey-dock-header-bar">
+                <span>📐 Bàn phím Đo đạc & Biên tập GIS</span>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" class="btn-collapse-survey-dock" onclick="captureGpsSurveyPointOrVertex()" style="background:#0284c7; border-color:#7dd3fc;">🎯 Chốt GPS</button>
+                    <button type="button" class="btn-collapse-survey-dock" id="btn-toggle-survey-dock" onclick="toggleSurveyorDockCollapse()">▼ Thu gọn</button>
+                </div>
+            </div>
+            <div class="survey-dock-top">
+                <div class="survey-style-bar">
+                    <span>🎨 Màu:</span>
+                    <span class="survey-color-swatch active" data-color="#16a34a" style="background:#16a34a;" title="Xanh lá (Cây xanh/Thảm cỏ)"></span>
+                    <span class="survey-color-swatch" data-color="#2563eb" style="background:#2563eb;" title="Xanh dương (Cấp thoát nước/Hạ tầng)"></span>
+                    <span class="survey-color-swatch" data-color="#dc2626" style="background:#dc2626;" title="Đỏ (Sự cố/Cảnh báo/Cây nguy hiểm)"></span>
+                    <span class="survey-color-swatch" data-color="#f59e0b" style="background:#f59e0b;" title="Vàng cam (Đang duy tu/Khảo sát)"></span>
+                    <span class="survey-color-swatch" data-color="#9333ea" style="background:#9333ea;" title="Tím (Ranh giới công viên/Mảng xanh)"></span>
+                    <span class="survey-color-swatch" data-color="#0f172a" style="background:#0f172a;" title="Đen (Mốc tọa độ/Hố ga)"></span>
+                    <input type="color" id="survey-custom-color" value="#16a34a" title="Chọn màu tùy ý" style="width:22px; height:22px; border:none; padding:0; background:none; cursor:pointer;">
+                </div>
+                <div class="survey-style-bar">
+                    <span>Biểu tượng:</span>
+                    <select id="survey-point-symbol" class="survey-select-mini" title="Chọn kiểu biểu tượng Điểm mốc">
+                        <option value="🌳">🌳 Cây xanh</option>
+                        <option value="🌴">🌴 Cây cổ thụ</option>
+                        <option value="⚠️">⚠️ Sự cố/Sâu bệnh</option>
+                        <option value="🪓">🪓 Cây cần cắt tỉa</option>
+                        <option value="📍">📍 Mốc tọa độ</option>
+                        <option value="💧">💧 Điểm ngập/Van nước</option>
+                        <option value="💡">💡 Trụ đèn/Hạ tầng</option>
+                        <option value="🌺">🌺 Bồn hoa/Tiểu cảnh</option>
+                    </select>
+                    <span>Nét:</span>
+                    <select id="survey-line-dash" class="survey-select-mini" title="Chọn kiểu đường kẻ viền">
+                        <option value="solid">━━ Nét liền</option>
+                        <option value="dashed">╌╌ Nét đứt</option>
+                        <option value="dotted">┈┈ Nét chấm</option>
+                    </select>
+                    <select id="survey-line-weight" class="survey-select-mini" title="Độ dày nét vẽ">
+                        <option value="2"> mảnh (2px)</option>
+                        <option value="4" selected>vừa (4px)</option>
+                        <option value="6">đậm (6px)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="survey-tools-row">
+                <button type="button" class="survey-tool-btn" id="btn-surv-point" onclick="activateSurveyTool('marker')" title="Chấm Điểm (Point) trên bản đồ">
+                    <span class="s-ico">📍</span><span>Điểm</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-line" onclick="activateSurveyTool('polyline')" title="Vẽ Đường / Đo chiều dài (Polyline)">
+                    <span class="s-ico">📏</span><span>Đường</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-poly" onclick="activateSurveyTool('polygon')" title="Vẽ Vùng đa giác / Đo diện tích (Polygon)">
+                    <span class="s-ico">📐</span><span>Đa giác</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-rect" onclick="activateSurveyTool('rectangle')" title="Vẽ Hình chữ nhật / Ô tiêu chuẩn (Rectangle)">
+                    <span class="s-ico">▭</span><span>Chữ nhật</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-circle" onclick="activateSurveyTool('circle')" title="Vẽ Vùng bán kính tán cây / Hành lang (Circle)">
+                    <span class="s-ico">⭕</span><span>Bán kính</span>
+                </button>
+                <button type="button" class="survey-tool-btn gps-btn" id="btn-surv-gps-vertex" onclick="captureGpsSurveyPointOrVertex()" title="Chốt tọa độ GPS thực tế hiện tại vào Điểm hoặc Đỉnh đang vẽ">
+                    <span class="s-ico">🎯</span><span>Chốt GPS</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-coord-input" onclick="openManualCoordSurveyModal()" title="Nhập tọa độ chính xác hoặc tạo vòng đệm (Buffer)">
+                    <span class="s-ico">🔢</span><span>Nhập TĐ</span>
+                </button>
+                <button type="button" class="survey-tool-btn" id="btn-surv-edit-vertices" onclick="toggleGlobalVertexEditMode()" title="Bật/Tắt chế độ kéo sửa đỉnh (Edit Vertices) toàn bộ đối tượng">
+                    <span class="s-ico">✏️</span><span id="lbl-surv-edit-btn">Sửa đỉnh</span>
+                </button>
+                <button type="button" class="survey-tool-btn attr-btn" id="btn-surv-attr-table" onclick="openGisAttributeTableModal()" title="Mở Bảng thuộc tính GIS & Xuất GeoJSON/KML/CSV">
+                    <span class="s-ico">📋</span><span>Bảng (<b id="surv-feature-count">0</b>)</span>
+                </button>
+            </div>
         </div>
 
         <!-- THANH 3 NÚT THAO TÁC 1 CHẠM DƯỚI ĐÁY MÀN HÌNH (CHỈ HIỆN Ở CHẾ ĐỘ CÔNG NHÂN HIỆN TRƯỜNG) -->
@@ -1784,7 +2736,10 @@
 
         <div id="tracking-control-panel" style="display: none;">
             <div class="tracking-header">
-                <h4>🏃‍♂️ Lưu Hành Trình</h4>
+                <div style="display:flex; align-items:center;">
+                    <h4>🏃‍♂️ Hành trình</h4>
+                    <span id="track-mini-summary" class="track-mini-summary">0.00m · 00:00</span>
+                </div>
                 <div class="tracking-header-tools">
                     <button class="tracking-tool-btn" id="btn-track-header-cam" title="Chụp ảnh hiện trường Timemark gắn vào hành trình" style="background:#fff7ed; color:#ea580c; border-color:#fdba74;">📸</button>
                     <button class="tracking-tool-btn" id="btn-open-share-track" title="Chia sẻ vị trí tức thời hoặc cả hành trình" style="background:#e0f2fe; color:#0284c7; border-color:#7dd3fc;">📤</button>
@@ -1930,7 +2885,8 @@
             <div class="support-row">
                 <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" title="Mời Em Ếch Xinh ly cà phê">☕</a>
                 <a href="#" id="donate-btn" title="Hỗ trợ Em Ếch Xinh duy trì">❤️</a>
-                <button id="info-btn" title="Ẩn/Hiện bảng thông tin thời tiết">i</button>
+                <button id="info-btn" title="Ẩn/Hiện bảng thông tin thời tiết chi tiết">⛅</button>
+                <button id="btn-open-f16-player" class="ui-gis-only" onclick="open16DayForecastPlayer()" title="Mở Trình phát tự động 64 mốc Dự báo mưa 16 ngày" style="background:#eff6ff !important; color:#1d4ed8 !important; font-size:16px; border:1px solid #93c5fd !important;">🌧️</button>
             </div>
         </div>
 
@@ -2297,6 +3253,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <div style="font-weight:700; color:#fde047; font-size:11.5px;" id="tm-live-project-label">KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG</div>
                         <div id="tm-live-note-label" style="color:#e2e8f0; font-size:11px; display:none;"></div>
                         <div id="tm-live-addr-label" style="color:#ffffff; margin-top:2px;">Đang xác định địa chỉ hiện trường...</div>
+                        <div id="tm-live-weather-label" style="color:#86efac; font-weight:700; font-size:11px; margin-top:2px;">⛅ Thời tiết: Đang đồng bộ khí tượng tại điểm chụp...</div>
                         <div id="tm-live-gps-label" style="color:#93c5fd; font-family:'Consolas',monospace; font-weight:700; margin-top:2px;">GPS: Đang định vị...</div>
                     </div>
                 </div>
@@ -2356,6 +3313,188 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             <button type="button" class="btn-voice-note" id="btn-tm-voice-note" title="Nhập ghi chú bằng giọng nói tiếng Việt">🎙️ Đọc</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Biên tập Thuộc tính & Kiểu mẫu Đối tượng Đo đạc GIS (Feature Inspector & Styler) -->
+        <div id="gis-feature-style-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 500px;">
+                <button class="modal-close-btn" onclick="$('#gis-feature-style-modal').removeClass('visible')">×</button>
+                <h3 style="color:#6d28d9; display:flex; align-items:center; gap:6px;">🎨 Biên tập Đối tượng & Kiểu mẫu GIS</h3>
+                <input type="hidden" id="gis-edit-stamp-id">
+
+                <div style="font-size:11.5px; color:#475569; margin-bottom:6px; font-weight:700;">⚡ Chọn nhanh Mẫu đối tượng chuẩn (Symbology Presets):</div>
+                <div class="style-preset-grid">
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('tree_good', 'Cây bóng mát', '#16a34a', '🌳', 'solid', 4)">🌳 Cây xanh tốt</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('tree_risk', 'Cây sâu bệnh/Nguy hiểm', '#dc2626', '⚠️', 'dashed', 4)">⚠️ Cây nguy hiểm</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('grass_zone', 'Thảm cỏ / Mảng xanh', '#22c55e', '🌺', 'solid', 3)">🌿 Mảng xanh/Cỏ</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('pipe_line', 'Tuyến ống tưới / Thoát nước', '#2563eb', '💧', 'dashed', 4)">💧 Tuyến cấp/thoát</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('park_bound', 'Ranh giới Công viên', '#9333ea', '📍', 'dotted', 5)">🏞️ Ranh công viên</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('work_area', 'Khu vực đang Duy tu', '#f59e0b', '🪓', 'dashed', 4)">🪓 Khu vực duy tu</button>
+                </div>
+
+                <div class="tm-meta-form" style="margin-top:8px;">
+                    <div>
+                        <label for="gis-feat-code">🏷️ Mã đối tượng (ID):</label>
+                        <input type="text" id="gis-feat-code" placeholder="VD: CX-001, Tuyen-02...">
+                    </div>
+                    <div>
+                        <label for="gis-feat-group">📂 Nhóm / Phân loại:</label>
+                        <select id="gis-feat-group" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12.5px;">
+                            <option value="Cây xanh đơn lẻ">🌳 Cây xanh đơn lẻ</option>
+                            <option value="Tuyến cây xanh">🛣️ Tuyến cây xanh</option>
+                            <option value="Mảng xanh / Thảm cỏ">🌿 Mảng xanh / Thảm cỏ</option>
+                            <option value="Bồn hoa / Tiểu cảnh">🌺 Bồn hoa / Tiểu cảnh</option>
+                            <option value="Hệ thống tưới / Thoát nước">💧 Hệ thống tưới / Thoát nước</option>
+                            <option value="Điểm ngập / Sự cố">⚠️ Điểm ngập / Sự cố</option>
+                            <option value="Ranh giới quản lý">📐 Ranh giới quản lý</option>
+                        </select>
+                    </div>
+                    <div class="full-col">
+                        <label for="gis-feat-name">📋 Tên đối tượng hiển thị trên bản đồ:</label>
+                        <input type="text" id="gis-feat-name" placeholder="Nhập tên đối tượng (VD: Thảm cỏ Khu A, Cây Sao đen số 15)...">
+                    </div>
+                    <div>
+                        <label for="gis-feat-status">📌 Tình trạng hiện trường:</label>
+                        <select id="gis-feat-status" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12.5px;">
+                            <option value="Bình thường / Tốt">🟢 Bình thường / Tốt</option>
+                            <option value="Cần cắt tỉa / Duy tu">🟡 Cần cắt tỉa / Duy tu</option>
+                            <option value="Sâu bệnh / Nghiêng nguy hiểm">🔴 Sâu bệnh / Nguy hiểm</option>
+                            <option value="Mới trồng / Đang theo dõi">🔵 Mới trồng / Đang theo dõi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="gis-feat-symbol">🎯 Biểu tượng (Nếu là Điểm):</label>
+                        <select id="gis-feat-symbol" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12.5px;">
+                            <option value="🌳">🌳 Cây xanh</option>
+                            <option value="🌴">🌴 Cây cổ thụ</option>
+                            <option value="⚠️">⚠️ Cảnh báo / Sự cố</option>
+                            <option value="🪓">🪓 Cần cắt tỉa</option>
+                            <option value="📍">📍 Mốc tọa độ</option>
+                            <option value="💧">💧 Nước / Ngập</option>
+                            <option value="💡">💡 Đèn / Hạ tầng</option>
+                            <option value="🌺">🌺 Bồn hoa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="gis-feat-color">🎨 Màu nét vẽ / Biểu tượng:</label>
+                        <input type="color" id="gis-feat-color" value="#16a34a" style="height:34px; padding:2px; cursor:pointer;">
+                    </div>
+                    <div>
+                        <label for="gis-feat-fill-color">🪣 Màu tô vùng (Fill Color):</label>
+                        <input type="color" id="gis-feat-fill-color" value="#22c55e" style="height:34px; padding:2px; cursor:pointer;">
+                    </div>
+                    <div>
+                        <label for="gis-feat-dash">〰️ Kiểu nét viền:</label>
+                        <select id="gis-feat-dash" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12.5px;">
+                            <option value="solid">━━ Nét liền (Solid)</option>
+                            <option value="dashed">╌╌ Nét đứt (Dashed)</option>
+                            <option value="dotted">┈┈ Nét chấm (Dotted)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="gis-feat-weight">📏 Độ dày nét & Độ mờ vùng:</label>
+                        <div style="display:flex; gap:4px;">
+                            <input type="number" id="gis-feat-weight" min="1" max="12" value="4" title="Độ dày nét (px)" style="width:50%;">
+                            <input type="number" id="gis-feat-opacity" min="0.05" max="0.95" step="0.05" value="0.3" title="Độ đậm màu tô (0.05 - 0.95)" style="width:50%;">
+                        </div>
+                    </div>
+                    <div class="full-col">
+                        <label for="gis-feat-notes">✍️ Ghi chú kỹ thuật (Kích thước, đường kính gốc, chiều cao, khối lượng...):</label>
+                        <input type="text" id="gis-feat-notes" placeholder="VD: Đường kính gốc 45cm, cao 12m, cần mé nhánh phía đường điện...">
+                    </div>
+                    <div class="full-col" style="display:flex; align-items:center; justify-content:space-between; padding-top:4px;">
+                        <label style="margin:0; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="checkbox" id="gis-feat-show-label" checked style="width:16px; height:16px; accent-color:#6d28d9;">
+                            <span>Hiển thị nhãn tên & thông số đo cố định trên bản đồ</span>
+                        </label>
+                        <span id="gis-feat-metric-preview" style="font-family:Consolas,monospace; font-weight:800; color:#1d4ed8; font-size:12px;"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="margin-top:14px; justify-content:space-between;">
+                    <button type="button" class="btn-action" style="background:#fee2e2; color:#dc2626;" onclick="deleteCurrentEditingFeature()">🗑️ Xóa</button>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-action btn-orange" onclick="enableSingleFeatureVertexEdit()">✏️ Sửa hình học</button>
+                        <button type="button" class="btn-action btn-green" onclick="saveGisFeatureStyleAndAttributes()">💾 Áp dụng & Lưu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Bảng Thuộc tính Đối tượng Đo đạc GIS (GIS Attribute Table & Multi-Exporter) -->
+        <div id="gis-attribute-table-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 680px;">
+                <button class="modal-close-btn" onclick="$('#gis-attribute-table-modal').removeClass('visible')">×</button>
+                <h3 style="color:#0f172a; display:flex; align-items:center; justify-content:space-between; padding-right:28px;">
+                    <span>📋 Bảng Thuộc tính Đối tượng Đo đạc Thực địa</span>
+                    <span style="font-size:12px; background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:999px;" id="gis-table-summary-badge">0 đối tượng</span>
+                </h3>
+                <p style="font-size:12px; color:#64748b; margin:-4px 0 8px 0;">Quản lý danh sách Điểm, Đường, Vùng đã thu thập; nhấn vào từng dòng để phóng tới vị trí hoặc chỉnh sửa kiểu dáng.</p>
+
+                <div class="gis-attr-table-wrap">
+                    <table class="gis-attr-table">
+                        <thead>
+                            <tr>
+                                <th>Mã ID</th>
+                                <th>Tên đối tượng</th>
+                                <th>Loại hình học</th>
+                                <th>Nhóm</th>
+                                <th>Thông số đo</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gis-attr-table-tbody">
+                            <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:18px;">Chưa có đối tượng đo đạc nào. Hãy dùng thanh công cụ để chấm Điểm, vẽ Đường hoặc Vùng.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="export-format-bar" style="margin-top:12px;">
+                    <button type="button" class="btn-export-fmt" style="background:#7c3aed;" onclick="exportSurveyFeaturesGeoJSON()" title="Xuất chuẩn GeoJSON (Giữ nguyên toàn bộ thuộc tính & màu sắc cho QGIS/ArcGIS)">
+                        🌐 Xuất GeoJSON (QGIS)
+                    </button>
+                    <button type="button" class="btn-export-fmt" style="background:#0284c7;" onclick="exportSurveyFeaturesStyledKML()" title="Xuất tệp KML có đầy đủ màu sắc, độ dày nét và bảng thuộc tính">
+                        📐 Xuất KML (Có Style)
+                    </button>
+                    <button type="button" class="btn-export-fmt" style="background:#16a34a;" onclick="exportSurveyFeaturesCSV()" title="Xuất bảng thống kê khối lượng ra Excel CSV">
+                        📊 Xuất Excel (CSV)
+                    </button>
+                    <button type="button" class="btn-export-fmt" style="background:#ea580c;" onclick="$('#gis-attribute-table-modal').removeClass('visible'); $('#custom-export-kml-btn').click();" title="Lưu toàn bộ lên Kho Google Drive">
+                        ☁️ Lưu lên Drive
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Nhập tọa độ Chính xác & Tạo Vùng đệm (Precision Coordinate & Buffer Tool) -->
+        <div id="gis-manual-coord-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 440px;">
+                <button class="modal-close-btn" onclick="$('#gis-manual-coord-modal').removeClass('visible')">×</button>
+                <h3 style="color:#0284c7;">🔢 Nhập Tọa độ Chính xác & Tạo Vùng bán kính</h3>
+                <p style="font-size:12px; color:#64748b; margin-top:-4px;">Tạo Điểm mốc hoặc Vùng tròn (tán cây / hành lang bảo vệ) theo tọa độ GPS chính xác.</p>
+                <div class="tm-meta-form">
+                    <div>
+                        <label for="manual-lat-input">Vĩ độ (Latitude - N):</label>
+                        <input type="number" step="any" id="manual-lat-input" placeholder="VD: 10.823150">
+                    </div>
+                    <div>
+                        <label for="manual-lng-input">Kinh độ (Longitude - E):</label>
+                        <input type="number" step="any" id="manual-lng-input" placeholder="VD: 106.758210">
+                    </div>
+                    <div class="full-col">
+                        <label for="manual-name-input">Tên Điểm mốc / Vùng bán kính:</label>
+                        <input type="text" id="manual-name-input" placeholder="VD: Mốc ranh giới M-01 / Vùng tán cây cổ thụ...">
+                    </div>
+                    <div class="full-col">
+                        <label for="manual-buffer-radius">Bán kính vùng đệm (Mét - Nhập 0 nếu chỉ tạo Điểm mốc):</label>
+                        <input type="number" min="0" max="5000" step="0.5" id="manual-buffer-radius" value="0" placeholder="Nhập bán kính (m), VD: 5">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-action btn-gray" onclick="fillCurrentGpsToManualInput()">📍 Lấy GPS hiện tại</button>
+                    <button type="button" class="btn-action btn-blue" onclick="createFeatureFromManualCoord()">✅ Tạo đối tượng</button>
                 </div>
             </div>
         </div>
@@ -2490,6 +3629,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         <div style="font-weight: 700; font-size: 12.5px; color: #166534; margin-bottom: 6px;">👤 Chọn giao diện phù hợp với vai trò của bạn:</div>
                         <select id="init-role-select" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #86efac; font-size: 13px; font-weight: 600; color: #0f172a; background: #ffffff; outline: none;">
                             <option value="gis">💻 Cán bộ Kỹ thuật / Quản lý GIS (Đầy đủ công cụ bản đồ)</option>
+                            <option value="survey">📐 Đội Đo đạc Thực địa (Thu thập Điểm/Đường/Vùng, Kiểu dáng & Sửa đỉnh GIS)</option>
                             <option value="worker">👷 Công nhân Hiện trường / Duy tu (Chữ to, 3 nút lớn 1 chạm)</option>
                             <option value="fitness">🏃 Thể thao & Cộng đồng (Đo Pace, Calo, Độ dốc & Phản ánh)</option>
                         </select>
@@ -5211,7 +6351,8 @@ ${fullUrl}`;
             ctx.font = '20px system-ui, sans-serif';
             const actText = $('#track-activity-type option:selected').text() || 'Hành trình thực địa GPS';
             const dateStr = (extState.trackingStartTime || new Date()).toLocaleString('vi-VN');
-            ctx.fillText(`${actText}   |   🕒 ${dateStr}`, 45, 92);
+            const weatherCardStr = (typeof window.getShortWeatherForShareCard === 'function') ? window.getShortWeatherForShareCard() : '';
+            ctx.fillText(`${actText}  |  🕒 ${dateStr}${weatherCardStr ? '  |  ' + weatherCardStr : ''}`, 45, 92);
 
             const mapBox = { x: 45, y: 118, w: 810, h: 390 };
             ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -6883,10 +8024,14 @@ Hành trình đã được ẩn tự động để bảo vệ quyền riêng tư
             const maxTextW = targetW - pad * 3.5;
             const addrLines = wrapCanvasTextLines(ctx, `Đ/c: ${addrText}`, maxTextW).slice(0, 2);
 
+            const weatherStampText = (typeof window.getCurrentWeatherStampString === 'function')
+                ? window.getCurrentWeatherStampString()
+                : '';
             const lineSpacing = Math.round(28 * scale);
             const clockBlockH = Math.round(64 * scale);
             let extraLinesCount = 2 + addrLines.length; // Dự án + Tọa độ + Địa chỉ
             if (noteText) extraLinesCount += 1;
+            if (weatherStampText) extraLinesCount += 1;
 
             const boxH = clockBlockH + extraLinesCount * lineSpacing + Math.round(36 * scale);
             const boxY = targetH - boxH - pad;
@@ -6958,6 +8103,14 @@ Hành trình đã được ẩn tự động để bảo vệ quyền riêng tư
                 cursorY += lineSpacing;
                 ctx.fillText(line, textStartX, cursorY);
             });
+
+            // Vẽ dòng thông số Thời tiết thực tế tại điểm chụp (Nhiệt độ, Gió giật, UV)
+            if (weatherStampText) {
+                cursorY += lineSpacing;
+                ctx.font = `600 ${Math.round(19 * scale)}px system-ui, Arial, sans-serif`;
+                ctx.fillStyle = '#86efac';
+                ctx.fillText(weatherStampText, textStartX, cursorY);
+            }
 
             // Vẽ Tọa độ GPS chuẩn N/E (Tương thích 100% với bộ đọc OCR Timemark)
             cursorY += lineSpacing;
@@ -7957,6 +9110,1494 @@ ${photoPlacemarksKml}</Document>
         setupLazyDriveLayer('1I17cM14OpuxsOnMKYrLy69Es6CX4cb9_', layer_GiamSat_Khong, '4. GS không');
 
         // =========================================================================
+        // BỔ SUNG MỚI: BỘ ĐIỀU PHỐI BỐ CỤC ĐỘNG & CHỐNG CHỒNG LẤN CÔNG CỤ TRÊN DI ĐỘNG
+        // (Dynamic Viewport Offset Engine, Mutual Panel Exclusion, Collapsible Docks,
+        //  Clean Map Mode, Mini Tracking Pill & Layer Tree Auto-Close)
+        // =========================================================================
+        (function() {
+            // 1. Hàm tính toán tự động khoảng đệm Đỉnh (--dynamic-top-offset) & Đáy (--dynamic-bottom-offset)
+            window.updateDynamicLayoutOffsets = function() {
+                const isMobile = window.innerWidth <= 767;
+                let maxTopBottom = isMobile ? 88 : 98;
+
+                const topIds = [
+                    'search-ui-container',
+                    'role-switcher',
+                    'live-weather-pill',
+                    'weather-safety-alert-banner',
+                    'draw-edit-overlay-container'
+                ];
+
+                topIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const style = window.getComputedStyle(el);
+                    if (style.display !== 'none' && style.visibility !== 'hidden' && parseFloat(style.opacity) > 0.1) {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.height > 0 && rect.bottom > maxTopBottom && rect.top < 220) {
+                            maxTopBottom = rect.bottom;
+                        }
+                    }
+                });
+
+                const computedTopOffset = Math.min(235, Math.max(isMobile ? 92 : 104, Math.round(maxTopBottom + 8)));
+                document.documentElement.style.setProperty('--dynamic-top-offset', computedTopOffset + 'px');
+
+                // Tính toán chiều cao các thanh công cụ dưới đáy màn hình
+                let dockHeight = 0;
+                const workerBar = document.getElementById('worker-bottom-bar');
+                const surveyDock = document.getElementById('surveyor-bottom-dock');
+                const f16Player = document.getElementById('forecast-16d-player');
+
+                if (workerBar && window.getComputedStyle(workerBar).display !== 'none') {
+                    dockHeight = Math.max(dockHeight, workerBar.getBoundingClientRect().height + 6);
+                }
+                if (surveyDock && window.getComputedStyle(surveyDock).display !== 'none') {
+                    dockHeight = Math.max(dockHeight, surveyDock.getBoundingClientRect().height + 12);
+                }
+
+                // Đặt vị trí cho Trình phát dự báo 16 ngày luôn nằm phía trên thanh Dock hiện tại
+                const playerBottom = Math.max(16, Math.round(dockHeight + 8));
+                document.documentElement.style.setProperty('--dynamic-player-bottom', playerBottom + 'px');
+
+                let totalBottomOffset = Math.max(20, Math.round(dockHeight + 10));
+                if (f16Player && window.getComputedStyle(f16Player).display !== 'none') {
+                    const pRect = f16Player.getBoundingClientRect();
+                    totalBottomOffset = Math.max(totalBottomOffset, Math.round(playerBottom + pRect.height + 10));
+                }
+
+                document.documentElement.style.setProperty('--dynamic-bottom-offset', totalBottomOffset + 'px');
+            };
+
+            // 2. Cơ chế chống chồng lấn giữa các Bảng thông tin nổi trên thiết bị di động
+            window.minimizeTrackingPanelToPill = function() {
+                const panel = $('#tracking-control-panel');
+                if (panel.is(':visible') && !panel.hasClass('minimized')) {
+                    panel.addClass('minimized');
+                    panel.css({ left: '', top: '' });
+                    $('#btn-minimize-track').text("+").attr("title", "Phóng to bảng hành trình");
+                }
+            };
+
+            window.coordinateFloatingPanels = function(activePanel) {
+                const isMobile = window.innerWidth <= 767;
+                // Thu gọn cây lớp bản đồ nếu đang xổ ra
+                $('.leaflet-control-layers').removeClass('leaflet-control-layers-expanded');
+
+                if (!isMobile) {
+                    setTimeout(window.updateDynamicLayoutOffsets, 60);
+                    return;
+                }
+
+                if (activePanel === 'weather') {
+                    $('#route-summary-modal').hide();
+                    window.minimizeTrackingPanelToPill();
+                } else if (activePanel === 'route') {
+                    hideWeatherInfoPanel();
+                    window.minimizeTrackingPanelToPill();
+                } else if (activePanel === 'tracking') {
+                    hideWeatherInfoPanel();
+                    $('#route-summary-modal').hide();
+                    // Đảm bảo bảng Lưu hành trình không bị kéo lệch khỏi màn hình di động
+                    $('#tracking-control-panel').css({ left: '', top: '' });
+                } else if (activePanel === 'drawing') {
+                    hideWeatherInfoPanel();
+                    window.minimizeTrackingPanelToPill();
+                }
+
+                setTimeout(window.updateDynamicLayoutOffsets, 60);
+            };
+
+            // 3. Thu gọn / Mở rộng Thanh Dock Đo đạc Thực địa (#surveyor-bottom-dock)
+            window.toggleSurveyorDockCollapse = function(forceCollapse) {
+                const dock = $('#surveyor-bottom-dock');
+                const btn = $('#btn-toggle-survey-dock');
+                const shouldCollapse = (typeof forceCollapse === 'boolean') ? forceCollapse : !dock.hasClass('dock-collapsed');
+
+                dock.toggleClass('dock-collapsed', shouldCollapse);
+                btn.html(shouldCollapse ? '▲ Mở rộng' : '▼ Thu gọn');
+                setTimeout(window.updateDynamicLayoutOffsets, 60);
+            };
+
+            // 4. Bật / Tắt chế độ "👁️ Bản đồ Thoáng" (Ẩn nhanh 2 cột nút nổi hai bên khi cần quan sát bản đồ)
+            window.toggleCleanMapMode = function() {
+                const isClean = document.body.classList.toggle('clean-map-mode');
+                $('#btn-clean-map-toggle').toggleClass('active', isClean);
+                $('#btn-clean-map-toggle').text(isClean ? '🛠️' : '👁️');
+                showToast(isClean ? "👁️ Đã ẩn gọn các nút nổi hai bên. Nhấn 🛠️ để hiện lại!" : "🛠️ Đã hiển thị đầy đủ các nút công cụ!", "info");
+                setTimeout(window.updateDynamicLayoutOffsets, 60);
+            };
+
+            // 5. Ghi đè & nối sự kiện vào các hàm mở Bảng Thời tiết, Chế độ Vẽ, Trình phát 16 ngày & Lưu hành trình
+            const origToggleWeather = window.toggleWeatherInfo;
+            window.toggleWeatherInfo = function() {
+                if (typeof origToggleWeather === 'function') origToggleWeather();
+                if (!$('#weather-info').hasClass('hidden')) {
+                    window.coordinateFloatingPanels('weather');
+                }
+            };
+            $('#info-btn').off('click').on('click', window.toggleWeatherInfo);
+
+            const origShowDrawHelper = window.showDrawHelperUI;
+            window.showDrawHelperUI = function(handler, isLineOrPoly) {
+                document.body.classList.add('is-drawing-active');
+                if (typeof origShowDrawHelper === 'function') origShowDrawHelper(handler, isLineOrPoly);
+                window.coordinateFloatingPanels('drawing');
+            };
+
+            const origHideDrawHelper = window.hideDrawHelperUI;
+            window.hideDrawHelperUI = function() {
+                document.body.classList.remove('is-drawing-active');
+                if (typeof origHideDrawHelper === 'function') origHideDrawHelper();
+                setTimeout(window.updateDynamicLayoutOffsets, 60);
+            };
+
+            // Nâng cấp nút Thu nhỏ / Phóng to bảng Lưu Hành Trình
+            $('#btn-minimize-track').off('click').on('click', function(e) {
+                e.stopPropagation();
+                const panel = $('#tracking-control-panel');
+                panel.toggleClass('minimized');
+                panel.css({ left: '', top: '' });
+                if (panel.hasClass('minimized')) {
+                    $(this).text("+").attr("title", "Phóng to bảng");
+                } else {
+                    $(this).text("_").attr("title", "Thu nhỏ bảng");
+                    window.coordinateFloatingPanels('tracking');
+                }
+            });
+
+            // Khi mở Trình phát 16 ngày trên di động: tự động thu gọn thanh Surveyor Dock nếu đang mở để tránh đè nhau
+            const origOpen16d = window.open16DayForecastPlayer;
+            window.open16DayForecastPlayer = function() {
+                if (window.innerWidth <= 767 && $('#surveyor-bottom-dock').is(':visible')) {
+                    window.toggleSurveyorDockCollapse(true);
+                }
+                if (typeof origOpen16d === 'function') origOpen16d();
+                setTimeout(window.updateDynamicLayoutOffsets, 200);
+            };
+
+            const origClose16d = window.close16DayForecastPlayer;
+            window.close16DayForecastPlayer = function() {
+                if (typeof origClose16d === 'function') origClose16d();
+                setTimeout(window.updateDynamicLayoutOffsets, 200);
+            };
+
+            // 6. Đồng bộ thông số Quãng đường & Thời gian lên Viên thuốc Hành trình thu nhỏ (#track-mini-summary)
+            setInterval(() => {
+                if (extState.isTracking) {
+                    const dTxt = $('#track-dist').text() || '0.0m';
+                    const tTxt = $('#track-time').text() || '00:00';
+                    $('#track-mini-summary').text(`${dTxt} · ${tTxt}`);
+                }
+            }, 1000);
+
+            // 7. Khi chạm vào bản đồ trên di động: Tự động đóng hộp chọn lớp bản đồ (Layer Tree) đang xổ rộng
+            map.on('click movestart', function() {
+                if (window.innerWidth <= 767) {
+                    $('.leaflet-control-layers').removeClass('leaflet-control-layers-expanded');
+                }
+            });
+
+            // 8. Theo dõi sự kiện xoay màn hình, đổi kích thước hoặc đổi chế độ người dùng
+            window.addEventListener('resize', () => {
+                setTimeout(window.updateDynamicLayoutOffsets, 100);
+            });
+            window.addEventListener('orientationchange', () => {
+                setTimeout(window.updateDynamicLayoutOffsets, 250);
+            });
+
+            // Quan sát biến động DOM của các thanh thông báo trên cùng và dưới đáy
+            $(document).ready(function() {
+                setTimeout(window.updateDynamicLayoutOffsets, 300);
+                setTimeout(window.updateDynamicLayoutOffsets, 1500);
+
+                const observer = new MutationObserver(() => {
+                    window.updateDynamicLayoutOffsets();
+                });
+                ['weather-safety-alert-banner', 'draw-edit-overlay-container', 'worker-bottom-bar', 'surveyor-bottom-dock', 'forecast-16d-player'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
+                });
+            });
+        })();
+
+
+        // =========================================================================
+        // BỔ SUNG MỚI: HỆ THỐNG ĐO ĐẠC THỰC ĐỊA & BIÊN TẬP ĐỐI TƯỢNG GIS CHUYÊN SÂU
+        // (Thu thập Điểm/Đường/Đa giác/Chữ nhật/Bán kính, Kiểu mẫu Symbology,
+        //  Sửa đỉnh Vertex Editing, Chốt tọa độ GPS, Bảng thuộc tính & Xuất GeoJSON/KML/CSV)
+        // =========================================================================
+        (function() {
+            window.surveyConfig = {
+                activeColor: '#16a34a',
+                activeFillColor: '#22c55e',
+                activeSymbol: '🌳',
+                activeDash: 'solid', // 'solid' | 'dashed' | 'dotted'
+                activeWeight: 4,
+                activeFillOpacity: 0.30,
+                isGlobalVertexEditing: false,
+                featureCounter: 0
+            };
+
+            // Khởi tạo thêm Handler vẽ Hình chữ nhật (Rectangle) và Hình tròn bán kính (Circle)
+            const drawRectHandler = (L.Draw && L.Draw.Rectangle) ? new L.Draw.Rectangle(map, {
+                shapeOptions: { color: '#16a34a', fillColor: '#22c55e', weight: 3, fillOpacity: 0.3 },
+                metric: true
+            }) : null;
+
+            const drawCircleHandler = (L.Draw && L.Draw.Circle) ? new L.Draw.Circle(map, {
+                shapeOptions: { color: '#16a34a', fillColor: '#22c55e', weight: 3, fillOpacity: 0.3 },
+                metric: true
+            }) : null;
+
+            function getDashArrayFromStyle(dashStyle, weight) {
+                const w = Number(weight) || 4;
+                if (dashStyle === 'dashed') return `${w * 2.5}, ${w * 1.8}`;
+                if (dashStyle === 'dotted') return `${w}, ${w * 1.8}`;
+                return null;
+            }
+
+            // Tạo Icon Điểm GIS tùy chỉnh (Màu sắc + Biểu tượng Emoji/Ký hiệu)
+            window.createGisPointDivIcon = function(color, symbolEmoji) {
+                const safeColor = color || '#16a34a';
+                const safeSym = symbolEmoji || '🌳';
+                return L.divIcon({
+                    className: '',
+                    html: `<div class="gis-custom-point-pin" style="background:${safeColor};"><span>${safeSym}</span></div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30],
+                    popupAnchor: [0, -28]
+                });
+            };
+
+            // Đồng bộ kiểu dáng hiện tại trên thanh Dock vào các bộ vẽ Leaflet.Draw
+            function syncActiveDrawHandlersStyle() {
+                const cfg = window.surveyConfig;
+                const dashArr = getDashArrayFromStyle(cfg.activeDash, cfg.activeWeight);
+                const shapeOpts = {
+                    color: cfg.activeColor,
+                    fillColor: cfg.activeColor,
+                    weight: Number(cfg.activeWeight) || 4,
+                    opacity: 0.95,
+                    fillOpacity: cfg.activeFillOpacity,
+                    dashArray: dashArr
+                };
+
+                if (drawMarkerHandler) {
+                    drawMarkerHandler.setOptions({
+                        icon: window.createGisPointDivIcon(cfg.activeColor, cfg.activeSymbol)
+                    });
+                }
+                if (drawLineHandler) {
+                    drawLineHandler.setOptions({ shapeOptions: shapeOpts });
+                }
+                if (drawPolyHandler) {
+                    drawPolyHandler.setOptions({ shapeOptions: shapeOpts });
+                }
+                if (drawRectHandler) {
+                    drawRectHandler.setOptions({ shapeOptions: shapeOpts });
+                }
+                if (drawCircleHandler) {
+                    drawCircleHandler.setOptions({ shapeOptions: shapeOpts });
+                }
+            }
+
+            // Bắt sự kiện chọn màu, biểu tượng, kiểu nét trên thanh Surveyor Dock
+            $(document).on('click', '.survey-color-swatch', function() {
+                $('.survey-color-swatch').removeClass('active');
+                $(this).addClass('active');
+                const c = $(this).attr('data-color') || '#16a34a';
+                window.surveyConfig.activeColor = c;
+                window.surveyConfig.activeFillColor = c;
+                $('#survey-custom-color').val(c);
+                syncActiveDrawHandlersStyle();
+            });
+
+            $('#survey-custom-color').on('input change', function() {
+                $('.survey-color-swatch').removeClass('active');
+                const c = $(this).val() || '#16a34a';
+                window.surveyConfig.activeColor = c;
+                window.surveyConfig.activeFillColor = c;
+                syncActiveDrawHandlersStyle();
+            });
+
+            $('#survey-point-symbol').on('change', function() {
+                window.surveyConfig.activeSymbol = $(this).val() || '🌳';
+                syncActiveDrawHandlersStyle();
+            });
+
+            $('#survey-line-dash').on('change', function() {
+                window.surveyConfig.activeDash = $(this).val() || 'solid';
+                syncActiveDrawHandlersStyle();
+            });
+
+            $('#survey-line-weight').on('change', function() {
+                window.surveyConfig.activeWeight = parseInt($(this).val(), 10) || 4;
+                syncActiveDrawHandlersStyle();
+            });
+
+            function disableAllSurveyDrawTools() {
+                drawMarkerHandler.disable();
+                drawLineHandler.disable();
+                drawPolyHandler.disable();
+                if (drawRectHandler) drawRectHandler.disable();
+                if (drawCircleHandler) drawCircleHandler.disable();
+                $('.survey-tool-btn').removeClass('active');
+                $('#custom-draw-marker-btn, #custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active');
+                hideDrawHelperUI();
+            }
+
+            // Kích hoạt công cụ vẽ từ thanh Dock Đo đạc Thực địa
+            window.activateSurveyTool = function(toolType) {
+                syncActiveDrawHandlersStyle();
+                const btnMap = {
+                    marker: '#btn-surv-point',
+                    polyline: '#btn-surv-line',
+                    polygon: '#btn-surv-poly',
+                    rectangle: '#btn-surv-rect',
+                    circle: '#btn-surv-circle'
+                };
+                const targetBtn = $(btnMap[toolType]);
+                const wasActive = targetBtn.hasClass('active');
+
+                disableAllSurveyDrawTools();
+                if (wasActive) return;
+
+                targetBtn.addClass('active');
+                if (toolType === 'marker') {
+                    drawMarkerHandler.enable();
+                    showDrawHelperUI(drawMarkerHandler, false);
+                    showToast(`📍 Chạm bản đồ để chấm Điểm (${window.surveyConfig.activeSymbol}) hoặc bấm '🎯 Chốt GPS'.`, "info");
+                } else if (toolType === 'polyline') {
+                    drawLineHandler.enable();
+                    showDrawHelperUI(drawLineHandler, true);
+                    showToast("📏 Chạm các đỉnh để vẽ Tuyến đường / Đo khoảng cách (Hoặc bấm '🎯 Chốt GPS' để thêm đỉnh).", "info");
+                } else if (toolType === 'polygon') {
+                    drawPolyHandler.enable();
+                    showDrawHelperUI(drawPolyHandler, true);
+                    showToast("📐 Chạm các đỉnh để vẽ Đa giác / Đo diện tích.", "info");
+                } else if (toolType === 'rectangle' && drawRectHandler) {
+                    drawRectHandler.enable();
+                    showDrawHelperUI(drawRectHandler, false);
+                    $('#draw-mode-label').text('VẼ HÌNH CHỮ NHẬT:');
+                    showToast("▭ Kéo trên bản đồ để tạo vùng Hình chữ nhật / Ô tiêu chuẩn.", "info");
+                } else if (toolType === 'circle' && drawCircleHandler) {
+                    drawCircleHandler.enable();
+                    showDrawHelperUI(drawCircleHandler, false);
+                    $('#draw-mode-label').text('VẼ VÙNG BÁN KÍNH:');
+                    showToast("⭕ Chạm tâm và kéo ra để vẽ Vùng bán kính tán cây / Hành lang.", "info");
+                }
+            };
+
+            // Tính toán chính xác thông số hình học của một Layer bất kỳ (Tọa độ, Dài, Diện tích, Chu vi, Bán kính)
+            window.computeGisLayerMetrics = function(layer) {
+                if (layer instanceof L.Circle) {
+                    const c = layer.getLatLng();
+                    const r = layer.getRadius();
+                    const area = Math.PI * r * r;
+                    const perim = 2 * Math.PI * r;
+                    return {
+                        geomType: 'Circle',
+                        typeLabel: '⭕ Vùng bán kính',
+                        metricSummary: `R=${r.toFixed(1)}m · S=${formatAreaText(area)}`,
+                        lengthM: perim,
+                        areaM2: area,
+                        radiusM: r,
+                        centerLat: c.lat,
+                        centerLng: c.lng,
+                        vertexCount: 1
+                    };
+                }
+                if (layer instanceof L.Marker) {
+                    const ll = layer.getLatLng();
+                    return {
+                        geomType: 'Point',
+                        typeLabel: '📍 Điểm mốc',
+                        metricSummary: `${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}`,
+                        lengthM: 0,
+                        areaM2: 0,
+                        radiusM: 0,
+                        centerLat: ll.lat,
+                        centerLng: ll.lng,
+                        vertexCount: 1
+                    };
+                }
+                if (layer instanceof L.Polygon) {
+                    const latlngs = layer.getLatLngs()[0] || [];
+                    const area = (latlngs.length >= 3 && L.GeometryUtil && L.GeometryUtil.geodesicArea)
+                        ? L.GeometryUtil.geodesicArea(latlngs)
+                        : 0;
+                    let perim = 0;
+                    for (let i = 0; i < latlngs.length; i++) {
+                        perim += latlngs[i].distanceTo(latlngs[(i + 1) % latlngs.length]);
+                    }
+                    const center = layer.getBounds().getCenter();
+                    const isRect = (layer instanceof L.Rectangle);
+                    return {
+                        geomType: isRect ? 'Rectangle' : 'Polygon',
+                        typeLabel: isRect ? '▭ Hình chữ nhật' : '📐 Vùng đa giác',
+                        metricSummary: `S=${formatAreaText(area)} · CV=${formatDistanceText(perim)}`,
+                        lengthM: perim,
+                        areaM2: area,
+                        radiusM: 0,
+                        centerLat: center.lat,
+                        centerLng: center.lng,
+                        vertexCount: latlngs.length
+                    };
+                }
+                if (layer instanceof L.Polyline) {
+                    const latlngs = layer.getLatLngs() || [];
+                    let dist = 0;
+                    for (let i = 0; i < latlngs.length - 1; i++) {
+                        dist += latlngs[i].distanceTo(latlngs[i + 1]);
+                    }
+                    const center = layer.getBounds().getCenter();
+                    return {
+                        geomType: 'LineString',
+                        typeLabel: '📏 Tuyến đường',
+                        metricSummary: `Dài=${formatDistanceText(dist)} (${latlngs.length} đỉnh)`,
+                        lengthM: dist,
+                        areaM2: 0,
+                        radiusM: 0,
+                        centerLat: center.lat,
+                        centerLng: center.lng,
+                        vertexCount: latlngs.length
+                    };
+                }
+                return { geomType: 'Unknown', typeLabel: 'Đối tượng', metricSummary: '-', lengthM: 0, areaM2: 0, radiusM: 0, centerLat: 0, centerLng: 0, vertexCount: 0 };
+            };
+
+            // Xây dựng nội dung Popup chuẩn GIS & Nhãn Tooltip cố định cho đối tượng
+            window.refreshGisLayerPopupAndTooltip = function(layer) {
+                if (!layer) return;
+                const stampId = L.Util.stamp(layer);
+                const m = window.computeGisLayerMetrics(layer);
+
+                if (!layer.gisProps) {
+                    window.surveyConfig.featureCounter += 1;
+                    const defaultCode = `DT-${String(window.surveyConfig.featureCounter).padStart(3, '0')}`;
+                    layer.gisProps = {
+                        code: defaultCode,
+                        name: `${m.typeLabel.replace(/^[^\s]+\s/, '')} #${window.surveyConfig.featureCounter}`,
+                        group: (m.geomType === 'Point') ? 'Cây xanh đơn lẻ' : (m.geomType === 'LineString' ? 'Tuyến cây xanh' : 'Mảng xanh / Thảm cỏ'),
+                        status: 'Bình thường / Tốt',
+                        symbol: window.surveyConfig.activeSymbol || '🌳',
+                        color: window.surveyConfig.activeColor || '#16a34a',
+                        fillColor: window.surveyConfig.activeFillColor || window.surveyConfig.activeColor || '#22c55e',
+                        dash: window.surveyConfig.activeDash || 'solid',
+                        weight: window.surveyConfig.activeWeight || 4,
+                        fillOpacity: window.surveyConfig.activeFillOpacity || 0.3,
+                        notes: '',
+                        showLabel: true,
+                        createdAt: new Date().toLocaleString('vi-VN')
+                    };
+                }
+
+                const p = layer.gisProps;
+                // Áp dụng kiểu dáng hình học lên bản đồ
+                if (layer instanceof L.Marker) {
+                    layer.setIcon(window.createGisPointDivIcon(p.color, p.symbol));
+                } else if (typeof layer.setStyle === 'function') {
+                    layer.setStyle({
+                        color: p.color,
+                        fillColor: p.fillColor || p.color,
+                        weight: Number(p.weight) || 4,
+                        opacity: 0.95,
+                        fillOpacity: Number(p.fillOpacity) || 0.3,
+                        dashArray: getDashArrayFromStyle(p.dash, p.weight)
+                    });
+                }
+
+                // Cập nhật Nhãn cố định trên bản đồ (Permanent Label)
+                if (typeof layer.unbindTooltip === 'function') layer.unbindTooltip();
+                if (p.showLabel) {
+                    const shortMetric = (m.geomType === 'Point') ? '' : ` (${m.metricSummary.split('·')[0].trim()})`;
+                    layer.bindTooltip(`${p.code}: ${p.name}${shortMetric}`, {
+                        permanent: true,
+                        direction: 'top',
+                        className: 'gis-feature-label',
+                        offset: (layer instanceof L.Marker) ? [0, -26] : [0, 0]
+                    });
+                }
+
+                // Xây dựng Popup chi tiết kèm các nút Chỉnh sửa Kiểu dáng, Sửa đỉnh, Xóa
+                const notesHtml = p.notes ? `<div style="margin-top:4px; background:#f8fafc; padding:4px 7px; border-radius:6px; border-left:3px solid ${p.color}; font-size:11.5px;"><b>Ghi chú:</b> ${p.notes}</div>` : '';
+                const popupHtml = `
+                    <div style="font-size:12.5px; color:#1e293b; min-width:225px; line-height:1.45;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed #cbd5e1; padding-bottom:4px; margin-bottom:6px;">
+                            <b style="color:${p.color}; font-size:13.5px;">${p.symbol || '📐'} ${p.name}</b>
+                            <span style="background:#f1f5f9; color:#475569; font-family:Consolas,monospace; font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:4px;">${p.code}</span>
+                        </div>
+                        <b>Phân nhóm:</b> ${p.group}<br>
+                        <b>Hình học:</b> ${m.typeLabel}<br>
+                        <b>Thông số đo:</b> <span style="color:#1d4ed8; font-weight:800; font-family:Consolas,monospace;">${m.metricSummary}</span><br>
+                        <b>Tình trạng:</b> ${p.status}
+                        ${notesHtml}
+                        <div class="share-btn-group" style="margin-top:8px;">
+                            <button type="button" class="btn-share-action" style="background:#7c3aed; color:white;" onclick="openGisFeatureStyleModal(${stampId})">🎨 Kiểu & Thuộc tính</button>
+                            <button type="button" class="btn-share-action" style="background:#f59e0b; color:white;" onclick="toggleLayerVertexEditing(${stampId})">✏️ Sửa đỉnh</button>
+                        </div>
+                        <div class="share-btn-group" style="margin-top:5px;">
+                            <button type="button" class="btn-share-action btn-share-copy" onclick="copyLocationLink(${m.centerLat}, ${m.centerLng})">📋 Tọa độ</button>
+                            <button type="button" class="btn-share-action btn-share-route" onclick="navigateToCoords(${m.centerLat}, ${m.centerLng}, false)">🚗 Dẫn đường</button>
+                            <button type="button" class="btn-share-action" style="background:#fee2e2; color:#dc2626;" onclick="deleteDrawnLayer(${stampId})">🗑️ Xóa</button>
+                        </div>
+                    </div>`;
+
+                layer.bindPopup(popupHtml);
+                updateSurveyFeatureCountBadge();
+            };
+
+            function updateSurveyFeatureCountBadge() {
+                const count = drawnItems ? drawnItems.getLayers().length : 0;
+                $('#surv-feature-count').text(count);
+                $('#gis-table-summary-badge').text(`${count} đối tượng`);
+                if (count > 0) $('#custom-export-kml-btn').show();
+            }
+
+            // Lắng nghe sự kiện tạo mới đối tượng từ Leaflet.Draw để gắn chuẩn GIS & tự động cập nhật
+            map.on(L.Draw.Event.CREATED, function(event) {
+                const layer = event.layer;
+                window.refreshGisLayerPopupAndTooltip(layer);
+                disableAllSurveyDrawTools();
+
+                // Nếu đang ở chế độ Đo đạc Thực địa (survey), mở nhanh hộp thoại đặt tên & kiểu mẫu
+                const currentRole = document.body.getAttribute('data-role');
+                if (currentRole === 'survey') {
+                    setTimeout(() => {
+                        window.openGisFeatureStyleModal(L.Util.stamp(layer));
+                    }, 220);
+                }
+            });
+
+            function findDrawnLayerByStamp(stampId) {
+                let found = null;
+                drawnItems.eachLayer(function(l) {
+                    if (L.Util.stamp(l) === Number(stampId)) found = l;
+                });
+                return found;
+            }
+
+            // Mở Modal chỉnh sửa Kiểu mẫu, Hình dáng & Thuộc tính của 1 đối tượng
+            window.openGisFeatureStyleModal = function(stampId) {
+                const layer = findDrawnLayerByStamp(stampId);
+                if (!layer) return;
+                if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
+
+                const p = layer.gisProps;
+                const m = window.computeGisLayerMetrics(layer);
+
+                $('#gis-edit-stamp-id').val(stampId);
+                $('#gis-feat-code').val(p.code || '');
+                $('#gis-feat-group').val(p.group || 'Cây xanh đơn lẻ');
+                $('#gis-feat-name').val(p.name || '');
+                $('#gis-feat-status').val(p.status || 'Bình thường / Tốt');
+                $('#gis-feat-symbol').val(p.symbol || '🌳');
+                $('#gis-feat-color').val(p.color || '#16a34a');
+                $('#gis-feat-fill-color').val(p.fillColor || p.color || '#22c55e');
+                $('#gis-feat-dash').val(p.dash || 'solid');
+                $('#gis-feat-weight').val(p.weight || 4);
+                $('#gis-feat-opacity').val(p.fillOpacity || 0.3);
+                $('#gis-feat-notes').val(p.notes || '');
+                $('#gis-feat-show-label').prop('checked', p.showLabel !== false);
+                $('#gis-feat-metric-preview').text(m.metricSummary);
+
+                $('.style-preset-chip').removeClass('active');
+                $('#gis-feature-style-modal').addClass('visible');
+            };
+
+            // Chọn nhanh Mẫu đối tượng chuẩn (Preset Symbology) trong Modal
+            window.applyFeaturePreset = function(presetKey, groupName, colorHex, symbolEmoji, dashType, weightNum) {
+                $('#gis-feat-color').val(colorHex);
+                $('#gis-feat-fill-color').val(colorHex);
+                $('#gis-feat-symbol').val(symbolEmoji);
+                $('#gis-feat-dash').val(dashType);
+                $('#gis-feat-weight').val(weightNum);
+                if (presetKey === 'tree_risk') $('#gis-feat-status').val('Sâu bệnh / Nghiêng nguy hiểm');
+                else if (presetKey === 'work_area') $('#gis-feat-status').val('Cần cắt tỉa / Duy tu');
+                else $('#gis-feat-status').val('Bình thường / Tốt');
+            };
+
+            // Lưu thông tin & kiểu dáng đã chỉnh sửa lên đối tượng
+            window.saveGisFeatureStyleAndAttributes = function() {
+                const stampId = $('#gis-edit-stamp-id').val();
+                const layer = findDrawnLayerByStamp(stampId);
+                if (!layer) return;
+
+                layer.gisProps = {
+                    code: $('#gis-feat-code').val().trim() || 'DT-001',
+                    group: $('#gis-feat-group').val(),
+                    name: $('#gis-feat-name').val().trim() || 'Đối tượng khảo sát',
+                    status: $('#gis-feat-status').val(),
+                    symbol: $('#gis-feat-symbol').val() || '🌳',
+                    color: $('#gis-feat-color').val() || '#16a34a',
+                    fillColor: $('#gis-feat-fill-color').val() || '#22c55e',
+                    dash: $('#gis-feat-dash').val() || 'solid',
+                    weight: parseInt($('#gis-feat-weight').val(), 10) || 4,
+                    fillOpacity: parseFloat($('#gis-feat-opacity').val()) || 0.3,
+                    notes: $('#gis-feat-notes').val().trim(),
+                    showLabel: $('#gis-feat-show-label').is(':checked'),
+                    createdAt: (layer.gisProps && layer.gisProps.createdAt) ? layer.gisProps.createdAt : new Date().toLocaleString('vi-VN')
+                };
+
+                window.refreshGisLayerPopupAndTooltip(layer);
+                $('#gis-feature-style-modal').removeClass('visible');
+                if ($('#gis-attribute-table-modal').hasClass('visible')) {
+                    window.renderGisAttributeTableRows();
+                }
+                showToast("✅ Đã cập nhật kiểu dáng & thuộc tính đối tượng GIS!", "success");
+            };
+
+            window.deleteCurrentEditingFeature = function() {
+                const stampId = $('#gis-edit-stamp-id').val();
+                $('#gis-feature-style-modal').removeClass('visible');
+                if (stampId) window.deleteDrawnLayer(Number(stampId));
+                updateSurveyFeatureCountBadge();
+            };
+
+            window.enableSingleFeatureVertexEdit = function() {
+                const stampId = $('#gis-edit-stamp-id').val();
+                $('#gis-feature-style-modal').removeClass('visible');
+                if (stampId) window.toggleLayerVertexEditing(Number(stampId));
+            };
+
+            // Bật/Tắt chỉnh sửa hình học / kéo đỉnh (Vertex Editing / Dragging) cho 1 đối tượng
+            window.toggleLayerVertexEditing = function(stampId) {
+                const layer = findDrawnLayerByStamp(stampId);
+                if (!layer) return;
+                map.closePopup();
+
+                if (layer instanceof L.Marker) {
+                    if (layer.dragging) {
+                        if (layer.dragging.enabled()) {
+                            layer.dragging.disable();
+                            window.refreshGisLayerPopupAndTooltip(layer);
+                            showToast("💾 Đã khóa vị trí Điểm mốc sau khi di chuyển!", "success");
+                        } else {
+                            layer.dragging.enable();
+                            layer.off('dragend').on('dragend', function() {
+                                window.refreshGisLayerPopupAndTooltip(layer);
+                            });
+                            showToast("👆 Hãy nhấn giữ và kéo Điểm mốc tới vị trí mới trên bản đồ!", "info");
+                        }
+                    }
+                    return;
+                }
+
+                if (layer.editing) {
+                    if (layer.editing.enabled()) {
+                        layer.editing.disable();
+                        window.refreshGisLayerPopupAndTooltip(layer);
+                        showToast("💾 Đã lưu hình dáng mới & tự động tính lại Diện tích / Chiều dài!", "success");
+                    } else {
+                        layer.editing.enable();
+                        layer.off('edit').on('edit', function() {
+                            window.refreshGisLayerPopupAndTooltip(layer);
+                        });
+                        showToast("✏️ Chế độ Sửa đỉnh: Kéo các nút trắng để đổi hình dáng, nhấp vào nút để xóa đỉnh. Bấm lại 'Sửa đỉnh' để lưu.", "info");
+                    }
+                }
+            };
+
+            // Bật/Tắt chế độ Sửa đỉnh cho TOÀN BỘ đối tượng trên bản đồ
+            window.toggleGlobalVertexEditMode = function() {
+                const layers = drawnItems.getLayers();
+                if (layers.length === 0) {
+                    showToast("Chưa có đối tượng nào trên bản đồ để sửa đỉnh.", "info");
+                    return;
+                }
+                window.surveyConfig.isGlobalVertexEditing = !window.surveyConfig.isGlobalVertexEditing;
+                const isEdit = window.surveyConfig.isGlobalVertexEditing;
+
+                $('#btn-surv-edit-vertices').toggleClass('active', isEdit);
+                $('#lbl-surv-edit-btn').text(isEdit ? 'Lưu đỉnh' : 'Sửa đỉnh');
+
+                layers.forEach(layer => {
+                    if (layer instanceof L.Marker && layer.dragging) {
+                        if (isEdit) {
+                            layer.dragging.enable();
+                            layer.off('dragend').on('dragend', () => window.refreshGisLayerPopupAndTooltip(layer));
+                        } else {
+                            layer.dragging.disable();
+                            window.refreshGisLayerPopupAndTooltip(layer);
+                        }
+                    } else if (layer.editing) {
+                        if (isEdit) {
+                            layer.editing.enable();
+                            layer.off('edit').on('edit', () => window.refreshGisLayerPopupAndTooltip(layer));
+                        } else {
+                            layer.editing.disable();
+                            window.refreshGisLayerPopupAndTooltip(layer);
+                        }
+                    }
+                });
+
+                if (isEdit) {
+                    showToast("✏️ Đã bật chế độ Sửa hình học toàn cục! Kéo các đỉnh/điểm để chỉnh sửa, bấm 'Lưu đỉnh' khi hoàn tất.", "info");
+                } else {
+                    showToast("💾 Đã lưu toàn bộ thay đổi hình học & cập nhật lại thông số đo đạc!", "success");
+                }
+            };
+
+            // Chức năng "🎯 Chốt GPS": Thu thập Điểm hoặc thêm Đỉnh vào Đường/Vùng đang vẽ bằng chính vị trí GPS thực tế của người đo
+            window.captureGpsSurveyPointOrVertex = function() {
+                const applyLatLngToSurvey = (lat, lng) => {
+                    const ll = L.latLng(lat, lng);
+                    extState.userGPSPosition = { lat, lng };
+                    map.panTo(ll, { animate: true });
+
+                    // Nếu đang bật công cụ vẽ Đường (Polyline) hoặc Đa giác (Polygon) -> Thêm đỉnh trực tiếp vào hình đang vẽ
+                    if (activeCurrentHandler === drawLineHandler || activeCurrentHandler === drawPolyHandler) {
+                        activeCurrentHandler.addVertex(ll);
+                        updateLiveDrawMetric();
+                        showToast(`🎯 Đã chốt thêm 1 đỉnh GPS (${lat.toFixed(6)}, ${lng.toFixed(6)}) vào hình đang vẽ!`, "success");
+                        return;
+                    }
+
+                    // Ngược lại -> Tạo ngay 1 Điểm khảo sát (Point) tại đúng vị trí GPS hiện tại
+                    syncActiveDrawHandlersStyle();
+                    const marker = L.marker(ll, {
+                        icon: window.createGisPointDivIcon(window.surveyConfig.activeColor, window.surveyConfig.activeSymbol)
+                    }).addTo(drawnItems);
+                    window.refreshGisLayerPopupAndTooltip(marker);
+                    marker.openPopup();
+                    showToast(`🎯 Đã chốt Điểm khảo sát GPS (${lat.toFixed(6)}, ${lng.toFixed(6)})!`, "success");
+                };
+
+                if (navigator.geolocation) {
+                    toggleLoading(true);
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            toggleLoading(false);
+                            applyLatLngToSurvey(pos.coords.latitude, pos.coords.longitude);
+                        },
+                        () => {
+                            toggleLoading(false);
+                            if (extState.userGPSPosition) {
+                                applyLatLngToSurvey(extState.userGPSPosition.lat, extState.userGPSPosition.lng);
+                            } else {
+                                const c = map.getCenter();
+                                applyLatLngToSurvey(c.lat, c.lng);
+                                showToast("Không lấy được tín hiệu vệ tinh, đã chốt tại tâm bản đồ hiện tại.", "info");
+                            }
+                        },
+                        { enableHighAccuracy: true, maximumAge: 0, timeout: 6000 }
+                    );
+                } else if (extState.userGPSPosition) {
+                    applyLatLngToSurvey(extState.userGPSPosition.lat, extState.userGPSPosition.lng);
+                }
+            };
+
+            // Mở Modal Nhập tọa độ X,Y chính xác & Tạo Vùng đệm (Buffer Circle)
+            window.openManualCoordSurveyModal = function() {
+                const c = extState.userGPSPosition || map.getCenter();
+                $('#manual-lat-input').val(c.lat.toFixed(6));
+                $('#manual-lng-input').val(c.lng.toFixed(6));
+                $('#manual-name-input').val('');
+                $('#manual-buffer-radius').val('0');
+                $('#gis-manual-coord-modal').addClass('visible');
+            };
+
+            window.fillCurrentGpsToManualInput = function() {
+                if (!navigator.geolocation) return;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    $('#manual-lat-input').val(pos.coords.latitude.toFixed(6));
+                    $('#manual-lng-input').val(pos.coords.longitude.toFixed(6));
+                    showToast("📍 Đã điền tọa độ GPS hiện tại!", "success");
+                });
+            };
+
+            window.createFeatureFromManualCoord = function() {
+                const lat = parseFloat($('#manual-lat-input').val());
+                const lng = parseFloat($('#manual-lng-input').val());
+                if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                    showToast("Tọa độ Vĩ độ / Kinh độ không hợp lệ!", "error");
+                    return;
+                }
+                const customName = $('#manual-name-input').val().trim();
+                const radiusM = parseFloat($('#manual-buffer-radius').val()) || 0;
+                const ll = L.latLng(lat, lng);
+
+                syncActiveDrawHandlersStyle();
+                let newLayer = null;
+                if (radiusM > 0) {
+                    newLayer = L.circle(ll, {
+                        radius: radiusM,
+                        color: window.surveyConfig.activeColor,
+                        fillColor: window.surveyConfig.activeColor,
+                        weight: window.surveyConfig.activeWeight,
+                        fillOpacity: window.surveyConfig.activeFillOpacity
+                    }).addTo(drawnItems);
+                } else {
+                    newLayer = L.marker(ll, {
+                        icon: window.createGisPointDivIcon(window.surveyConfig.activeColor, window.surveyConfig.activeSymbol)
+                    }).addTo(drawnItems);
+                }
+
+                window.refreshGisLayerPopupAndTooltip(newLayer);
+                if (customName && newLayer.gisProps) {
+                    newLayer.gisProps.name = customName;
+                    window.refreshGisLayerPopupAndTooltip(newLayer);
+                }
+                $('#gis-manual-coord-modal').removeClass('visible');
+                map.flyTo(ll, 18, { animate: true, duration: 1.0 });
+                setTimeout(() => newLayer.openPopup(), 600);
+                showToast("✅ Đã tạo đối tượng khảo sát theo tọa độ chính xác!", "success");
+            };
+
+            // BẢNG THUỘC TÍNH ĐỐI TƯỢNG ĐO ĐẠC GIS (ATTRIBUTE TABLE) & XUẤT ĐA ĐỊNH DẠNG
+            window.openGisAttributeTableModal = function() {
+                window.renderGisAttributeTableRows();
+                $('#gis-attribute-table-modal').addClass('visible');
+            };
+
+            window.renderGisAttributeTableRows = function() {
+                const layers = drawnItems ? drawnItems.getLayers() : [];
+                updateSurveyFeatureCountBadge();
+                const tbody = $('#gis-attr-table-tbody');
+                if (layers.length === 0) {
+                    tbody.html('<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:18px;">Chưa có đối tượng đo đạc nào. Hãy dùng thanh công cụ để chấm Điểm, vẽ Đường hoặc Vùng.</td></tr>');
+                    return;
+                }
+                let html = '';
+                layers.forEach(layer => {
+                    if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
+                    const stampId = L.Util.stamp(layer);
+                    const p = layer.gisProps;
+                    const m = window.computeGisLayerMetrics(layer);
+                    html += `
+                        <tr>
+                            <td><b style="font-family:Consolas,monospace;">${p.code}</b></td>
+                            <td><span class="gis-color-dot" style="background:${p.color};"></span><b>${p.name}</b></td>
+                            <td>${m.typeLabel}</td>
+                            <td>${p.group}</td>
+                            <td style="font-family:Consolas,monospace; color:#1d4ed8; font-weight:700;">${m.metricSummary}</td>
+                            <td style="white-space:nowrap;">
+                                <button type="button" class="btn-action btn-blue" style="padding:3px 7px; font-size:10.5px;" onclick="zoomToSurveyFeature(${stampId})">🔍 Tới</button>
+                                <button type="button" class="btn-action" style="background:#7c3aed; color:white; padding:3px 7px; font-size:10.5px;" onclick="$('#gis-attribute-table-modal').removeClass('visible'); openGisFeatureStyleModal(${stampId});">🎨 Sửa</button>
+                                <button type="button" class="btn-action" style="background:#fee2e2; color:#dc2626; padding:3px 7px; font-size:10.5px;" onclick="deleteDrawnLayer(${stampId}); renderGisAttributeTableRows();">🗑️</button>
+                            </td>
+                        </tr>`;
+                });
+                tbody.html(html);
+            };
+
+            window.zoomToSurveyFeature = function(stampId) {
+                const layer = findDrawnLayerByStamp(stampId);
+                if (!layer) return;
+                $('#gis-attribute-table-modal').removeClass('visible');
+                if (layer.getBounds && typeof layer.getBounds === 'function') {
+                    map.fitBounds(layer.getBounds(), { maxZoom: 19, padding: [50, 50] });
+                } else if (layer.getLatLng) {
+                    map.flyTo(layer.getLatLng(), 18, { animate: true, duration: 0.8 });
+                }
+                setTimeout(() => layer.openPopup(), 500);
+            };
+
+            // 1. Xuất chuẩn GeoJSON (Tương thích 100% QGIS, ArcGIS, Mapbox)
+            window.exportSurveyFeaturesGeoJSON = function() {
+                const layers = drawnItems ? drawnItems.getLayers() : [];
+                if (layers.length === 0) {
+                    showToast("Chưa có đối tượng nào để xuất GeoJSON.", "error");
+                    return;
+                }
+                const features = [];
+                layers.forEach(layer => {
+                    if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
+                    const p = layer.gisProps;
+                    const m = window.computeGisLayerMetrics(layer);
+                    let geo = layer.toGeoJSON();
+                    geo.properties = {
+                        id_code: p.code,
+                        name: p.name,
+                        group: p.group,
+                        status: p.status,
+                        geom_type: m.geomType,
+                        metric_summary: m.metricSummary,
+                        length_m: Number(m.lengthM.toFixed(2)),
+                        area_m2: Number(m.areaM2.toFixed(2)),
+                        radius_m: Number(m.radiusM.toFixed(2)),
+                        stroke_color: p.color,
+                        fill_color: p.fillColor,
+                        stroke_width: p.weight,
+                        line_dash: p.dash,
+                        symbol: p.symbol,
+                        notes: p.notes,
+                        created_at: p.createdAt
+                    };
+                    features.push(geo);
+                });
+
+                const fc = { type: "FeatureCollection", name: "DuLieu_DoDac_ThucDia_CayXanh2", features: features };
+                const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/geo+json;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `DoDacThucDia_GIS_${new Date().toISOString().slice(0,10)}.geojson`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("🌐 Đã xuất tệp chuẩn GeoJSON (Mở trực tiếp trên QGIS / ArcGIS)!", "success");
+            };
+
+            // 2. Xuất Bảng khối lượng đo đạc ra Excel CSV (Hỗ trợ tiếng Việt UTF-8 BOM)
+            window.exportSurveyFeaturesCSV = function() {
+                const layers = drawnItems ? drawnItems.getLayers() : [];
+                if (layers.length === 0) {
+                    showToast("Chưa có đối tượng nào để xuất Excel CSV.", "error");
+                    return;
+                }
+                let csv = "\uFEFFMã ID,Tên Đối Tượng,Phân Nhóm,Loại Hình Học,Tình Trạng,Chiều Dài / Chu Vi (m),Diện Tích (m2),Bán Kính (m),Vĩ Độ Tâm (Lat),Kinh Độ Tâm (Lng),Ghi Chú Kỹ Thuật,Thời Gian Thu Thập\n";
+                layers.forEach(layer => {
+                    if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
+                    const p = layer.gisProps;
+                    const m = window.computeGisLayerMetrics(layer);
+                    const esc = (s) => String(s || '').replace(/"/g, '""');
+                    csv += `"${esc(p.code)}","${esc(p.name)}","${esc(p.group)}","${esc(m.typeLabel)}","${esc(p.status)}",${m.lengthM.toFixed(2)},${m.areaM2.toFixed(2)},${m.radiusM.toFixed(2)},${m.centerLat.toFixed(6)},${m.centerLng.toFixed(6)},"${esc(p.notes)}","${esc(p.createdAt)}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `BangKhoiLuong_DoDacThucDia_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("📊 Đã xuất Bảng khối lượng đo đạc ra tệp CSV (Mở bằng Excel)!", "success");
+            };
+
+            // Chuyển mã màu HEX (#RRGGBB) sang chuẩn màu KML (aabbggrr)
+            function hexToKmlColor(hexStr, alphaFloat = 1.0) {
+                const clean = (hexStr || '#16a34a').replace('#', '');
+                if (clean.length !== 6) return 'ff4aa316';
+                const r = clean.substring(0, 2);
+                const g = clean.substring(2, 4);
+                const b = clean.substring(4, 6);
+                const a = Math.round(Math.max(0, Math.min(1, alphaFloat)) * 255).toString(16).padStart(2, '0');
+                return `${a}${b}${g}${r}`.toLowerCase();
+            }
+
+            // Tạo chuỗi KML chuẩn có đầy đủ Style màu sắc, độ dày nét và ExtendedData thuộc tính
+            window.buildStyledSurveyKMLString = function(docName, docDesc) {
+                let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n  <name>${docName}</name>\n  <description><![CDATA[${docDesc}]]></description>\n`;
+                drawnItems.eachLayer(function(layer) {
+                    if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
+                    const p = layer.gisProps;
+                    const m = window.computeGisLayerMetrics(layer);
+                    const lineKmlColor = hexToKmlColor(p.color, 0.95);
+                    const polyKmlColor = hexToKmlColor(p.fillColor || p.color, p.fillOpacity || 0.35);
+
+                    const descHtml = `<b>Mã ID:</b> ${p.code}<br><b>Nhóm:</b> ${p.group}<br><b>Thông số:</b> ${m.metricSummary}<br><b>Tình trạng:</b> ${p.status}<br><b>Ghi chú:</b> ${p.notes || '-'}<br><b>Thời gian:</b> ${p.createdAt}`;
+
+                    kml += `  <Placemark>\n    <name>${p.code} - ${p.name}</name>\n    <description><![CDATA[${descHtml}]]></description>\n`;
+                    kml += `    <Style>\n      <LineStyle><color>${lineKmlColor}</color><width>${p.weight || 4}</width></LineStyle>\n      <PolyStyle><color>${polyKmlColor}</color><fill>1</fill><outline>1</outline></PolyStyle>\n    </Style>\n`;
+
+                    if (layer instanceof L.Circle) {
+                        // Xấp xỉ hình tròn bán kính thành đa giác 36 đỉnh để hiển thị chuẩn trên Google Earth KML
+                        const center = layer.getLatLng();
+                        const rMeters = layer.getRadius();
+                        const latRad = center.lat * Math.PI / 180;
+                        let ringCoords = '';
+                        for (let i = 0; i <= 36; i++) {
+                            const angle = (i * 10) * Math.PI / 180;
+                            const dLat = (rMeters * Math.cos(angle)) / 111320;
+                            const dLng = (rMeters * Math.sin(angle)) / (111320 * Math.cos(latRad));
+                            ringCoords += `            ${(center.lng + dLng).toFixed(7)},${(center.lat + dLat).toFixed(7)},0\n`;
+                        }
+                        kml += `    <Polygon><outerBoundaryIs><LinearRing><coordinates>\n${ringCoords}          </coordinates></LinearRing></outerBoundaryIs></Polygon>\n`;
+                    } else if (layer instanceof L.Marker) {
+                        const pt = layer.getLatLng();
+                        kml += `    <Point><coordinates>${pt.lng.toFixed(7)},${pt.lat.toFixed(7)},0</coordinates></Point>\n`;
+                    } else if (layer instanceof L.Polygon) {
+                        const pts = layer.getLatLngs()[0] || [];
+                        kml += `    <Polygon><outerBoundaryIs><LinearRing><coordinates>\n`;
+                        pts.forEach(pt => { kml += `            ${pt.lng.toFixed(7)},${pt.lat.toFixed(7)},0\n`; });
+                        if (pts.length > 0) kml += `            ${pts[0].lng.toFixed(7)},${pts[0].lat.toFixed(7)},0\n`;
+                        kml += `          </coordinates></LinearRing></outerBoundaryIs></Polygon>\n`;
+                    } else if (layer instanceof L.Polyline) {
+                        const pts = layer.getLatLngs() || [];
+                        kml += `    <LineString><tessellate>1</tessellate><coordinates>\n`;
+                        pts.forEach(pt => { kml += `        ${pt.lng.toFixed(7)},${pt.lat.toFixed(7)},0\n`; });
+                        kml += `      </coordinates></LineString>\n`;
+                    }
+                    kml += `  </Placemark>\n`;
+                });
+                kml += `</Document>\n</kml>`;
+                return kml;
+            };
+
+            // 3. Xuất tệp KML có đầy đủ Style màu sắc về máy
+            window.exportSurveyFeaturesStyledKML = function() {
+                if (drawnItems.getLayers().length === 0) {
+                    showToast("Chưa có đối tượng đo đạc nào để xuất KML.", "error");
+                    return;
+                }
+                const docName = `DoDacThucDia_${new Date().toISOString().slice(0,10)}`;
+                const kmlStr = window.buildStyledSurveyKMLString(docName, "Dữ liệu đo đạc thực địa kèm thuộc tính & kiểu dáng GIS");
+                const blob = new Blob([kmlStr], { type: 'application/vnd.google-earth.kml+xml;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${docName}.kml`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("📐 Đã xuất tệp KML kèm đầy đủ màu sắc, kiểu dáng & thuộc tính GIS!", "success");
+            };
+
+            // Nâng cấp hàm lưu lên Google Drive để giữ nguyên toàn bộ Style màu sắc & thuộc tính của các đối tượng đo đạc
+            window.executeSaveDrawingsToDrive = function() {
+                var fileName = $('#kml-filename').val().trim();
+                var description = $('#kml-description').val().trim() || "Dữ liệu đo đạc thực địa GIS.";
+                if (!fileName) {
+                    alert("Vui lòng nhập tên file theo cấu trúc gợi ý (Họ tên_Nội dung) để lưu trữ!");
+                    return;
+                }
+                $('#save-kml-modal').removeClass('visible');
+                toggleLoading(true);
+                const styledKml = window.buildStyledSurveyKMLString(fileName, description);
+                sendDataToAppsScript(fileName, styledKml);
+            };
+        })();
+
+
+        // =========================================================================
+        // BỔ SUNG MỚI: HỆ THỐNG DỰ BÁO THỜI TIẾT THÔNG MINH ĐA TẦNG CHO 3 NHÓM NGƯỜI DÙNG
+        // (1. Viên thuốc Live Weather Pill + Cảnh báo Gió giật/An toàn cây xanh
+        //  2. Tích hợp Open-Meteo lấy Chỉ số Tia UV, Gió giật (Wind Gusts) & AQI Bụi mịn PM2.5
+        //  3. Trình phát tự động 64 mốc Dự báo 16 Ngày (Timeline Player + Pre-fetch)
+        //  4. Tự động đóng dấu Thời tiết lên ảnh Timemark & Thẻ ảnh Hành trình)
+        // =========================================================================
+        (function() {
+            window.extWeatherPro = {
+                tempC: null,
+                desc: '',
+                humidity: null,
+                windSpeedMs: null,
+                windGustMs: null,
+                rainProbPct: 0,
+                uvIndex: null,
+                aqiVal: null,
+                pm25: null,
+                bestWorkoutWindow: '16:30 – 18:30',
+                hazardLevel: 'safe', // 'safe' | 'caution' | 'danger'
+                hazardTitle: 'An toàn thi công & vận động',
+                hazardAdvice: 'Thời tiết thuận lợi cho công tác duy tu cây xanh và tập luyện ngoài trời.',
+                locationName: 'Khu vực trung tâm',
+                lastLat: 10.8231,
+                lastLng: 106.7580
+            };
+
+            // 1. Lấy bổ sung Chỉ số UV, Gió giật (Wind Gusts) & Chất lượng không khí (AQI/PM2.5) từ Open-Meteo (Miễn phí, không cần Key)
+            async function fetchOpenMeteoSupplement(lat, lng) {
+                try {
+                    const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(5)}&longitude=${lng.toFixed(5)}&current=uv_index,wind_gusts_10m,precipitation&hourly=temperature_2m,precipitation_probability,uv_index&wind_speed_unit=ms&timezone=auto&forecast_days=2`;
+                    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat.toFixed(5)}&longitude=${lng.toFixed(5)}&current=european_aqi,pm2_5&timezone=auto`;
+
+                    const [meteoResp, aqiResp] = await Promise.all([
+                        fetch(meteoUrl).catch(() => null),
+                        fetch(aqiUrl).catch(() => null)
+                    ]);
+
+                    if (meteoResp && meteoResp.ok) {
+                        const mData = await meteoResp.json();
+                        if (mData && mData.current) {
+                            if (typeof mData.current.uv_index === 'number') {
+                                window.extWeatherPro.uvIndex = mData.current.uv_index;
+                            }
+                            if (typeof mData.current.wind_gusts_10m === 'number') {
+                                window.extWeatherPro.windGustMs = mData.current.wind_gusts_10m;
+                            }
+                        }
+                        // Tìm "Khung giờ vàng vận động" trong 24 giờ tới (Nhiệt độ dễ chịu, xác suất mưa thấp < 30%, UV <= 5)
+                        if (mData && mData.hourly && Array.isArray(mData.hourly.time)) {
+                            let bestSlot = null;
+                            let bestScore = -999;
+                            const nowTime = Date.now();
+                            for (let i = 0; i < Math.min(24, mData.hourly.time.length); i++) {
+                                const tMs = new Date(mData.hourly.time[i]).getTime();
+                                if (tMs < nowTime) continue;
+                                const hr = new Date(tMs).getHours();
+                                if (hr < 5 || hr > 20) continue; // Chỉ xét từ 5h sáng đến 20h tối
+                                const temp = mData.hourly.temperature_2m[i] || 28;
+                                const pop = mData.hourly.precipitation_probability[i] || 0;
+                                const uv = mData.hourly.uv_index[i] || 0;
+                                const score = 100 - (pop * 1.2) - (Math.abs(temp - 26) * 3) - (uv * 4);
+                                if (score > bestScore) {
+                                    bestScore = score;
+                                    bestSlot = { hr, temp: Math.round(temp), pop: Math.round(pop), uv: uv.toFixed(1) };
+                                }
+                            }
+                            if (bestSlot) {
+                                const endHr = (bestSlot.hr + 2) % 24;
+                                const pad0 = (n) => (n < 10 ? '0' + n : n);
+                                window.extWeatherPro.bestWorkoutWindow = `${pad0(bestSlot.hr)}:00 – ${pad0(endHr)}:00 (${bestSlot.temp}°C, Mưa ${bestSlot.pop}%, UV ${bestSlot.uv})`;
+                            }
+                        }
+                    }
+
+                    if (aqiResp && aqiResp.ok) {
+                        const aData = await aqiResp.json();
+                        if (aData && aData.current) {
+                            if (typeof aData.current.european_aqi === 'number') {
+                                window.extWeatherPro.aqiVal = Math.round(aData.current.european_aqi);
+                            }
+                            if (typeof aData.current.pm2_5 === 'number') {
+                                window.extWeatherPro.pm25 = aData.current.pm2_5.toFixed(1);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Open-Meteo supplement warning:", e);
+                }
+            }
+
+            // 2. Đánh giá Chỉ số Rủi ro Thời tiết đối với Cây xanh & An toàn lao động hiện trường
+            function evaluateTreeAndFieldSafety() {
+                const w = window.extWeatherPro;
+                const wind = w.windSpeedMs || 0;
+                const gust = w.windGustMs || (wind * 1.35);
+                const rainProb = w.rainProbPct || 0;
+                const uv = w.uvIndex || 0;
+
+                if (wind >= 8.0 || gust >= 11.5 || rainProb >= 80) {
+                    w.hazardLevel = 'danger';
+                    w.hazardTitle = '🔴 CẢNH BÁO NGUY HIỂM: Gió giật mạnh / Mưa dông lớn';
+                    w.hazardAdvice = 'Ngừng ngay việc leo cao cắt tỉa cây! Nguy cơ gãy cành, bật gốc cây xanh và ngập úng cục bộ. Kích hoạt đội tuần tra sự cố.';
+                } else if (wind >= 5.5 || gust >= 8.5 || rainProb >= 55 || uv >= 9.0) {
+                    w.hazardLevel = 'caution';
+                    w.hazardTitle = '🟡 CHÚ Ý AN TOÀN: Gió trung bình-mạnh / Mưa rào / Nắng gắt';
+                    w.hazardAdvice = (uv >= 9.0 && rainProb < 50)
+                        ? `Chỉ số tia cực tím rất cao (UV ${uv.toFixed(1)}). Công nhân cần mặc đồ bảo hộ chống nắng, bổ sung nước và tránh làm việc liên tục ngoài nắng trưa.`
+                        : `Khả năng mưa ${Math.round(rainProb)}%, gió giật ${gust.toFixed(1)} m/s. Hạn chế phun thuốc bảo vệ thực vật và chú ý an toàn điện/cành khô.`;
+                } else {
+                    w.hazardLevel = 'safe';
+                    w.hazardTitle = '🟢 AN TOÀN: Thời tiết thuận lợi';
+                    w.hazardAdvice = 'Điều kiện khí tượng ổn định, phù hợp cho công tác khảo sát, cắt tỉa cây xanh và tập luyện thể thao ngoài trời.';
+                }
+            }
+
+            // 3. Cập nhật thanh Live Weather Pill, Thanh Cảnh báo Safety Banner & Lớp phủ Camera Timemark
+            function updateLiveWeatherPillAndCamUI() {
+                const w = window.extWeatherPro;
+                if (w.tempC === null) return;
+
+                evaluateTreeAndFieldSafety();
+
+                const pill = $('#live-weather-pill');
+                pill.removeClass('hazard-safe hazard-caution hazard-danger').addClass('hazard-' + w.hazardLevel);
+
+                const gustTxt = w.windGustMs ? ` (Giật ${w.windGustMs.toFixed(1)})` : '';
+                $('#wp-temp-icon').text(`⛅ ${w.tempC.toFixed(1)}°C`);
+                $('#wp-rain-prob').text(`🌧️ Mưa: ${Math.round(w.rainProbPct)}%`);
+                $('#wp-wind-gust').text(`💨 Gió: ${(w.windSpeedMs || 0).toFixed(1)}m/s${gustTxt}`);
+
+                const uvTxt = (w.uvIndex !== null) ? w.uvIndex.toFixed(1) : '--';
+                const aqiTxt = (w.aqiVal !== null) ? w.aqiVal : '--';
+                $('#wp-uv-aqi').text(`☀️ UV: ${uvTxt} · 🍃 AQI: ${aqiTxt}`);
+
+                const badge = $('#wp-safety-badge');
+                badge.removeClass('safe caution danger').addClass(w.hazardLevel);
+                if (w.hazardLevel === 'danger') badge.text('🔴 Nguy hiểm');
+                else if (w.hazardLevel === 'caution') badge.text('🟡 Chú ý');
+                else badge.text('🟢 An toàn');
+
+                // Hiển thị Banner Cảnh báo tự động nếu ở mức Nguy hiểm (hoặc Chú ý khi ở chế độ Hiện trường)
+                const currentRole = document.body.getAttribute('data-role') || 'gis';
+                const alertBanner = $('#weather-safety-alert-banner');
+                if (w.hazardLevel === 'danger') {
+                    alertBanner.removeClass('caution-mode').css('display', 'flex');
+                    $('#weather-safety-alert-text').html(`<b>${w.hazardTitle}:</b> ${w.hazardAdvice}`);
+                } else if (w.hazardLevel === 'caution' && currentRole === 'worker') {
+                    alertBanner.addClass('caution-mode').css('display', 'flex');
+                    $('#weather-safety-alert-text').html(`<b>${w.hazardTitle}:</b> ${w.hazardAdvice}`);
+                } else {
+                    alertBanner.hide();
+                }
+
+                // Cập nhật dòng thời tiết trực tiếp trên khung ngắm Camera Timemark
+                const camWeatherLine = `⛅ ${w.tempC.toFixed(1)}°C (${w.desc || 'Thực địa'}) · Mưa ${Math.round(w.rainProbPct)}% · Gió ${(w.windSpeedMs || 0).toFixed(1)}m/s${w.uvIndex !== null ? ' · UV ' + w.uvIndex.toFixed(1) : ''}`;
+                $('#tm-live-weather-label').text(camWeatherLine);
+            }
+
+            // Chuỗi đóng dấu Thời tiết lên ảnh chụp Timemark
+            window.getCurrentWeatherStampString = function() {
+                const w = window.extWeatherPro;
+                if (w.tempC === null) return '';
+                const gustPart = w.windGustMs ? ` (Giật ${w.windGustMs.toFixed(1)}m/s)` : '';
+                const uvPart = (w.uvIndex !== null) ? ` | UV: ${w.uvIndex.toFixed(1)}` : '';
+                return `Thời tiết: ${w.tempC.toFixed(1)}°C (${w.desc}) | Mưa: ${Math.round(w.rainProbPct)}% | Gió: ${(w.windSpeedMs || 0).toFixed(1)}m/s${gustPart}${uvPart}`;
+            };
+
+            // Chuỗi thời tiết ngắn gọn cho Thẻ ảnh Hành trình (Share Card PNG)
+            window.getShortWeatherForShareCard = function() {
+                const w = window.extWeatherPro;
+                if (w.tempC === null) return '';
+                const aqiStr = (w.aqiVal !== null) ? ` · AQI ${w.aqiVal}` : '';
+                return `⛅ ${w.tempC.toFixed(1)}°C · Gió ${(w.windSpeedMs || 0).toFixed(1)}m/s${aqiStr}`;
+            };
+
+            // 4. Ghi đè nâng cấp hàm getWeather & renderWeather để bổ sung khối thông tin chuyên biệt cho 3 Nhóm người dùng
+            window.getWeather = async function(lat, lng, locationName) {
+                try {
+                    window.extWeatherPro.lastLat = lat;
+                    window.extWeatherPro.lastLng = lng;
+                    window.extWeatherPro.locationName = locationName || 'Vị trí hiện tại';
+
+                    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${extState.openWeatherApiKey}&units=metric&lang=vi&cnt=40`;
+                    const [forecastResponse] = await Promise.all([
+                        fetch(forecastUrl),
+                        fetchOpenMeteoSupplement(lat, lng)
+                    ]);
+                    const forecastData = await forecastResponse.json();
+                    if (!forecastResponse.ok || !forecastData.list?.length) throw new Error('Failed to fetch weather');
+
+                    extState.lastWeatherData = forecastData;
+                    const cur = forecastData.list[0];
+                    window.extWeatherPro.tempC = cur.main.temp;
+                    window.extWeatherPro.desc = cur.weather[0].description;
+                    window.extWeatherPro.humidity = cur.main.humidity;
+                    window.extWeatherPro.windSpeedMs = cur.wind.speed;
+                    if (cur.wind.gust && (!window.extWeatherPro.windGustMs || cur.wind.gust > window.extWeatherPro.windGustMs)) {
+                        window.extWeatherPro.windGustMs = cur.wind.gust;
+                    }
+                    window.extWeatherPro.rainProbPct = (cur.pop || 0) * 100;
+
+                    updateLiveWeatherPillAndCamUI();
+                    renderWeather(forecastData, window.extWeatherPro.locationName);
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('weather-info').innerHTML = `<div class="weather-header"><button class="weather-close-btn" onclick="hideWeatherInfoPanel()">×</button><span style="color:red;">Lỗi khi tải dữ liệu thời tiết.</span></div>`;
+                }
+            };
+
+            window.renderWeather = function(forecastData, locationName) {
+                const current = forecastData.list[0];
+                const icon = `https://openweathermap.org/img/w/${current.weather[0].icon}.png`;
+                const w = window.extWeatherPro;
+                const gustVal = w.windGustMs ? w.windGustMs.toFixed(1) : (current.wind.speed * 1.3).toFixed(1);
+                const uvVal = (w.uvIndex !== null) ? w.uvIndex.toFixed(1) : '--';
+                const aqiVal = (w.aqiVal !== null) ? w.aqiVal : '--';
+                const pm25Val = (w.pm25 !== null) ? w.pm25 : '--';
+
+                let aqiStatus = 'Tốt';
+                if (w.aqiVal > 100) aqiStatus = 'Kém';
+                else if (w.aqiVal > 50) aqiStatus = 'Trung bình';
+
+                let weatherHTML = `
+                  <div class="weather-header">
+                    <button class="weather-close-btn" onclick="hideWeatherInfoPanel()">×</button>
+                    <h3>⛅ Thời tiết: ${locationName}</h3>
+                  </div>
+                  <div class="current-weather-main">
+                    <img src="${icon}" alt="${current.weather[0].description}">
+                    <div>
+                        <div style="font-size:14px; color:#0f172a;">Bây giờ: ${current.main.temp.toFixed(1)}°C · ${current.weather[0].description}</div>
+                        <div style="font-size:11px; color:#64748b; font-weight:500;">Độ ẩm: ${current.main.humidity}% | Áp suất: ${current.main.pressure} hPa</div>
+                    </div>
+                  </div>
+
+                  <!-- Lưới chỉ số mở rộng: Gió giật, Tia UV, Chất lượng không khí AQI -->
+                  <div class="weather-metrics-mini-grid">
+                    <div class="wm-mini-box">
+                        <span class="lbl">💨 Gió / Giật</span>
+                        <span class="val">${current.wind.speed.toFixed(1)} / ${gustVal} m/s</span>
+                    </div>
+                    <div class="wm-mini-box">
+                        <span class="lbl">☀️ Chỉ số UV</span>
+                        <span class="val" style="color:${w.uvIndex >= 8 ? '#dc2626' : '#15803d'};">${uvVal}</span>
+                    </div>
+                    <div class="wm-mini-box">
+                        <span class="lbl">🍃 AQI (PM2.5)</span>
+                        <span class="val" style="color:${w.aqiVal > 80 ? '#d97706' : '#15803d'};">${aqiVal} (${aqiStatus})</span>
+                    </div>
+                  </div>
+
+                  <!-- Khối khuyến nghị chuyên biệt cho Công nhân Hiện trường -->
+                  <div class="weather-role-card weather-role-worker">
+                    <div style="font-weight:800; margin-bottom:3px;">${w.hazardTitle}</div>
+                    <div>${w.hazardAdvice}</div>
+                  </div>
+
+                  <!-- Khối khuyến nghị chuyên biệt cho Thể thao & Cộng đồng -->
+                  <div class="weather-role-card weather-role-fitness ui-fitness-only">
+                    <div style="font-weight:800; margin-bottom:2px;">🏃 Khung giờ vàng vận động (24h tới):</div>
+                    <div>🕒 <b>${w.bestWorkoutWindow}</b> · Bụi mịn PM2.5: <b>${pm25Val} µg/m³</b></div>
+                  </div>
+
+                  <!-- Khối công cụ nhanh cho Quản lý GIS -->
+                  <div class="weather-role-card weather-role-gis ui-gis-only">
+                    <div style="font-weight:800; margin-bottom:6px;">💻 Công cụ Giám sát Khí tượng & Ngập úng GIS:</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action btn-blue" style="padding:5px 10px; font-size:11px; flex:1;" onclick="open16DayForecastPlayer(); hideWeatherInfoPanel();">▶️ Phát 64 mốc Dự báo 16 ngày</button>
+                        <button type="button" class="btn-action btn-green" style="padding:5px 10px; font-size:11px; flex:1;" onclick="toggleQuickRainAndFloodLayers()">🌊 Bật Lớp Mưa & Điểm Ngập</button>
+                    </div>
+                  </div>
+
+                  <div class="weather-tab-container ui-gis-only">
+                     <button class="weather-tab-btn active" onclick="switchWeatherView('list')">📋 Danh sách</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('rain')">🌧️ Đồ thị Mưa</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('wind')">🌀 Hoa Gió</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('humidity')">💧 Độ ẩm</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('pressure')">📈 Áp suất</button>
+                  </div>
+                  <div id="weather-chart-area" class="weather-chart-wrapper" style="display:none;"><canvas id="weatherCanvasNode"></canvas></div>
+                  <div id="weather-list-area">`;
+
+                let lastDay = new Date().getDay();
+                for (const forecast of forecastData.list) {
+                    const date = new Date(forecast.dt * 1000);
+                    const currentDate = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+                    const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    const windSpeed = forecast.wind.speed;
+                    const windDirection = getWindDirectionText(forecast.wind.deg);
+                    const pop = forecast.pop * 100;
+                    const description = forecast.weather[0].description;
+                    const temp = forecast.main.temp.toFixed(0);
+                    if (date.getDay() !== lastDay) {
+                        weatherHTML += `<h4 style="margin-top: 12px; border-top: 1px solid #ddd; padding-top: 6px;">${currentDate}</h4>`;
+                        lastDay = date.getDay();
+                    }
+                    weatherHTML += `<div class="forecast-item"><span><strong>${time}:</strong> ${temp}°C, ${description}</span><span style="font-size: 0.85em; color: #666;">Gió: ${windSpeed}m/s (${windDirection}) | Mưa: ${pop.toFixed(0)}%</span></div>`;
+                }
+                weatherHTML += `</div>`;
+                document.getElementById('weather-info').innerHTML = weatherHTML;
+            };
+
+            // Bật nhanh lớp Lượng mưa vệ tinh + Cảnh báo Điểm ngập cho Cán bộ Quản lý
+            window.toggleQuickRainAndFloodLayers = function() {
+                if (!map.hasLayer(layer_HydroEstimatorRainfall_4)) {
+                    map.addLayer(layer_HydroEstimatorRainfall_4);
+                }
+                if (!map.hasLayer(layer_CanhBao_DiemNgap)) {
+                    map.addLayer(layer_CanhBao_DiemNgap);
+                }
+                refreshLayerTreeControl();
+                showToast("🌊 Đã bật đồng thời lớp Lượng mưa vệ tinh & Cảnh báo Điểm ngập!", "success");
+            };
+
+            // 5. TRÌNH PHÁT TỰ ĐỘNG 64 MỐC DỰ BÁO 16 NGÀY (TIMELINE PLAYER + PREFETCH)
+            const f16State = {
+                currentIndex: 0,
+                isPlaying: false,
+                playTimer: null,
+                speedMult: 1, // 1x = 1800ms, 2x = 900ms
+                activeHour: null
+            };
+
+            function formatForecastRealDate(plusHours) {
+                const targetDate = new Date(Date.now() + plusHours * 3600000);
+                const hh = String(targetDate.getHours()).padStart(2, '0') + ':00';
+                const dd = String(targetDate.getDate()).padStart(2, '0');
+                const mo = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const wdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                return `+${plusHours}h (${hh} ${wdays[targetDate.getDay()]} ${dd}/${mo})`;
+            }
+
+            function prefetch16DayIndex(idx) {
+                if (idx < 0 || idx >= kmz16DaysData.length) return;
+                const item = kmz16DaysData[idx];
+                const grp = layer16DaysGroups[item.hour];
+                if (grp && !grp._isLoaded) {
+                    grp._isLoaded = true;
+                    $('#f16-preload-status').text(`⏳ Đang nạp +${item.hour}h...`).css('color', '#facc15');
+                    loadLayerById(grp._fileId, grp, grp._layerName).then(() => {
+                        $('#f16-preload-status').text('● Sẵn sàng').css('color', '#4ade80');
+                    });
+                }
+            }
+
+            function show16DayForecastAtIndex(index) {
+                if (!kmz16DaysData || kmz16DaysData.length === 0) return;
+                const safeIdx = ((index % kmz16DaysData.length) + kmz16DaysData.length) % kmz16DaysData.length;
+                f16State.currentIndex = safeIdx;
+
+                // Tắt toàn bộ các lớp dự báo 16 ngày đang bật trước đó
+                Object.keys(layer16DaysGroups).forEach(h => {
+                    const g = layer16DaysGroups[h];
+                    if (g && map.hasLayer(g)) {
+                        map.removeLayer(g);
+                    }
+                });
+
+                const currentItem = kmz16DaysData[safeIdx];
+                const targetGroup = layer16DaysGroups[currentItem.hour];
+                if (targetGroup) {
+                    map.addLayer(targetGroup);
+                    f16State.activeHour = currentItem.hour;
+                }
+
+                $('#f16-timeline-slider').val(safeIdx);
+                $('#f16-current-label').text(formatForecastRealDate(currentItem.hour));
+
+                // Tải trước (Prefetch) 2 mốc kế tiếp để chạy mượt mà
+                prefetch16DayIndex(safeIdx + 1);
+                prefetch16DayIndex(safeIdx + 2);
+            }
+
+            window.open16DayForecastPlayer = function() {
+                $('#forecast-16d-player').fadeIn(180);
+                show16DayForecastAtIndex(f16State.currentIndex || 0);
+                showToast("🌧️ Đã mở Trình phát 64 mốc Dự báo 16 ngày! Bấm ▶️ Phát để xem diễn biến.", "info");
+            };
+
+            window.close16DayForecastPlayer = function() {
+                if (f16State.isPlaying) window.togglePlay16DayForecast();
+                Object.keys(layer16DaysGroups).forEach(h => {
+                    const g = layer16DaysGroups[h];
+                    if (g && map.hasLayer(g)) map.removeLayer(g);
+                });
+                $('#forecast-16d-player').fadeOut(150);
+                refreshLayerTreeControl();
+            };
+
+            window.togglePlay16DayForecast = function() {
+                f16State.isPlaying = !f16State.isPlaying;
+                const btn = $('#btn-f16-play');
+                if (f16State.isPlaying) {
+                    btn.addClass('playing').text('⏸️ Dừng');
+                    const intervalMs = f16State.speedMult === 2 ? 950 : 1800;
+                    f16State.playTimer = setInterval(() => {
+                        show16DayForecastAtIndex(f16State.currentIndex + 1);
+                    }, intervalMs);
+                } else {
+                    btn.removeClass('playing').text('▶️ Phát');
+                    if (f16State.playTimer) {
+                        clearInterval(f16State.playTimer);
+                        f16State.playTimer = null;
+                    }
+                }
+            };
+
+            window.step16DayForecast = function(delta) {
+                if (f16State.isPlaying) window.togglePlay16DayForecast();
+                show16DayForecastAtIndex(f16State.currentIndex + delta);
+            };
+
+            window.onSlide16DayForecast = function(val) {
+                if (f16State.isPlaying) window.togglePlay16DayForecast();
+                show16DayForecastAtIndex(parseInt(val, 10) || 0);
+            };
+
+            window.cycle16DaySpeed = function() {
+                f16State.speedMult = (f16State.speedMult === 1) ? 2 : 1;
+                $('#btn-f16-speed').text(f16State.speedMult + 'x');
+                if (f16State.isPlaying) {
+                    window.togglePlay16DayForecast();
+                    window.togglePlay16DayForecast();
+                }
+            };
+
+            // Tự động lấy thời tiết tại tâm bản đồ ngay khi khởi động để Live Weather Pill có số liệu tức thì
+            $(document).ready(function() {
+                setTimeout(() => {
+                    if (!extState.lastWeatherData) {
+                        const c = map.getCenter();
+                        window.getWeather(c.lat, c.lng, "Khu vực TP.HCM / Thủ Đức");
+                    }
+                }, 1200);
+            });
+        })();
+
+
+        // =========================================================================
         // BỔ SUNG MỚI: HỆ THỐNG PHÂN QUYỀN 3 NHÓM NGƯỜI DÙNG, KHÓA CHỜ GPS TIMEMARK,
         // NHẬP GHI CHÚ GIỌNG NÓI, TRÍCH XUẤT HÀNG LOẠT (BATCH OCR) & THẺ ẢNH WORKOUT
         // =========================================================================
@@ -7967,9 +10608,9 @@ ${photoPlacemarksKml}</Document>
             let isTimemarkGpsLocked = false;
             window.batchOcrItems = [];
 
-            // 1. Hàm chuyển đổi 3 chế độ người dùng: 'worker' | 'gis' | 'fitness'
+            // 1. Hàm chuyển đổi 4 chế độ người dùng: 'worker' | 'survey' | 'gis' | 'fitness'
             window.applyUserRole = function(role, showNotification = true) {
-                const validRoles = ['worker', 'gis', 'fitness'];
+                const validRoles = ['worker', 'survey', 'gis', 'fitness'];
                 const targetRole = validRoles.includes(role) ? role : DEFAULT_ROLE;
 
                 document.body.setAttribute('data-role', targetRole);
@@ -8002,6 +10643,14 @@ ${photoPlacemarksKml}</Document>
                     }
                     if (showNotification) {
                         showToast("👷 Đã bật Chế độ Hiện trường: Chữ to ngoài nắng & Thanh thao tác 1 chạm!", "success");
+                    }
+                } else if (targetRole === 'survey') {
+                    if (actSelect && actSelect.value !== 'survey') {
+                        actSelect.value = 'survey';
+                        $(actSelect).trigger('change');
+                    }
+                    if (showNotification) {
+                        showToast("📐 Đã bật Chế độ Đo đạc Thực địa: Thanh công cụ Điểm/Đường/Vùng, Kiểu dáng & Sửa đỉnh GIS!", "success");
                     }
                 } else if (targetRole === 'gis') {
                     if (showNotification) {
