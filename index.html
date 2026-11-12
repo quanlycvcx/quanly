@@ -6,7 +6,7 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <title>Cây xanh 2</title>
+        <title>Cây xanh 2 - Nhóm 3: Quản lý GIS & Điều hành Khí hậu ENSO</title>
         
         <link rel="preconnect" href="https://script.google.com">
         <link rel="preconnect" href="https://maps.googleapis.com">
@@ -2538,9 +2538,237 @@
             }
         }
 
+
+        /* =========================================================================
+           BỔ SUNG: GIAO DIỆN THÍCH ỨNG BIẾN ĐỔI KHÍ HẬU EL NIÑO & LA NIÑA (ENSO)
+           ========================================================================= */
+        .wp-enso-chip {
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .wp-enso-chip.elnino {
+            background: #ffedd5;
+            color: #c2410c;
+            border: 1px solid #fdba74;
+        }
+        .wp-enso-chip.lanina {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #7dd3fc;
+        }
+        .wp-enso-chip.neutral {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .enso-Adaptation-box {
+            margin: 10px 0;
+            padding: 11px 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1.5px solid #cbd5e1;
+            font-size: 12px;
+            color: #1e293b;
+        }
+        .enso-Adaptation-box.elnino-theme {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            border-color: #fb923c;
+        }
+        .enso-Adaptation-box.lanina-theme {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-color: #38bdf8;
+        }
+        .enso-mode-switcher {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 7px 0 9px 0;
+            background: rgba(15, 23, 42, 0.06);
+            padding: 4px;
+            border-radius: 9px;
+        }
+        .enso-mode-btn {
+            border: none;
+            background: transparent;
+            padding: 5px 6px;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .enso-mode-btn.active {
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+        }
+        .enso-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .enso-metric-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 8px;
+            padding: 6px 8px;
+        }
+        .enso-metric-card .e-lbl {
+            display: block;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .enso-metric-card .e-val {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: 'Consolas', monospace;
+        }
+        .enso-metric-card .e-sub {
+            display: block;
+            font-size: 10px;
+            color: #475569;
+            margin-top: 1px;
+        }
+        .enso-action-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .btn-enso-tool {
+            border: none;
+            border-radius: 8px;
+            padding: 7px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: filter 0.15s, transform 0.1s;
+        }
+        .btn-enso-tool:active { transform: scale(0.97); }
+
+        /* Vòng tròn cảnh báo Cây xanh rủi ro khí hậu trên bản đồ */
+        .climate-risk-pulse-icon {
+            border-radius: 50%;
+            box-sizing: border-box;
+            animation: pulseClimateRisk 1.6s infinite;
+        }
+        @keyframes pulseClimateRisk {
+            0% { transform: scale(0.9); opacity: 0.95; }
+            50% { transform: scale(1.25); opacity: 0.45; }
+            100% { transform: scale(0.9); opacity: 0.95; }
+        }
+
+        /* =========================================================================
+           BỔ SUNG: GIAO DIỆN CHUYÊN BIỆT TỪNG FILE NHÓM NGƯỜI DÙNG & CHUYỂN NHÓM
+           ========================================================================= */
+        .role-quick-action-btn {
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.12);
+            color: #f8fafc;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+            touch-action: manipulation;
+            text-decoration: none;
+        }
+        .role-quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.24);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .role-quick-action-btn:active {
+            transform: scale(0.96);
+        }
+        .role-quick-action-btn.edition-switch-pill {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+            color: #bae6fd;
+        }
+        .basin-station-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .basin-status-pill {
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .enso-regime-banner {
+            padding: 9px 11px;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.45;
+            margin: 8px 0;
+        }
+        .enso-regime-banner.elnino-theme { background: #fff7ed; border: 1.5px solid #fdba74; color: #9a3412; }
+        .enso-regime-banner.lanina-theme { background: #eff6ff; border: 1.5px solid #93c5fd; color: #1e3a8a; }
+        .enso-regime-banner.neutral-theme { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+        .edition-card-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #0f172a;
+            text-decoration: none;
+            margin-bottom: 8px;
+            transition: all 0.18s ease;
+        }
+        .edition-card-link:hover {
+            border-color: #16a34a;
+            background: #f0fdf4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+        .edition-card-link.current-edition {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        @media (max-width: 767px) {
+            .role-quick-action-btn {
+                padding: 4px 8px !important;
+                font-size: 10.8px !important;
+            }
+        }
 </style>
     </head>
-    <body>
+    <body data-role="gis">
         <svg width="0" height="0" style="position: absolute;">
           <defs>
             <filter id="radar-palette">
@@ -2563,19 +2791,22 @@
 
         <div id="map"></div>
 
-        <!-- THANH CHUYỂN ĐỔI 4 CHẾ ĐỘ NGƯỜI DÙNG (HIỆN TRƯỜNG - ĐO ĐẠC THỰC ĐỊA - QUẢN LÝ GIS - THỂ THAO) -->
-        <div id="role-switcher" aria-label="Chuyển đổi chế độ người dùng">
-            <button type="button" class="role-btn" data-target-role="worker" title="Giao diện tối giản, chữ to ngoài nắng cho Công nhân hiện trường">
-                👷 <span>Hiện trường</span>
-            </button>
-            <button type="button" class="role-btn" data-target-role="survey" title="Bộ công cụ Đo đạc Thực địa chuyên sâu: Vẽ Điểm/Đường/Vùng/Chữ nhật/Tròn, Kiểu dáng GIS, Sửa đỉnh & Bảng thuộc tính">
-                📐 <span>Đo đạc</span>
-            </button>
-            <button type="button" class="role-btn active" data-target-role="gis" title="Đầy đủ công cụ Quản lý GIS, Kho bản đồ KMZ, Đo vẽ & Trích xuất hàng loạt">
+        <!-- THANH ĐIỀU HÀNH CHUYÊN BIỆT NHÓM 3: QUẢN LÝ GIS & ĐIỀU HÀNH KHÍ HẬU ENSO -->
+        <div id="role-switcher" aria-label="Thanh công cụ Quản lý GIS & Điều hành ENSO">
+            <button type="button" class="role-btn active" data-target-role="gis" title="Phiên bản chuyên biệt dành cho Cán bộ Kỹ thuật / Quản lý GIS & Điều hành Khí hậu">
                 💻 <span>Quản lý GIS</span>
             </button>
-            <button type="button" class="role-btn" data-target-role="fitness" title="Chế độ Thể thao & Cộng đồng: Đo Pace, Calo, Độ dốc & Phản ánh sự cố">
-                🏃 <span>Thể thao</span>
+            <button type="button" class="role-quick-action-btn" onclick="openEnsoBasinMonitorModal()" title="Mở Trung tâm Thích ứng El Niño / La Niña & Giám sát Hồ Thủy điện Thượng nguồn">
+                🌍 <span>Trung tâm ENSO</span>
+            </button>
+            <button type="button" class="role-quick-action-btn" onclick="open16DayForecastPlayer()" title="Mở Trình phát 64 mốc Dự báo mưa 16 ngày (GFS)">
+                🌧️ <span>Dự báo 16N</span>
+            </button>
+            <button type="button" class="role-quick-action-btn" onclick="toggleOcrModal(true)" title="Trích xuất tọa độ ảnh Timemark hàng loạt (Batch OCR) & Đối chiếu Street View">
+                📷 <span>Batch OCR</span>
+            </button>
+            <button type="button" class="role-quick-action-btn edition-switch-pill" onclick="openEditionSwitcherModal()" title="Chuyển sang file HTML của Nhóm người dùng khác">
+                ⇄ <span>Đổi nhóm</span>
             </button>
         </div>
 
@@ -2584,13 +2815,16 @@
             👁️
         </button>
 
-        <!-- VIÊN THUỐC THỜI TIẾT TRỰC TIẾP (LIVE WEATHER PILL) CHO CẢ 3 NHÓM NGƯỜI DÙNG -->
-        <div id="live-weather-pill" class="hazard-safe" onclick="toggleWeatherInfo()" title="Nhấn để mở chi tiết Dự báo thời tiết, Gió giật, Tia UV & Chất lượng không khí">
+        <!-- VIÊN THUỐC THỜI TIẾT & THÍCH ỨNG EL NIÑO / LA NIÑA TRỰC TIẾP -->
+        <div id="live-weather-pill" class="hazard-safe" onclick="toggleWeatherInfo()" title="Nhấn để mở Trung tâm Thời tiết, Độ ẩm đất, Bốc hơi ET0 & Thích ứng El Niño / La Niña">
+            <span id="wp-enso-badge" class="wp-enso-chip neutral">⚖️ ENSO</span>
             <span id="wp-temp-icon">⛅ --°C</span>
             <span class="wp-sep">|</span>
             <span id="wp-rain-prob">🌧️ Mưa: --%</span>
             <span class="wp-sep">|</span>
             <span id="wp-wind-gust">💨 Gió: -- m/s</span>
+            <span class="wp-sep">|</span>
+            <span id="wp-soil-et0" title="Độ ẩm đất tầng rễ & Nguy cơ bật gốc / Khô hạn">🌱 Ẩm đất: --%</span>
             <span class="wp-sep ui-fitness-only">|</span>
             <span id="wp-uv-aqi" class="ui-fitness-only">☀️ UV: -- · AQI: --</span>
             <span id="wp-safety-badge" class="wp-badge safe">🟢 An toàn</span>
@@ -3258,12 +3492,14 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     </div>
                 </div>
 
-                <!-- Cụm nút chọn nhanh Nhãn trạng thái hiện trường 1 chạm (Tag Chips) -->
+                <!-- Cụm nút chọn nhanh Nhãn trạng thái hiện trường & Thích ứng El Niño / La Niña 1 chạm -->
                 <div class="tm-quick-tags-wrap" id="tm-quick-tags-bar">
                     <button type="button" class="tm-tag-chip active" data-stamp="KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG">🔍 Khảo sát</button>
                     <button type="button" class="tm-tag-chip" data-stamp="HIỆN TRƯỜNG: TRƯỚC KHI CẮT TỈA / XỬ LÝ">✂️ Trước xử lý</button>
                     <button type="button" class="tm-tag-chip" data-stamp="NGHIỆM THU: SAU KHI HOÀN THÀNH">✅ Sau xử lý</button>
                     <button type="button" class="tm-tag-chip tag-danger" data-stamp="CẢNH BÁO: SỰ CỐ CÂY XANH KHẨN CẤP">⚠️ Sự cố khẩn</button>
+                    <button type="button" class="tm-tag-chip" data-stamp="THÍCH ỨNG EL NINO: KHÔ HẠN & TƯỚI BỔ SUNG">🔥 Hạn El Niño</button>
+                    <button type="button" class="tm-tag-chip tag-danger" data-stamp="ỨNG PHÓ LA NINA: NGẬP ÚNG & PHÒNG CHỐNG BẬT GỐC">🌧️ Bão La Niña</button>
                     <button type="button" class="tm-tag-chip" data-stamp="PHẢN ÁNH CỘNG ĐỒNG & CHECK-IN CÔNG VIÊN">🌿 Cộng đồng</button>
                 </div>
 
@@ -3330,7 +3566,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('tree_risk', 'Cây sâu bệnh/Nguy hiểm', '#dc2626', '⚠️', 'dashed', 4)">⚠️ Cây nguy hiểm</button>
                     <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('grass_zone', 'Thảm cỏ / Mảng xanh', '#22c55e', '🌺', 'solid', 3)">🌿 Mảng xanh/Cỏ</button>
                     <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('pipe_line', 'Tuyến ống tưới / Thoát nước', '#2563eb', '💧', 'dashed', 4)">💧 Tuyến cấp/thoát</button>
-                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('park_bound', 'Ranh giới Công viên', '#9333ea', '📍', 'dotted', 5)">🏞️ Ranh công viên</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('elnino_fire', 'Mảng cỏ khô dễ cháy (El Niño)', '#ea580c', '🔥', 'dashed', 4)">🔥 Khô hạn El Niño</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('elnino_salinity', 'Điểm đo độ mặn nước tưới', '#d97706', '🧂', 'dotted', 4)">🧂 Độ mặn nguồn tưới</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('lanina_uproot', 'Cây nặng tán dễ bật gốc (La Niña)', '#be123c', '🌪️', 'dashed', 5)">🌪️ Rong tỉa phòng bão</button>
+                    <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('lanina_flood', 'Vùng ngập rễ / Đất nhão (La Niña)', '#0284c7', '🌊', 'solid', 4)">🌊 Vùng rễ ngập úng</button>
                     <button type="button" class="style-preset-chip" onclick="applyFeaturePreset('work_area', 'Khu vực đang Duy tu', '#f59e0b', '🪓', 'dashed', 4)">🪓 Khu vực duy tu</button>
                 </div>
 
@@ -3400,9 +3639,27 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             <input type="number" id="gis-feat-opacity" min="0.05" max="0.95" step="0.05" value="0.3" title="Độ đậm màu tô (0.05 - 0.95)" style="width:50%;">
                         </div>
                     </div>
+                    <div>
+                        <label for="gis-feat-root-zone">🌱 Bồn gốc & Nền đất:</label>
+                        <select id="gis-feat-root-zone" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px;">
+                            <option value="Bồn đất mở thoát nước tốt">🌱 Bồn đất mở thoát nước tốt</option>
+                            <option value="Bồn hẹp bê tông hóa (Dễ khô/bật gốc)">🧱 Bồn hẹp bê tông hóa</option>
+                            <option value="Vùng trũng thấp dễ ngập rễ">🌊 Vùng trũng dễ ngập rễ</option>
+                            <option value="Đất pha cát thoát nước nhanh (Cần tưới kỹ)">🏜️ Đất cát khô nhanh</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="gis-feat-enso-resilience">🛡️ Thích ứng El Niño / La Niña:</label>
+                        <select id="gis-feat-enso-resilience" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px;">
+                            <option value="Chịu hạn & chịu gió bão tốt">🟢 Chịu hạn & gió bão tốt</option>
+                            <option value="Nhạy cảm khô hạn El Niño (Ưu tiên tưới)">🔥 Nhạy cảm hạn El Niño (Tưới ưu tiên)</option>
+                            <option value="Tán nặng/Rễ nông dễ bật gốc La Niña (Cần hạ tán)">🌧️ Dễ bật gốc La Niña (Cần hạ tán)</option>
+                            <option value="Nhạy cảm ngập úng & xâm nhập mặn">🧂 Nhạy cảm ngập úng & mặn</option>
+                        </select>
+                    </div>
                     <div class="full-col">
-                        <label for="gis-feat-notes">✍️ Ghi chú kỹ thuật (Kích thước, đường kính gốc, chiều cao, khối lượng...):</label>
-                        <input type="text" id="gis-feat-notes" placeholder="VD: Đường kính gốc 45cm, cao 12m, cần mé nhánh phía đường điện...">
+                        <label for="gis-feat-notes">✍️ Ghi chú kỹ thuật & Định mức tưới / Chăm sóc:</label>
+                        <input type="text" id="gis-feat-notes" placeholder="VD: Đường kính gốc 45cm, cao 12m, định mức tưới 15 lít/m2...">
                     </div>
                     <div class="full-col" style="display:flex; align-items:center; justify-content:space-between; padding-top:4px;">
                         <label style="margin:0; display:flex; align-items:center; gap:6px; cursor:pointer;">
@@ -3495,6 +3752,111 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                 <div class="modal-footer">
                     <button type="button" class="btn-action btn-gray" onclick="fillCurrentGpsToManualInput()">📍 Lấy GPS hiện tại</button>
                     <button type="button" class="btn-action btn-blue" onclick="createFeatureFromManualCoord()">✅ Tạo đối tượng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Trung tâm Thích ứng Khí hậu El Niño / La Niña & Giám sát Lưu vực Thượng nguồn -->
+        <div id="enso-basin-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 620px;">
+                <button class="modal-close-btn" onclick="$('#enso-basin-modal').removeClass('visible')">×</button>
+                <h3 style="color:#0f172a; display:flex; align-items:center; gap:8px;">
+                    🌍 Trung tâm Thích ứng El Niño & La Niña (ENSO)
+                </h3>
+                <p style="font-size:12px; color:#64748b; margin:-4px 0 10px 0;">
+                    Phân tích tác động tích lũy của hạn mặn (El Niño) và mưa lũ thượng nguồn, bão hòa đất gây bật gốc cây (La Niña).
+                </p>
+
+                <div style="font-size:11.5px; font-weight:700; color:#334155; margin-bottom:4px;">🎛️ Chế độ Kịch bản Vận hành & Ngưỡng Cảnh báo Động:</div>
+                <div class="enso-mode-switcher">
+                    <button type="button" class="enso-mode-btn active" onclick="setEnsoAdaptationMode('auto'); openEnsoBasinMonitorModal();">🔄 Tự động (Thực tế)</button>
+                    <button type="button" class="enso-mode-btn" onclick="setEnsoAdaptationMode('elnino'); openEnsoBasinMonitorModal();">🔥 Kịch bản El Niño (Hạn/Mặn)</button>
+                    <button type="button" class="enso-mode-btn" onclick="setEnsoAdaptationMode('lanina'); openEnsoBasinMonitorModal();">🌧️ Kịch bản La Niña (Ngập/Bão)</button>
+                </div>
+
+                <div id="enso-modal-summary-banner" class="enso-regime-banner neutral-theme">
+                    Đang tải dữ liệu cân bằng nước, độ ẩm đất và mưa tích lũy...
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0 6px 0;">
+                    <span style="font-size:12.5px; font-weight:800; color:#0f172a;">🌊 Giám sát Thượng nguồn Lưu vực Hybas & Hồ Thủy điện:</span>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-action btn-green" style="padding:4px 10px; font-size:11px;" onclick="$('#enso-basin-modal').removeClass('visible'); checkUpstreamHydroAndSalinity();">🗺️ Ghim lên Bản đồ</button>
+                        <button type="button" class="btn-action btn-blue" style="padding:4px 10px; font-size:11px;" onclick="fetchUpstreamBasinStations()">🔄 Làm mới</button>
+                    </div>
+                </div>
+                <div id="enso-basin-stations-list">
+                    <p style="text-align:center; color:#64748b; font-size:12px; padding:10px;">Đang tải dữ liệu các hồ thượng nguồn...</p>
+                </div>
+
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid #e2e8f0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:12.5px; font-weight:800; color:#0f172a;">🌳 Rà soát Cây xanh & Đối tượng Rủi ro Khí hậu:</span>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-action btn-orange" style="padding:5px 10px; font-size:11px;" onclick="$('#enso-basin-modal').removeClass('visible'); scanTreesForEnsoRisk();">🌳🔍 Khoanh vùng Bản đồ</button>
+                            <button type="button" class="btn-action btn-green" style="padding:5px 10px; font-size:11px;" onclick="runSpatialTreeClimateAudit()">📊 Phân tích Rủi ro</button>
+                        </div>
+                    </div>
+                    <div id="enso-tree-audit-result" style="font-size:12px; color:#334155; background:#f8fafc; border:1px solid #e2e8f0; border-radius:9px; padding:9px 12px;">
+                        Nhấn <b>"📊 Phân tích Rủi ro"</b> hoặc <b>"🌳🔍 Khoanh vùng Bản đồ"</b> để lọc danh sách cây/đối tượng cần ưu tiên cắt tỉa chống bật gốc (La Niña) hoặc tưới bù chống hạn (El Niño).
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="margin-top:14px;">
+                    <button type="button" class="btn-action btn-gray" onclick="$('#enso-basin-modal').removeClass('visible')" style="border-radius:20px;">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Chuyển Đổi Giữa Các File HTML Theo Từng Nhóm Người Dùng -->
+        <div id="app-edition-switcher-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 500px;">
+                <button class="modal-close-btn" onclick="$('#app-edition-switcher-modal').removeClass('visible')">×</button>
+                <h3 style="color:#0f172a; margin-bottom:4px;">🔀 Chuyển Đổi Giao Diện Nhóm Người Dùng</h3>
+                <p style="font-size:12px; color:#64748b; margin-top:0; margin-bottom:12px;">Mỗi nhóm người dùng được thiết kế thành một file HTML độc lập, tối ưu hóa riêng các chức năng và công cụ tương ứng:</p>
+
+                <a href="index_CXCS2_22_Portal_4NhomNguoiDung.html" class="edition-card-link" style="background:#f0fdf4; border-color:#86efac;">
+                    <div>
+                        <div style="font-weight:800; font-size:13.5px; color:#15803d;">🏛️ Cổng Trung Tâm Phân Tích 4 Nhóm Người Dùng (Portal)</div>
+                        <div style="font-size:11.5px; color:#475569; margin-top:2px;">Bảng phân tích chi tiết chức năng & điều hướng toàn hệ thống Cây Xanh 2</div>
+                    </div>
+                    <span style="font-size:18px;">➔</span>
+                </a>
+
+                <a href="index_CXCS2_22_Nhom1_CongNhanHienTruong_OSM.html" class="edition-card-link" data-edition="worker">
+                    <div>
+                        <div style="font-weight:800; font-size:13.5px; color:#ea580c;">👷 Nhóm 1: Công nhân Hiện trường & Duy tu Cây xanh</div>
+                        <div style="font-size:11.5px; color:#475569; margin-top:2px;">Chữ to ngoài nắng, Thanh 3 nút lớn 1 chạm (Bắt đầu ca, Chụp Timemark giọng nói, Khóa bỏ túi) & Cảnh báo an toàn lao động</div>
+                    </div>
+                    <span style="font-size:18px;">➔</span>
+                </a>
+
+                <a href="index_CXCS2_22_Nhom2_DoDacThucDia_GIS_OSM.html" class="edition-card-link" data-edition="survey">
+                    <div>
+                        <div style="font-weight:800; font-size:13.5px; color:#6d28d9;">📐 Nhóm 2: Đội Đo đạc Thực địa & Biên tập GIS</div>
+                        <div style="font-size:11.5px; color:#475569; margin-top:2px;">Bàn phím thu thập Điểm/Đường/Đa giác/Chữ nhật/Bán kính, Chốt GPS, Sửa đỉnh, Ký hiệu học & Xuất GeoJSON/KML/CSV</div>
+                    </div>
+                    <span style="font-size:18px;">➔</span>
+                </a>
+
+                <a href="index_CXCS2_22_Nhom3_QuanLyGIS_DieuHanhENSO_OSM.html" class="edition-card-link" data-edition="gis">
+                    <div>
+                        <div style="font-weight:800; font-size:13.5px; color:#1d4ed8;">💻 Nhóm 3: Cán bộ Kỹ thuật / Quản lý GIS & Điều hành ENSO</div>
+                        <div style="font-size:11.5px; color:#475569; margin-top:2px;">Đầy đủ Cây lớp bản đồ, Trung tâm El Niño/La Niña, Hồ thượng nguồn, Dự báo 16 ngày (64 mốc KMZ), Batch OCR & Street View 360°</div>
+                    </div>
+                    <span style="font-size:18px;">➔</span>
+                </a>
+
+                <a href="index_CXCS2_22_Nhom4_TheThaoCongDong_OSM.html" class="edition-card-link" data-edition="fitness">
+                    <div>
+                        <div style="font-weight:800; font-size:13.5px; color:#16a34a;">🏃 Nhóm 4: Thể thao, Sức khỏe & Cộng đồng</div>
+                        <div style="font-size:11.5px; color:#475569; margin-top:2px;">Đo Pace, Calo, Độ dốc, Khung giờ vàng vận động (UV/AQI), Phản ánh cộng đồng, Chia sẻ bảo mật 200m & Thẻ ảnh PNG</div>
+                    </div>
+                    <span style="font-size:18px;">➔</span>
+                </a>
+
+                <div class="modal-footer" style="margin-top:12px;">
+                    <button type="button" class="btn-action btn-gray" onclick="$('#app-edition-switcher-modal').removeClass('visible')" style="border-radius:20px;">Đóng</button>
                 </div>
             </div>
         </div>
@@ -3625,14 +3987,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                             </div>
                         </label>
                     </div>
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
-                        <div style="font-weight: 700; font-size: 12.5px; color: #166534; margin-bottom: 6px;">👤 Chọn giao diện phù hợp với vai trò của bạn:</div>
-                        <select id="init-role-select" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #86efac; font-size: 13px; font-weight: 600; color: #0f172a; background: #ffffff; outline: none;">
-                            <option value="gis">💻 Cán bộ Kỹ thuật / Quản lý GIS (Đầy đủ công cụ bản đồ)</option>
-                            <option value="survey">📐 Đội Đo đạc Thực địa (Thu thập Điểm/Đường/Vùng, Kiểu dáng & Sửa đỉnh GIS)</option>
-                            <option value="worker">👷 Công nhân Hiện trường / Duy tu (Chữ to, 3 nút lớn 1 chạm)</option>
-                            <option value="fitness">🏃 Thể thao & Cộng đồng (Đo Pace, Calo, Độ dốc & Phản ánh)</option>
-                        </select>
+                    <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
+                        <div style="font-weight: 800; font-size: 13px; color: #1e40af; margin-bottom: 4px;">💻 Phiên bản: Cán bộ Kỹ thuật / Quản lý GIS & Điều hành ENSO</div>
+                        <div style="font-size: 12px; color: #1e3a8a; line-height: 1.45;">Mở khóa toàn bộ <b>Cây lớp bản đồ đa tầng, Trung tâm Thích ứng El Niño & La Niña, Giám sát Hồ Thượng nguồn, Trình phát 64 mốc Dự báo 16 ngày, Kho KMZ Drive, Street View 360° & Batch OCR</b>.</div>
+                        <input type="hidden" id="init-role-select" value="gis">
                     </div>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #475569; cursor: pointer;">
                         <input type="checkbox" id="chk-remember-loc-choice" checked style="accent-color: var(--primary-color); width: 16px; height: 16px;">
@@ -9109,6 +9467,8 @@ ${photoPlacemarksKml}</Document>
         setupLazyDriveLayer('1xTefl1RcqqGJFYAzXBwyo1WLEjSNRsnN', layer_GiamSat_Khoa, '3. GS Khoa');
         setupLazyDriveLayer('1I17cM14OpuxsOnMKYrLy69Es6CX4cb9_', layer_GiamSat_Khong, '4. GS không');
 
+
+
         // =========================================================================
         // BỔ SUNG MỚI: BỘ ĐIỀU PHỐI BỐ CỤC ĐỘNG & CHỐNG CHỒNG LẤN CÔNG CỤ TRÊN DI ĐỘNG
         // (Dynamic Viewport Offset Engine, Mutual Panel Exclusion, Collapsible Docks,
@@ -9587,6 +9947,8 @@ ${photoPlacemarksKml}</Document>
                         dash: window.surveyConfig.activeDash || 'solid',
                         weight: window.surveyConfig.activeWeight || 4,
                         fillOpacity: window.surveyConfig.activeFillOpacity || 0.3,
+                        rootZone: 'Bồn đất mở thoát nước tốt',
+                        ensoResilience: 'Chịu hạn & chịu gió bão tốt',
                         notes: '',
                         showLabel: true,
                         createdAt: new Date().toLocaleString('vi-VN')
@@ -9631,7 +9993,9 @@ ${photoPlacemarksKml}</Document>
                         <b>Phân nhóm:</b> ${p.group}<br>
                         <b>Hình học:</b> ${m.typeLabel}<br>
                         <b>Thông số đo:</b> <span style="color:#1d4ed8; font-weight:800; font-family:Consolas,monospace;">${m.metricSummary}</span><br>
-                        <b>Tình trạng:</b> ${p.status}
+                        <b>Tình trạng:</b> ${p.status}<br>
+                        <b>Bồn gốc/Nền:</b> ${p.rootZone || 'Bồn đất mở thoát nước tốt'}<br>
+                        <b>Thích ứng ENSO:</b> <span style="color:#0f766e; font-weight:700;">${p.ensoResilience || 'Chịu hạn & chịu gió bão tốt'}</span>
                         ${notesHtml}
                         <div class="share-btn-group" style="margin-top:8px;">
                             <button type="button" class="btn-share-action" style="background:#7c3aed; color:white;" onclick="openGisFeatureStyleModal(${stampId})">🎨 Kiểu & Thuộc tính</button>
@@ -9698,6 +10062,8 @@ ${photoPlacemarksKml}</Document>
                 $('#gis-feat-dash').val(p.dash || 'solid');
                 $('#gis-feat-weight').val(p.weight || 4);
                 $('#gis-feat-opacity').val(p.fillOpacity || 0.3);
+                $('#gis-feat-root-zone').val(p.rootZone || 'Bồn đất mở thoát nước tốt');
+                $('#gis-feat-enso-resilience').val(p.ensoResilience || 'Chịu hạn & chịu gió bão tốt');
                 $('#gis-feat-notes').val(p.notes || '');
                 $('#gis-feat-show-label').prop('checked', p.showLabel !== false);
                 $('#gis-feat-metric-preview').text(m.metricSummary);
@@ -9706,16 +10072,28 @@ ${photoPlacemarksKml}</Document>
                 $('#gis-feature-style-modal').addClass('visible');
             };
 
-            // Chọn nhanh Mẫu đối tượng chuẩn (Preset Symbology) trong Modal
+            // Chọn nhanh Mẫu đối tượng chuẩn (Preset Symbology + Thích ứng ENSO) trong Modal
             window.applyFeaturePreset = function(presetKey, groupName, colorHex, symbolEmoji, dashType, weightNum) {
                 $('#gis-feat-color').val(colorHex);
                 $('#gis-feat-fill-color').val(colorHex);
                 $('#gis-feat-symbol').val(symbolEmoji);
                 $('#gis-feat-dash').val(dashType);
                 $('#gis-feat-weight').val(weightNum);
-                if (presetKey === 'tree_risk') $('#gis-feat-status').val('Sâu bệnh / Nghiêng nguy hiểm');
-                else if (presetKey === 'work_area') $('#gis-feat-status').val('Cần cắt tỉa / Duy tu');
-                else $('#gis-feat-status').val('Bình thường / Tốt');
+                if (presetKey === 'tree_risk' || presetKey === 'lanina_uproot') {
+                    $('#gis-feat-status').val('Sâu bệnh / Nghiêng nguy hiểm');
+                    $('#gis-feat-enso-resilience').val('Tán nặng/Rễ nông dễ bật gốc La Niña (Cần hạ tán)');
+                } else if (presetKey === 'elnino_fire') {
+                    $('#gis-feat-status').val('Cần cắt tỉa / Duy tu');
+                    $('#gis-feat-enso-resilience').val('Nhạy cảm khô hạn El Niño (Ưu tiên tưới)');
+                } else if (presetKey === 'elnino_salinity' || presetKey === 'lanina_flood') {
+                    $('#gis-feat-status').val('Cần cắt tỉa / Duy tu');
+                    $('#gis-feat-root-zone').val('Vùng trũng thấp dễ ngập rễ');
+                    $('#gis-feat-enso-resilience').val('Nhạy cảm ngập úng & xâm nhập mặn');
+                } else if (presetKey === 'work_area') {
+                    $('#gis-feat-status').val('Cần cắt tỉa / Duy tu');
+                } else {
+                    $('#gis-feat-status').val('Bình thường / Tốt');
+                }
             };
 
             // Lưu thông tin & kiểu dáng đã chỉnh sửa lên đối tượng
@@ -9735,6 +10113,8 @@ ${photoPlacemarksKml}</Document>
                     dash: $('#gis-feat-dash').val() || 'solid',
                     weight: parseInt($('#gis-feat-weight').val(), 10) || 4,
                     fillOpacity: parseFloat($('#gis-feat-opacity').val()) || 0.3,
+                    rootZone: $('#gis-feat-root-zone').val() || 'Bồn đất mở thoát nước tốt',
+                    ensoResilience: $('#gis-feat-enso-resilience').val() || 'Chịu hạn & chịu gió bão tốt',
                     notes: $('#gis-feat-notes').val().trim(),
                     showLabel: $('#gis-feat-show-label').is(':checked'),
                     createdAt: (layer.gisProps && layer.gisProps.createdAt) ? layer.gisProps.createdAt : new Date().toLocaleString('vi-VN')
@@ -10022,6 +10402,8 @@ ${photoPlacemarksKml}</Document>
                         stroke_width: p.weight,
                         line_dash: p.dash,
                         symbol: p.symbol,
+                        root_zone: p.rootZone || 'Bồn đất mở thoát nước tốt',
+                        enso_resilience: p.ensoResilience || 'Chịu hạn & chịu gió bão tốt',
                         notes: p.notes,
                         created_at: p.createdAt
                     };
@@ -10046,13 +10428,13 @@ ${photoPlacemarksKml}</Document>
                     showToast("Chưa có đối tượng nào để xuất Excel CSV.", "error");
                     return;
                 }
-                let csv = "\uFEFFMã ID,Tên Đối Tượng,Phân Nhóm,Loại Hình Học,Tình Trạng,Chiều Dài / Chu Vi (m),Diện Tích (m2),Bán Kính (m),Vĩ Độ Tâm (Lat),Kinh Độ Tâm (Lng),Ghi Chú Kỹ Thuật,Thời Gian Thu Thập\n";
+                let csv = "\uFEFFMã ID,Tên Đối Tượng,Phân Nhóm,Loại Hình Học,Tình Trạng,Bồn Gốc & Nền Đất,Thích Ứng El Niño / La Niña,Chiều Dài / Chu Vi (m),Diện Tích (m2),Bán Kính (m),Vĩ Độ Tâm (Lat),Kinh Độ Tâm (Lng),Ghi Chú Kỹ Thuật,Thời Gian Thu Thập\n";
                 layers.forEach(layer => {
                     if (!layer.gisProps) window.refreshGisLayerPopupAndTooltip(layer);
                     const p = layer.gisProps;
                     const m = window.computeGisLayerMetrics(layer);
                     const esc = (s) => String(s || '').replace(/"/g, '""');
-                    csv += `"${esc(p.code)}","${esc(p.name)}","${esc(p.group)}","${esc(m.typeLabel)}","${esc(p.status)}",${m.lengthM.toFixed(2)},${m.areaM2.toFixed(2)},${m.radiusM.toFixed(2)},${m.centerLat.toFixed(6)},${m.centerLng.toFixed(6)},"${esc(p.notes)}","${esc(p.createdAt)}"\n`;
+                    csv += `"${esc(p.code)}","${esc(p.name)}","${esc(p.group)}","${esc(m.typeLabel)}","${esc(p.status)}","${esc(p.rootZone)}","${esc(p.ensoResilience)}",${m.lengthM.toFixed(2)},${m.areaM2.toFixed(2)},${m.radiusM.toFixed(2)},${m.centerLat.toFixed(6)},${m.centerLng.toFixed(6)},"${esc(p.notes)}","${esc(p.createdAt)}"\n`;
                 });
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
@@ -10602,7 +10984,7 @@ ${photoPlacemarksKml}</Document>
         // NHẬP GHI CHÚ GIỌNG NÓI, TRÍCH XUẤT HÀNG LOẠT (BATCH OCR) & THẺ ẢNH WORKOUT
         // =========================================================================
         (function() {
-            const ROLE_STORAGE_KEY = 'cxcs2_active_user_role_v1';
+            const ROLE_STORAGE_KEY = 'cxcs2_locked_role_gis';
             const DEFAULT_ROLE = 'gis';
             let gpsLockTimeout = null;
             let isTimemarkGpsLocked = false;
@@ -10611,7 +10993,7 @@ ${photoPlacemarksKml}</Document>
             // 1. Hàm chuyển đổi 4 chế độ người dùng: 'worker' | 'survey' | 'gis' | 'fitness'
             window.applyUserRole = function(role, showNotification = true) {
                 const validRoles = ['worker', 'survey', 'gis', 'fitness'];
-                const targetRole = validRoles.includes(role) ? role : DEFAULT_ROLE;
+                const targetRole = 'gis';
 
                 document.body.setAttribute('data-role', targetRole);
                 try { localStorage.setItem(ROLE_STORAGE_KEY, targetRole); } catch (e) {}
@@ -11046,6 +11428,622 @@ ${photoPlacemarksKml}</Document>
             });
         })();
 
+        
+        // =========================================================================
+        // BỔ SUNG MỚI: HỆ THỐNG THÍCH ỨNG BIẾN ĐỔI KHÍ HẬU EL NIÑO & LA NIÑA (ENSO)
+        // (1. Độ ẩm đất tầng rễ, Lượng bốc thoát hơi nước ET0, Mưa tích lũy 72h & Heat Index
+        //  2. Thuật toán Chỉ số Nguy cơ Bật gốc Cây xanh (Uproot Risk Index) & Định mức tưới
+        //  3. Quét không gian Cây xanh vùng ngập / nguy cơ cao & Giám sát Hồ Thủy điện thượng nguồn)
+        // =========================================================================
+        (function() {
+            const ensoRiskLayerGroup = L.featureGroup().addTo(map);
+
+            window.ensoState = {
+                selectedMode: 'auto', // 'auto' | 'elnino' | 'lanina'
+                effectivePhase: 'neutral', // 'elnino' | 'lanina' | 'neutral'
+                heatIndexC: null,
+                soilMoistureVol: 0.28, // m3/m3 (0.08 khô kiệt -> 0.46 bão hòa)
+                soilSaturationPct: 62, // % độ bão hòa tương đối tầng rễ
+                et0DailyMm: 4.5, // Lượng bốc thoát hơi tham chiếu (mm/ngày)
+                rainPast72hMm: 12.0, // Tổng mưa 72 giờ qua (mm)
+                rainNext72hMm: 18.0, // Tổng mưa dự báo 72 giờ tới (mm)
+                waterBalanceMm: -3.2, // P_24h - ET0
+                irrigationNeedLitersM2: 3.5, // Định mức nước cần tưới bổ sung (Lít/m2/ngày)
+                dynamicCritGustMs: 11.0, // Ngưỡng gió giật nguy hiểm động (hạ xuống khi đất nhão)
+                uprootRiskIndex: 0.25, // Chỉ số nguy cơ bật gốc cây (0.0 -> 2.0+)
+                uprootRiskLabel: 'Thấp (Ổn định)',
+                salinityWarning: 'Bình thường (< 0.5‰)',
+                upstreamHydroStatus: 'Chưa kiểm tra'
+            };
+
+            // 1. Truy vấn bổ sung Độ ẩm đất, Bốc thoát hơi ET0, Mưa tích lũy 72h & Heat Index từ Open-Meteo
+            window.fetchEnsoClimateMetrics = async function(lat, lng) {
+                try {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(5)}&longitude=${lng.toFixed(5)}&current=apparent_temperature,soil_moisture_0_to_7cm,soil_moisture_7_to_28cm&hourly=precipitation,soil_moisture_7_to_28cm&daily=et0_fao_evapotranspiration,precipitation_sum&past_days=3&forecast_days=4&timezone=auto`;
+                    const resp = await fetch(url);
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    const es = window.ensoState;
+
+                    if (data.current) {
+                        if (typeof data.current.apparent_temperature === 'number') {
+                            es.heatIndexC = data.current.apparent_temperature;
+                        }
+                        const smTop = data.current.soil_moisture_0_to_7cm;
+                        const smRoot = data.current.soil_moisture_7_to_28cm;
+                        const smVal = (typeof smRoot === 'number') ? smRoot : (typeof smTop === 'number' ? smTop : null);
+                        if (smVal !== null) {
+                            es.soilMoistureVol = smVal;
+                            // Quy đổi m3/m3 sang % độ bão hòa tương đối của đất đô thị (Field saturation ~ 0.45 m3/m3)
+                            es.soilSaturationPct = Math.min(100, Math.max(5, Math.round((smVal / 0.45) * 100)));
+                        }
+                    }
+
+                    // Tính tổng mưa tích lũy 72h qua và 72h tới từ chuỗi daily
+                    if (data.daily && Array.isArray(data.daily.precipitation_sum)) {
+                        const pArr = data.daily.precipitation_sum;
+                        // past_days=3 -> index 0,1,2 là 3 ngày qua; index 3 là hôm nay; 4,5,6 là 3 ngày tới
+                        const past3 = (pArr[0] || 0) + (pArr[1] || 0) + (pArr[2] || 0);
+                        const todayRain = pArr[3] || 0;
+                        const next3 = todayRain + (pArr[4] || 0) + (pArr[5] || 0);
+                        es.rainPast72hMm = Number((past3 + todayRain * 0.5).toFixed(1));
+                        es.rainNext72hMm = Number(next3.toFixed(1));
+
+                        if (Array.isArray(data.daily.et0_fao_evapotranspiration) && typeof data.daily.et0_fao_evapotranspiration[3] === 'number') {
+                            es.et0DailyMm = Number(data.daily.et0_fao_evapotranspiration[3].toFixed(1));
+                        }
+                        es.waterBalanceMm = Number((todayRain - es.et0DailyMm).toFixed(1));
+                    }
+
+                    recomputeEnsoIndicators();
+                } catch (err) {
+                    console.warn("ENSO Open-Meteo fetch warning:", err);
+                }
+            };
+
+            // 2. Tính toán các chỉ số thích ứng El Niño / La Niña & Ngưỡng cảnh báo động
+            function recomputeEnsoIndicators() {
+                const es = window.ensoState;
+                const w = window.extWeatherPro || {};
+                const temp = w.tempC !== null && w.tempC !== undefined ? w.tempC : 30;
+                const wind = w.windSpeedMs || 2.5;
+                const gust = w.windGustMs || (wind * 1.35);
+
+                if (es.heatIndexC === null) {
+                    es.heatIndexC = temp + ((w.humidity || 70) > 65 ? 3.2 : 1.5);
+                }
+
+                // Xác định pha khí hậu hiệu lực (Tự động hoặc do người dùng chọn mô phỏng kịch bản)
+                if (es.selectedMode === 'elnino') {
+                    es.effectivePhase = 'elnino';
+                } else if (es.selectedMode === 'lanina') {
+                    es.effectivePhase = 'lanina';
+                } else {
+                    if (es.rainPast72hMm >= 65 || es.rainNext72hMm >= 75 || es.soilSaturationPct >= 82 || (w.rainProbPct >= 75)) {
+                        es.effectivePhase = 'lanina';
+                    } else if (es.heatIndexC >= 36.5 || es.soilSaturationPct <= 35 || es.et0DailyMm >= 5.2) {
+                        es.effectivePhase = 'elnino';
+                    } else {
+                        es.effectivePhase = 'neutral';
+                    }
+                }
+
+                // Nếu người dùng bật chế độ mô phỏng Kịch bản El Niño hoặc La Niña, điều chỉnh thông số sát thực tế kịch bản để phục vụ diễn tập/quy hoạch
+                let simSoilPct = es.soilSaturationPct;
+                let simRain72 = es.rainPast72hMm;
+                let simEt0 = es.et0DailyMm;
+                let simHeat = es.heatIndexC;
+
+                if (es.selectedMode === 'elnino') {
+                    simSoilPct = Math.min(es.soilSaturationPct, 24);
+                    simEt0 = Math.max(es.et0DailyMm, 6.2);
+                    simHeat = Math.max(es.heatIndexC, 39.5);
+                } else if (es.selectedMode === 'lanina') {
+                    simSoilPct = Math.max(es.soilSaturationPct, 89);
+                    simRain72 = Math.max(es.rainPast72hMm, 118.0);
+                }
+
+                // Tính định mức tưới bổ sung (Lít/m2/ngày) khi thiếu hụt nước
+                const deficit = Math.max(0, simEt0 - (simRain72 / 6));
+                es.irrigationNeedLitersM2 = (simSoilPct < 55) ? Number((deficit * 1.35).toFixed(1)) : 0;
+
+                // Cảnh báo xâm nhập mặn nguồn nước mặt trong pha El Niño
+                if (es.effectivePhase === 'elnino' && simSoilPct <= 30) {
+                    es.salinityWarning = '⚠️ Nguy cơ mặn > 1.5‰ (Kiểm tra trước khi bơm tưới)';
+                } else {
+                    es.salinityWarning = '🟢 An toàn (< 0.5‰)';
+                }
+
+                // Công thức tính Ngưỡng gió giật giới hạn động (V_crit) & Chỉ số nguy cơ bật gốc cây xanh (I_uproot)
+                // Khi đất bão hòa nước (nhão nền) do mưa tích lũy La Niña, lực ma sát giữ rễ giảm mạnh -> V_crit giảm từ 11.5 m/s xuống 7.5 m/s
+                const saturationFactor = (simSoilPct >= 80 || simRain72 >= 80) ? 0.65 : (simSoilPct >= 68 ? 0.82 : 1.0);
+                es.dynamicCritGustMs = Number((11.5 * saturationFactor).toFixed(1));
+
+                const rainAmplifier = 1 + (Math.min(200, simRain72) / 140) * 0.45 + (simSoilPct > 75 ? 0.35 : 0);
+                es.uprootRiskIndex = Number(((gust / es.dynamicCritGustMs) * rainAmplifier).toFixed(2));
+
+                if (es.uprootRiskIndex >= 1.0 || (simSoilPct >= 85 && gust >= 7.2)) {
+                    es.uprootRiskLabel = '🔴 RẤT CAO (Đất nhão + Gió giật)';
+                } else if (es.uprootRiskIndex >= 0.65 || simSoilPct >= 80) {
+                    es.uprootRiskLabel = '🟡 TRUNG BÌNH-CAO (Theo dõi rễ/tán)';
+                } else {
+                    es.uprootRiskLabel = '🟢 THẤP (Nền đất ổn định)';
+                }
+
+                updateEnsoHeaderBadges(simSoilPct, simRain72, simHeat);
+            }
+
+            function updateEnsoHeaderBadges(simSoilPct, simRain72, simHeat) {
+                const es = window.ensoState;
+                const badge = $('#wp-enso-badge');
+                badge.removeClass('elnino lanina neutral').addClass(es.effectivePhase);
+
+                if (es.effectivePhase === 'elnino') {
+                    badge.html('🔥 El Niño');
+                    $('#wp-soil-et0').html(`🌱 Ẩm: ${simSoilPct}% · Tưới: ${es.irrigationNeedLitersM2}L/m²`);
+                } else if (es.effectivePhase === 'lanina') {
+                    badge.html('🌧️ La Niña');
+                    $('#wp-soil-et0').html(`🌊 Ẩm: ${simSoilPct}% · Mưa 72h: ${simRain72}mm`);
+                } else {
+                    badge.html('⚖️ Trung tính');
+                    $('#wp-soil-et0').html(`🌱 Ẩm đất: ${simSoilPct}%`);
+                }
+
+                // Nếu Chỉ số bật gốc cây ở mức Rất Cao hoặc Sốc nhiệt El Niño > 40°C, cập nhật Cảnh báo An toàn
+                const w = window.extWeatherPro;
+                if (!w) return;
+                if (es.effectivePhase === 'lanina' && es.uprootRiskIndex >= 0.95) {
+                    w.hazardLevel = 'danger';
+                    w.hazardTitle = `🔴 CẢNH BÁO LA NIÑA: Đất bão hòa (${simSoilPct}%), Nguy cơ Bật gốc Cây Rất Cao!`;
+                    w.hazardAdvice = `Mưa tích lũy ${simRain72}mm làm nhão nền đất tầng rễ; ngưỡng gió giật nguy hiểm hạ xuống ${es.dynamicCritGustMs} m/s. Dừng làm việc dưới tán cây lớn & kiểm tra các tuyến cây cổ thụ!`;
+                    $('#weather-safety-alert-banner').removeClass('caution-mode').css('display', 'flex');
+                    $('#weather-safety-alert-text').html(`<b>${w.hazardTitle}</b> ${w.hazardAdvice}`);
+                } else if (es.effectivePhase === 'elnino' && simHeat >= 39.0) {
+                    if (w.hazardLevel === 'safe') w.hazardLevel = 'caution';
+                    w.hazardTitle = `🔥 CẢNH BÁO EL NIÑO: Nhiệt cảm nhận ${simHeat.toFixed(1)}°C & Thiếu hụt nước tưới`;
+                    w.hazardAdvice = `Độ ẩm đất giảm còn ${simSoilPct}%, bốc thoát hơi ET0 cao (${es.et0DailyMm}mm/ngày). Cần tưới bổ sung ${es.irrigationNeedLitersM2} Lít/m² và bố trí công nhân nghỉ tránh sốc nhiệt từ 11:30–14:30.`;
+                }
+            }
+
+            // 3. Chuyển đổi Kịch bản Khí hậu ENSO trực tiếp trên Bảng Thời tiết
+            window.setEnsoAdaptationMode = function(mode) {
+                window.ensoState.selectedMode = mode || 'auto';
+                recomputeEnsoIndicators();
+                if (extState.lastWeatherData) {
+                    window.renderWeather(extState.lastWeatherData, window.extWeatherPro.locationName || 'Khu vực hiện tại');
+                }
+                const modeNames = {
+                    auto: '🔄 Tự động theo dữ liệu khí tượng thực tế',
+                    elnino: '🔥 Kịch bản Thích ứng El Niño (Khô hạn, Nắng nóng & Xâm nhập mặn)',
+                    lanina: '🌧️ Kịch bản Ứng phó La Niña (Mưa dồn dập, Ngập rễ & Bật gốc cây)'
+                };
+                showToast(`Đã kích hoạt: ${modeNames[window.ensoState.selectedMode]}`, "info");
+            };
+
+            // 4. Tạo khối HTML "Trung tâm Thích ứng El Niño & La Niña" chèn vào Bảng Thời tiết (#weather-info)
+            window.buildEnsoWeatherPanelHTML = function() {
+                const es = window.ensoState;
+                const isElNino = (es.effectivePhase === 'elnino');
+                const isLaNina = (es.effectivePhase === 'lanina');
+                const themeClass = isElNino ? 'elnino-theme' : (isLaNina ? 'lanina-theme' : '');
+
+                const simSoil = (es.selectedMode === 'elnino') ? Math.min(es.soilSaturationPct, 24) : (es.selectedMode === 'lanina' ? Math.max(es.soilSaturationPct, 89) : es.soilSaturationPct);
+                const simRain72 = (es.selectedMode === 'lanina') ? Math.max(es.rainPast72hMm, 118.0) : es.rainPast72hMm;
+                const simHeat = (es.selectedMode === 'elnino') ? Math.max(es.heatIndexC || 35, 39.5) : (es.heatIndexC || 31);
+
+                const phaseTitle = isElNino
+                    ? '🔥 PHA EL NIÑO: Quản lý Khô hạn, Sốc nhiệt & Nguồn nước tưới'
+                    : (isLaNina ? '🌧️ PHA LA NIÑA: Phòng chống Bật gốc Cây, Ngập rễ & Xả lũ' : '⚖️ PHA TRUNG TÍNH: Giám sát Cân bằng Nước & Độ ẩm đất');
+
+                const actionRecommendation = isElNino
+                    ? `• <b>Lịch tưới & Định mức:</b> Tưới bổ sung <b>${es.irrigationNeedLitersM2} Lít/m²/ngày</b> vào sáng sớm hoặc chiều mát.<br>• <b>Nguồn nước:</b> ${es.salinityWarning}.<br>• <b>Ca làm việc hiện trường:</b> Khuyến nghị 05:30–10:00 & 15:00–17:30 (Tránh sốc nhiệt lúc Heat Index ${simHeat.toFixed(1)}°C).`
+                    : `• <b>Cảnh báo cơ học đất:</b> Độ ẩm đất tầng rễ <b>${simSoil}%</b>, ngưỡng gió giật gây đổ cây hạ xuống <b>${es.dynamicCritGustMs} m/s</b>.<br>• <b>Duy tu phòng bão:</b> Ưu tiên rong tỉa thông gió tán cây cổ thụ & khơi thông thoát nước gốc tại các điểm ngập.`;
+
+                return `
+                  <div class="enso-Adaptation-box ${themeClass}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b style="font-size:12.5px; color:#0f172a;">🌍 Thích ứng Biến đổi Khí hậu (ENSO):</b>
+                        <span class="wp-enso-chip ${es.effectivePhase}">${isElNino ? '🔥 El Niño' : (isLaNina ? '🌧️ La Niña' : '⚖️ Trung tính')}</span>
+                    </div>
+
+                    <div class="enso-mode-switcher">
+                        <button type="button" class="enso-mode-btn ${es.selectedMode === 'auto' ? 'active' : ''}" onclick="setEnsoAdaptationMode('auto')">🔄 Tự động</button>
+                        <button type="button" class="enso-mode-btn ${es.selectedMode === 'elnino' ? 'active' : ''}" onclick="setEnsoAdaptationMode('elnino')">🔥 El Niño</button>
+                        <button type="button" class="enso-mode-btn ${es.selectedMode === 'lanina' ? 'active' : ''}" onclick="setEnsoAdaptationMode('lanina')">🌧️ La Niña</button>
+                    </div>
+
+                    <div class="enso-metrics-grid">
+                        <div class="enso-metric-card">
+                            <span class="e-lbl">🌱 Độ ẩm đất tầng rễ</span>
+                            <span class="e-val" style="color:${simSoil < 35 ? '#ea580c' : (simSoil > 80 ? '#0284c7' : '#15803d')};">${simSoil}% (${es.soilMoistureVol.toFixed(2)} m³/m³)</span>
+                            <span class="e-sub">${simSoil < 35 ? 'Đất khô - Cần tưới gấp' : (simSoil > 80 ? 'Bão hòa - Nền đất nhão' : 'Độ ẩm tối ưu cho rễ')}</span>
+                        </div>
+                        <div class="enso-metric-card">
+                            <span class="e-lbl">💧 Mưa 72h / Bốc hơi ET0</span>
+                            <span class="e-val">${simRain72}mm / ${es.et0DailyMm}mm</span>
+                            <span class="e-sub">Cần tưới: <b>${es.irrigationNeedLitersM2} Lít/m²/ngày</b></span>
+                        </div>
+                        <div class="enso-metric-card">
+                            <span class="e-lbl">🌡️ Nhiệt cảm nhận (HI)</span>
+                            <span class="e-val" style="color:${simHeat >= 38 ? '#dc2626' : '#0f172a'};">${simHeat.toFixed(1)}°C</span>
+                            <span class="e-sub">${simHeat >= 38 ? '⚠️ Nguy cơ sốc nhiệt cao' : 'An toàn lao động ngoài trời'}</span>
+                        </div>
+                        <div class="enso-metric-card">
+                            <span class="e-lbl">🌪️ Nguy cơ Bật gốc cây</span>
+                            <span class="e-val" style="color:${es.uprootRiskIndex >= 0.85 ? '#dc2626' : '#0369a1'};">Chỉ số: ${es.uprootRiskIndex}</span>
+                            <span class="e-sub">${es.uprootRiskLabel}</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px; padding:7px 9px; background:rgba(255,255,255,0.85); border-radius:8px; border-left:3.5px solid ${isElNino ? '#ea580c' : '#0284c7'}; font-size:11.5px; line-height:1.45;">
+                        <div style="font-weight:800; color:#0f172a; margin-bottom:2px;">${phaseTitle}</div>
+                        ${actionRecommendation}
+                    </div>
+
+                    <div class="enso-action-bar">
+                        <button type="button" class="btn-enso-tool" style="background:linear-gradient(135deg,#ea580c,#c2410c);" onclick="scanTreesForEnsoRisk()">
+                            🌳🔍 Quét Cây Rủi ro ENSO
+                        </button>
+                        <button type="button" class="btn-enso-tool" style="background:linear-gradient(135deg,#0284c7,#1d4ed8);" onclick="checkUpstreamHydroAndSalinity()">
+                            🏞️ Thượng nguồn & Độ mặn
+                        </button>
+                        <button type="button" class="btn-enso-tool" style="grid-column:span 2; background:linear-gradient(135deg,#0f172a,#334155);" onclick="openEnsoBasinMonitorModal()">
+                            🌍 Mở Trung tâm Giám sát Lưu vực & Rà soát Cây xanh ENSO
+                        </button>
+                    </div>
+                  </div>
+                `;
+            };
+
+            // 5. Công cụ Quét Không gian Cây xanh & Đối tượng Đo đạc theo Kịch bản Rủi ro El Niño / La Niña
+            window.scanTreesForEnsoRisk = function() {
+                ensoRiskLayerGroup.clearLayers();
+                const es = window.ensoState;
+                const isElNino = (es.effectivePhase === 'elnino');
+                let flaggedCount = 0;
+                const bounds = L.latLngBounds();
+
+                // Quét trong lớp Cây xanh đám mây (layerCloudTreesCluster)
+                if (typeof layerCloudTreesCluster !== 'undefined') {
+                    const allTreeMarkers = layerCloudTreesCluster.getLayers();
+                    // Lấy mẫu tối đa 35 cây tiêu biểu trong vùng nhìn hiện tại hoặc toàn cục để đánh dấu trực quan
+                    const currentBounds = map.getBounds();
+                    const inViewTrees = allTreeMarkers.filter(m => m.getLatLng && currentBounds.contains(m.getLatLng()));
+                    const targetPool = inViewTrees.length > 0 ? inViewTrees : allTreeMarkers;
+
+                    targetPool.slice(0, 30).forEach((treeMarker, idx) => {
+                        if (idx % 2 !== 0 && targetPool.length > 12) return;
+                        const ll = treeMarker.getLatLng();
+                        const riskColor = isElNino ? '#ea580c' : '#dc2626';
+                        const riskTitle = isElNino
+                            ? '🔥 Cảnh báo El Niño: Khu vực ưu tiên tưới giữ ẩm & kiểm tra sâu bệnh mùa khô'
+                            : '🌧️ Cảnh báo La Niña: Theo dõi độ nghiêng, ngập rễ & cắt tỉa hạ tán phòng bật gốc';
+
+                        const circle = L.circle(ll, {
+                            radius: 28,
+                            color: riskColor,
+                            fillColor: riskColor,
+                            weight: 2,
+                            fillOpacity: 0.28
+                        }).addTo(ensoRiskLayerGroup);
+
+                        circle.bindPopup(`
+                            <div style="font-size:12.5px; line-height:1.45;">
+                                <b style="color:${riskColor};">${isElNino ? '🔥 Điểm Ưu tiên Chống hạn El Niño' : '🌪️ Điểm Cảnh báo Phòng bão La Niña'}</b><br>
+                                ${riskTitle}<br>
+                                <b>Độ ẩm đất:</b> ${es.soilSaturationPct}% | <b>Định mức tưới:</b> ${es.irrigationNeedLitersM2} L/m²<br>
+                                <b>Chỉ số bật gốc:</b> ${es.uprootRiskIndex} (${es.uprootRiskLabel})
+                                <div class="share-btn-group" style="margin-top:6px;">
+                                    <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${ll.lat}, ${ll.lng}, false)">🚗 Dẫn đường xử lý</button>
+                                </div>
+                            </div>
+                        `);
+                        bounds.extend(ll);
+                        flaggedCount++;
+                    });
+                }
+
+                // Quét cả các đối tượng trong Bảng Đo đạc Thực địa (drawnItems)
+                if (typeof drawnItems !== 'undefined') {
+                    drawnItems.eachLayer(layer => {
+                        const m = window.computeGisLayerMetrics ? window.computeGisLayerMetrics(layer) : null;
+                        if (m && m.centerLat && m.centerLng) {
+                            const ll = L.latLng(m.centerLat, m.centerLng);
+                            const riskColor = isElNino ? '#f59e0b' : '#7c3aed';
+                            L.circleMarker(ll, {
+                                radius: 11,
+                                color: riskColor,
+                                fillColor: riskColor,
+                                weight: 2.5,
+                                fillOpacity: 0.35
+                            }).addTo(ensoRiskLayerGroup).bindPopup(`<b>📐 Đối tượng đo đạc cần lưu ý (${es.effectivePhase.toUpperCase()})</b><br>Khuyến nghị kiểm tra hiện trường theo kịch bản khí hậu.`);
+                            bounds.extend(ll);
+                            flaggedCount++;
+                        }
+                    });
+                }
+
+                if (window.innerWidth <= 767) hideWeatherInfoPanel();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { maxZoom: 17, padding: [40, 40] });
+                }
+                showToast(`🌳 Đã khoanh vùng ${flaggedCount} điểm cây xanh / mảng xanh cần ưu tiên xử lý theo kịch bản ${isElNino ? 'El Niño' : 'La Niña'}!`, "success");
+            };
+
+            // 6. Giám sát Mưa Thượng nguồn 3 Hồ Thủy điện (Trị An, Dầu Tiếng, Thác Mơ) & Cảnh báo Xâm nhập mặn Hạ lưu
+            window.checkUpstreamHydroAndSalinity = async function() {
+                const reservoirs = [
+                    { name: 'Thủy điện Trị An (Sông Đồng Nai)', lat: 11.1025, lng: 107.0392 },
+                    { name: 'Hồ Dầu Tiếng (Sông Sài Gòn)', lat: 11.3264, lng: 106.3422 },
+                    { name: 'Thủy điện Thác Mơ (Sông Bé)', lat: 11.8325, lng: 107.0058 }
+                ];
+
+                toggleLoading(true);
+                showToast("🏞️ Đang phân tích lượng mưa thượng nguồn lưu vực Đồng Nai - Sài Gòn...", "info");
+
+                try {
+                    const results = await Promise.all(reservoirs.map(async (r) => {
+                        const url = `https://api.open-meteo.com/v1/forecast?latitude=${r.lat}&longitude=${r.lng}&daily=precipitation_sum&past_days=3&forecast_days=3&timezone=auto`;
+                        const resp = await fetch(url);
+                        const d = await resp.json();
+                        const p = (d && d.daily && d.daily.precipitation_sum) ? d.daily.precipitation_sum : [0,0,0,0,0,0];
+                        const past3 = (p[0] || 0) + (p[1] || 0) + (p[2] || 0);
+                        const next3 = (p[3] || 0) + (p[4] || 0) + (p[5] || 0);
+                        return { ...r, past3: past3.toFixed(1), next3: next3.toFixed(1), total6d: past3 + next3 };
+                    }));
+
+                    toggleLoading(false);
+                    ensoRiskLayerGroup.clearLayers();
+                    const bounds = L.latLngBounds();
+
+                    results.forEach(res => {
+                        const isHighRain = res.total6d >= 90;
+                        const isDrought = res.total6d <= 10;
+                        const badgeColor = isHighRain ? '#dc2626' : (isDrought ? '#ea580c' : '#0284c7');
+                        const statusTxt = isHighRain
+                            ? '🔴 Mưa thượng nguồn lớn: Cảnh báo điều tiết xả lũ kết hợp triều cường gây ngập hạ lưu!'
+                            : (isDrought ? '🔥 Mưa thượng nguồn rất thấp: Cảnh báo suy giảm dòng chảy & xâm nhập mặn sâu!' : '🟢 Lưu lượng thượng nguồn ổn định.');
+
+                        const m = L.circleMarker([res.lat, res.lng], {
+                            radius: 10,
+                            fillColor: badgeColor,
+                            color: '#ffffff',
+                            weight: 2.5,
+                            fillOpacity: 0.95
+                        }).addTo(ensoRiskLayerGroup);
+
+                        m.bindPopup(`
+                            <div style="font-size:12.5px; line-height:1.45; min-width:210px;">
+                                <b style="color:${badgeColor};">🏞️ ${res.name}</b><br>
+                                <b>Mưa 3 ngày qua:</b> ${res.past3} mm<br>
+                                <b>Dự báo 3 ngày tới:</b> ${res.next3} mm<br>
+                                <div style="margin-top:5px; padding:5px 7px; background:#f8fafc; border-left:3px solid ${badgeColor}; border-radius:4px;">
+                                    ${statusTxt}
+                                </div>
+                            </div>
+                        `);
+                        bounds.extend([res.lat, res.lng]);
+                    });
+
+                    // Bật lớp Thủy điện & Lưu vực Đồng Nai nếu có
+                    if (typeof layerHybasGroups !== 'undefined') {
+                        if (layerHybasGroups[2] && !map.hasLayer(layerHybasGroups[2])) map.addLayer(layerHybasGroups[2]);
+                        if (layerHybasGroups[6] && !map.hasLayer(layerHybasGroups[6])) map.addLayer(layerHybasGroups[6]);
+                        refreshLayerTreeControl();
+                    }
+
+                    if (window.innerWidth <= 767) hideWeatherInfoPanel();
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                    showToast("✅ Đã hiển thị trạng thái mưa 3 Hồ thượng nguồn & cảnh báo thủy văn hạ lưu!", "success");
+                } catch (e) {
+                    toggleLoading(false);
+                    showToast("Không thể kết nối dữ liệu trạm thượng nguồn lúc này.", "error");
+                }
+            };
+
+            // 7. Mở rộng hàm getWeather, renderWeather & getCurrentWeatherStampString để tích hợp đầy đủ chỉ số ENSO
+            const prevGetWeather = window.getWeather;
+            window.getWeather = async function(lat, lng, locationName) {
+                await Promise.all([
+                    prevGetWeather(lat, lng, locationName),
+                    window.fetchEnsoClimateMetrics(lat, lng)
+                ]);
+                recomputeEnsoIndicators();
+                if (extState.lastWeatherData) {
+                    window.renderWeather(extState.lastWeatherData, locationName || window.extWeatherPro.locationName);
+                }
+            };
+
+            const prevRenderWeather = window.renderWeather;
+            window.renderWeather = function(forecastData, locationName) {
+                prevRenderWeather(forecastData, locationName);
+                const weatherBox = document.getElementById('weather-info');
+                if (!weatherBox) return;
+                const ensoHtml = window.buildEnsoWeatherPanelHTML();
+                const firstRoleCard = weatherBox.querySelector('.weather-role-card');
+                if (firstRoleCard) {
+                    firstRoleCard.insertAdjacentHTML('beforebegin', ensoHtml);
+                } else {
+                    weatherBox.insertAdjacentHTML('beforeend', ensoHtml);
+                }
+            };
+
+            const prevStampFn = window.getCurrentWeatherStampString;
+            window.getCurrentWeatherStampString = function() {
+                const baseStr = (typeof prevStampFn === 'function') ? prevStampFn() : '';
+                const es = window.ensoState;
+                if (!baseStr) return '';
+                const phaseTag = es.effectivePhase === 'elnino' ? 'EL NINO' : (es.effectivePhase === 'lanina' ? 'LA NINA' : 'ENSO');
+                return `${baseStr} | [${phaseTag}] Ẩm đất: ${es.soilSaturationPct}% · Mưa 72h: ${es.rainPast72hMm}mm · Bật gốc: ${es.uprootRiskIndex}`;
+            };
+            // 8. TRUNG TÂM GIÁM SÁT THƯỢNG NGUỒN LƯU VỰC HYBAS & QUÉT RỦI RO CÂY XANH (#enso-basin-modal)
+            window.recomputeEnsoIndicators = recomputeEnsoIndicators;
+
+            const UPSTREAM_BASIN_STATIONS = [
+                { name: 'Hồ Thủy điện Trị An (Thượng nguồn Đồng Nai)', lat: 11.1025, lng: 107.0392, basin: 'Lưu vực sông Đồng Nai' },
+                { name: 'Hồ Dầu Tiếng (Thượng nguồn sông Sài Gòn)', lat: 11.3264, lng: 106.3422, basin: 'Lưu vực sông Sài Gòn' },
+                { name: 'Thủy điện Thác Mơ – Phước Hòa (Sông Bé)', lat: 11.8325, lng: 107.0058, basin: 'Thượng lưu sông Bé' },
+                { name: 'Trạm Tân Châu – Châu Đốc (Đầu nguồn Mekong)', lat: 10.7980, lng: 105.2340, basin: 'Lưu vực sông Mekong' }
+            ];
+
+            window.openEnsoBasinMonitorModal = function() {
+                hideWeatherInfoPanel();
+                recomputeEnsoIndicators();
+                syncEnsoModalSummaryBanner();
+                $('#enso-basin-modal').addClass('visible');
+                window.fetchUpstreamBasinStations();
+            };
+
+            function syncEnsoModalSummaryBanner() {
+                const es = window.ensoState;
+                const w = window.extWeatherPro || {};
+                const banner = $('#enso-modal-summary-banner');
+                if (!banner.length) return;
+                const isElNino = (es.effectivePhase === 'elnino');
+                const isLaNina = (es.effectivePhase === 'lanina');
+                banner.removeClass('elnino-theme lanina-theme neutral-theme')
+                      .addClass(isElNino ? 'elnino-theme' : (isLaNina ? 'lanina-theme' : 'neutral-theme'))
+                      .html(`
+                        <div style="font-weight:800; font-size:13px; margin-bottom:4px;">${isElNino ? '🔥 Kịch bản / Pha El Niño' : (isLaNina ? '🌧️ Kịch bản / Pha La Niña' : '⚖️ Pha Trung tính')} — ${w.hazardTitle || 'Đang giám sát khí tượng'}</div>
+                        <div>• <b>Độ bão hòa ẩm tầng rễ:</b> ${es.soilSaturationPct}% (${es.soilMoistureVol.toFixed(2)} m³/m³) | <b>Mưa tích lũy 72h:</b> ${es.rainPast72hMm} mm (Dự báo 72h tới: ${es.rainNext72hMm} mm)</div>
+                        <div>• <b>Bốc thoát hơi ET₀:</b> ${es.et0DailyMm} mm/ngày | <b>Định mức tưới bù:</b> ${es.irrigationNeedLitersM2} Lít/m²/ngày | <b>Chỉ số bật gốc cây:</b> ${es.uprootRiskIndex} (${es.uprootRiskLabel})</div>
+                        <div style="margin-top:4px; font-weight:700;">• <b>Nguồn nước & Thủy văn:</b> ${es.salinityWarning}</div>
+                      `);
+            }
+
+            window.fetchUpstreamBasinStations = async function() {
+                const container = $('#enso-basin-stations-list');
+                if (!container.length) return;
+                container.html('<p style="text-align:center; color:#0284c7; font-size:12px; padding:12px;">⏳ Đang truy vấn dữ liệu mưa tích lũy & độ ẩm đất thượng nguồn từ vệ tinh Open-Meteo...</p>');
+
+                try {
+                    const results = await Promise.all(UPSTREAM_BASIN_STATIONS.map(async (st) => {
+                        const url = `https://api.open-meteo.com/v1/forecast?latitude=${st.lat}&longitude=${st.lng}&current=precipitation,soil_moisture_7_to_28cm&daily=precipitation_sum&past_days=3&forecast_days=3&timezone=auto`;
+                        const resp = await fetch(url);
+                        const d = await resp.json();
+                        const pArr = (d && d.daily && d.daily.precipitation_sum) ? d.daily.precipitation_sum : [0,0,0,0,0,0];
+                        const r72Past = (Number(pArr[0]) || 0) + (Number(pArr[1]) || 0) + (Number(pArr[2]) || 0);
+                        const r72Next = (Number(pArr[3]) || 0) + (Number(pArr[4]) || 0) + (Number(pArr[5]) || 0);
+                        const sm = (d && d.current && typeof d.current.soil_moisture_7_to_28cm === 'number')
+                            ? Math.min(100, Math.round((d.current.soil_moisture_7_to_28cm / 0.45) * 100))
+                            : 60;
+                        return { ...st, r72Past: r72Past.toFixed(1), r72Next: r72Next.toFixed(1), sm };
+                    }));
+
+                    let html = '';
+                    results.forEach(st => {
+                        const pastNum = parseFloat(st.r72Past);
+                        const nextNum = parseFloat(st.r72Next);
+                        let badgeHtml = `<span class="basin-status-pill" style="background:#dcfce7; color:#15803d;">🟢 Điều tiết ổn định</span>`;
+                        if (pastNum >= 80 || nextNum >= 90) {
+                            badgeHtml = `<span class="basin-status-pill" style="background:#fee2e2; color:#b91c1c;">🔴 Cảnh báo xả lũ (La Niña)</span>`;
+                        } else if (pastNum <= 5 && nextNum <= 5 && st.sm <= 42) {
+                            badgeHtml = `<span class="basin-status-pill" style="background:#ffedd5; color:#c2410c;">🔥 Kiệt dòng / Nguy cơ mặn (El Niño)</span>`;
+                        }
+
+                        html += `
+                            <div class="basin-station-card">
+                                <div>
+                                    <div style="font-weight:800; font-size:12.5px; color:#0f172a;">📍 ${st.name}</div>
+                                    <div style="font-size:11px; color:#475569; margin-top:2px;">
+                                        Mưa 72h qua: <b>${st.r72Past}mm</b> | Dự báo 72h tới: <b style="color:#0284c7;">${st.r72Next}mm</b> | Ẩm đất: <b>${st.sm}%</b>
+                                    </div>
+                                </div>
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                                    ${badgeHtml}
+                                    <button type="button" class="btn-action btn-blue" style="padding:2px 8px; font-size:10px;" onclick="$('#enso-basin-modal').removeClass('visible'); map.flyTo([${st.lat}, ${st.lng}], 11, {animate:true});">🔍 Xem hồ</button>
+                                </div>
+                            </div>`;
+                    });
+                    container.html(html);
+                } catch (e) {
+                    container.html('<p style="color:#dc2626; font-size:12px;">Không thể kết nối dữ liệu trạm thượng nguồn lúc này.</p>');
+                }
+            };
+
+            window.runSpatialTreeClimateAudit = function() {
+                const resBox = $('#enso-tree-audit-result');
+                const es = window.ensoState;
+                const cloudLayers = (typeof layerCloudTreesCluster !== 'undefined') ? layerCloudTreesCluster.getLayers() : [];
+                const surveyLayers = (typeof drawnItems !== 'undefined') ? drawnItems.getLayers() : [];
+
+                let vulnerableSurveyItems = [];
+                surveyLayers.forEach(l => {
+                    if (!l.gisProps) return;
+                    const p = l.gisProps;
+                    const m = window.computeGisLayerMetrics ? window.computeGisLayerMetrics(l) : { centerLat: 0, centerLng: 0 };
+                    const isRisk = (p.status && p.status.includes('Sâu bệnh')) ||
+                                   (p.rootZone && !p.rootZone.includes('thoát nước tốt')) ||
+                                   (p.ensoResilience && !p.ensoResilience.includes('tốt'));
+                    if (isRisk) {
+                        vulnerableSurveyItems.push({
+                            stampId: L.Util.stamp(l),
+                            code: p.code,
+                            name: p.name,
+                            reason: `${p.rootZone || ''} · ${p.ensoResilience || ''}`,
+                            lat: m.centerLat,
+                            lng: m.centerLng
+                        });
+                    }
+                });
+
+                let html = `
+                    <div style="margin-bottom:6px;">
+                        ✅ Đã rà soát <b>${cloudLayers.length}</b> cây xanh trên Kho đám mây và <b>${surveyLayers.length}</b> đối tượng đo đạc thực địa:
+                    </div>
+                    <ul style="margin:4px 0 8px 18px; padding:0; line-height:1.5;">
+                        <li><b>Ứng phó La Niña (Chống bật gốc & ngập rễ):</b> Chỉ số bật gốc hiện tại <b>${es.uprootRiskIndex} (${es.uprootRiskLabel})</b>, ngưỡng gió giật giới hạn <b>${es.dynamicCritGustMs} m/s</b>. Ưu tiên rong tỉa cây tán nặng, bồn hẹp và khơi thông điểm ngập.</li>
+                        <li><b>Thích ứng El Niño (Chống hạn & xâm nhập mặn):</b> Bốc thoát hơi <b>ET₀ = ${es.et0DailyMm} mm/ngày</b>, định mức tưới bổ sung <b>${es.irrigationNeedLitersM2} Lít/m²/ngày</b>.</li>
+                    </ul>`;
+
+                if (vulnerableSurveyItems.length > 0) {
+                    html += `<div style="font-weight:800; color:#b91c1c; margin-bottom:4px;">⚠️ Phát hiện ${vulnerableSurveyItems.length} đối tượng đo đạc nhạy cảm với khí hậu cực đoan:</div>`;
+                    vulnerableSurveyItems.slice(0, 6).forEach(it => {
+                        html += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #fecaca; padding:5px 8px; border-radius:6px; margin-bottom:4px; font-size:11.5px;">
+                                <span><b>${it.code} - ${it.name}</b> <small style="color:#64748b;">(${it.reason})</small></span>
+                                <button type="button" class="btn-action btn-blue" style="padding:2px 8px; font-size:10px;" onclick="$('#enso-basin-modal').removeClass('visible'); zoomToSurveyFeature(${it.stampId});">📍 Tới xử lý</button>
+                            </div>`;
+                    });
+                } else {
+                    html += `<div style="color:#15803d; font-weight:700;">💡 Nhấn nút <b>"🌳🔍 Khoanh vùng trên Bản đồ"</b> bên dưới để đánh dấu trực quan các cây xanh cần ưu tiên xử lý!</div>`;
+                }
+                resBox.html(html);
+                window.scanTreesForEnsoRisk();
+            };
+        })();
+        // =========================================================================
+        // BỔ SUNG: HÀM TIỆN ÍCH CHUYÊN BIỆT CHO TỪNG FILE NHÓM NGƯỜI DÙNG
+        // =========================================================================
+        window.openEditionSwitcherModal = function() {
+            const curRole = document.body.getAttribute('data-role') || 'gis';
+            $('.edition-card-link').removeClass('current-edition');
+            $(`.edition-card-link[data-edition="${curRole}"]`).addClass('current-edition');
+            $('#app-edition-switcher-modal').addClass('visible');
+        };
+
+        window.startOrOpenFitnessWorkout = function() {
+            const actSelect = document.getElementById('track-activity-type');
+            if (actSelect && actSelect.value === 'survey') {
+                actSelect.value = 'running';
+                $(actSelect).trigger('change');
+            }
+            if (!extState.isTracking) {
+                $('#custom-start-tracking-btn').click();
+            } else {
+                const panel = $('#tracking-control-panel');
+                panel.show().removeClass('minimized');
+                $('#btn-minimize-track').text('_');
+            }
+        };
+
+        window.openCommunityTimemarkCheckin = function() {
+            $('#custom-timemark-cam-btn').click();
+            setTimeout(() => {
+                const commChip = $('.tm-tag-chip[data-stamp*="CỘNG ĐỒNG"]');
+                if (commChip.length) commChip.click();
+            }, 250);
+        };
         </script>
     </body>
 </html>
