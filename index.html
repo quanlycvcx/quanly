@@ -4800,6 +4800,318 @@
             }
         }
 
+
+        /* =========================================================================
+           BỔ SUNG V32: TỐI ƯU KHUNG NGẮM CAMERA TIMEMARK RÕ NÉT TRÊN DI ĐỘNG
+           (Khung ngắm cao 48-55dvh, Chế độ Mở rộng Toàn màn hình, Lưới 1/3 căn bố cục,
+            Tem trực tiếp siêu gọn chống che chủ thể, Chạm lấy nét & Thanh công cụ nổi)
+           ========================================================================= */
+        .tm-grid-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 3;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+            background-size: 33.333% 33.333%;
+            display: none;
+        }
+        .tm-grid-overlay.active {
+            display: block;
+        }
+        .tm-focus-ring {
+            position: absolute;
+            width: 56px;
+            height: 56px;
+            border: 2px solid #facc15;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.55), inset 0 0 8px rgba(250, 204, 21, 0.45);
+            transform: translate(-50%, -50%) scale(1.15);
+            pointer-events: none;
+            z-index: 6;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .tm-focus-ring.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .tm-cam-aspect-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.72);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.45);
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Chế độ Toàn màn hình Khung ngắm Camera (Fullscreen Viewfinder) */
+        #timemark-camera-modal.tm-fullscreen-mode {
+            padding: 0 !important;
+            background: #000000 !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .modal-content {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            padding: 0 !important;
+            background: #000000 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode > .modal-content > h3,
+        #timemark-camera-modal.tm-fullscreen-mode .tm-meta-form,
+        #timemark-camera-modal.tm-fullscreen-mode .tm-quick-tags-wrap {
+            display: none !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .modal-close-btn {
+            position: fixed !important;
+            top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+            right: 12px !important;
+            z-index: 40 !important;
+            background: rgba(15, 23, 42, 0.78) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .tm-cam-viewport {
+            flex: 1 1 auto !important;
+            height: auto !important;
+            max-height: none !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .tm-cam-top-tools {
+            top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+            left: 10px !important;
+            right: 52px !important;
+            flex-wrap: wrap;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .tm-cam-aspect-badge {
+            display: none !important;
+        }
+        #timemark-camera-modal.tm-fullscreen-mode .tm-shutter-bar,
+        #timemark-camera-modal.tm-fullscreen-mode .tm-result-actions.active {
+            margin: 0 !important;
+            padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+            background: rgba(15, 23, 42, 0.96) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        /* Tối ưu hiển thị rõ khung hình trên điện thoại & tablet (<= 767px) */
+        @media (max-width: 767px) {
+            #timemark-camera-modal .modal-content {
+                width: 97vw !important;
+                max-width: 97vw !important;
+                padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                max-height: 95dvh !important;
+                border-radius: 16px !important;
+            }
+            #timemark-camera-modal h3 {
+                font-size: 14px !important;
+                margin-bottom: 6px !important;
+            }
+            /* Mở rộng chiều cao khung ngắm lên 46dvh - 54dvh để nhìn rõ toàn cảnh cây xanh & công trình */
+            #timemark-camera-modal .tm-cam-viewport {
+                height: clamp(275px, 48dvh, 430px) !important;
+                border-radius: 11px !important;
+            }
+            /* Thu gọn lớp phủ thông tin trực tiếp trên màn hình điện thoại để không che 40% khung ngắm */
+            #timemark-camera-modal .tm-live-overlay {
+                left: 6px !important;
+                right: 6px !important;
+                bottom: 6px !important;
+                padding: 5px 8px !important;
+                font-size: 10px !important;
+                line-height: 1.25 !important;
+                background: linear-gradient(to top, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.42)) !important;
+            }
+            #timemark-camera-modal .tm-live-clock {
+                font-size: 16px !important;
+            }
+            #timemark-camera-modal .tm-live-date-col {
+                font-size: 9.5px !important;
+            }
+            #timemark-camera-modal #tm-live-project-label {
+                font-size: 10.5px !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            #timemark-camera-modal #tm-live-addr-label {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-top: 1px !important;
+            }
+            #timemark-camera-modal #tm-live-weather-label {
+                display: none !important; /* Ẩn bớt trên khung ngắm nhỏ, vẫn đóng dấu đầy đủ 100% lên ảnh xuất ra */
+            }
+            #timemark-camera-modal #tm-live-gps-label {
+                font-size: 9.8px !important;
+                margin-top: 1px !important;
+            }
+            /* Khi bật chế độ Siêu thoáng (Hide HUD) trên khung ngắm */
+            #timemark-camera-modal .tm-cam-viewport.hud-compact .tm-live-overlay #tm-live-addr-label,
+            #timemark-camera-modal .tm-cam-viewport.hud-compact .tm-live-overlay #tm-live-project-label,
+            #timemark-camera-modal .tm-cam-viewport.hud-compact .tm-live-overlay #tm-live-note-label {
+                display: none !important;
+            }
+            #timemark-camera-modal .tm-cam-viewport.hud-compact .tm-live-overlay {
+                padding: 3px 7px !important;
+                right: auto !important;
+                max-width: 82%;
+            }
+            #timemark-camera-modal .tm-cam-top-tools {
+                top: 6px !important;
+                left: 6px !important;
+                gap: 4px !important;
+                flex-wrap: wrap;
+                max-width: calc(100% - 12px);
+            }
+            #timemark-camera-modal .btn-tm-mini {
+                padding: 4px 8px !important;
+                font-size: 10.5px !important;
+            }
+            #timemark-camera-modal .tm-cam-aspect-badge {
+                display: none !important;
+            }
+            #timemark-camera-modal .tm-quick-tags-wrap {
+                margin-top: 6px !important;
+                padding: 2px 0 !important;
+            }
+            #timemark-camera-modal .tm-tag-chip {
+                padding: 4px 9px !important;
+                font-size: 11px !important;
+            }
+            #timemark-camera-modal .tm-shutter-bar {
+                margin-top: 6px !important;
+                padding: 4px 0 0 0 !important;
+            }
+            #timemark-camera-modal .btn-tm-shutter {
+                padding: 10px 12px !important;
+                font-size: 13px !important;
+            }
+            #timemark-camera-modal .tm-meta-form {
+                margin-top: 7px !important;
+                padding: 8px !important;
+                gap: 6px !important;
+            }
+        }
+
+
+        /* =========================================================================
+           BỔ SUNG V33: CHẾ ĐỘ QUAY VIDEO HIỆN TRƯỜNG ĐÓNG DẤU TỌA ĐỘ & THỜI GIAN
+           (Tab chuyển đổi Ảnh / Video, Bộ đếm REC thời gian thực, Canvas Compositor
+            đóng dấu GPS/Giờ/Địa chỉ trực tiếp vào từng khung hình video & Tải/Chia sẻ)
+           ========================================================================= */
+        .tm-mode-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        .tm-mode-tab {
+            border: none;
+            background: transparent;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .tm-mode-tab.active {
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+        }
+        .tm-mode-tab.active[data-tmmode="video"] {
+            color: #dc2626;
+        }
+        #timemark-video-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000000;
+            display: none;
+        }
+        .tm-rec-indicator {
+            position: absolute;
+            top: 42px;
+            left: 10px;
+            z-index: 8;
+            background: rgba(220, 38, 38, 0.92);
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-family: 'Consolas', monospace;
+            font-size: 11.5px;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 10px rgba(220, 38, 38, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .tm-rec-indicator.active {
+            display: inline-flex;
+        }
+        .tm-rec-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffffff;
+            animation: pulseRecBlink 0.9s infinite;
+        }
+        @keyframes pulseRecBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .btn-tm-shutter.video-ready {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.38) !important;
+        }
+        .btn-tm-shutter.video-recording {
+            background: linear-gradient(135deg, #991b1b, #7f1d1d) !important;
+            border: 2px solid #fde047 !important;
+            animation: pulseWorkerRec 1.4s infinite;
+        }
+        @media (max-width: 767px) {
+            #timemark-camera-modal .tm-mode-switcher {
+                margin-bottom: 6px !important;
+                padding: 3px !important;
+            }
+            #timemark-camera-modal .tm-mode-tab {
+                padding: 5px 8px !important;
+                font-size: 11.5px !important;
+            }
+            .tm-rec-indicator {
+                top: 38px !important;
+                left: 6px !important;
+                font-size: 10.5px !important;
+                padding: 3px 8px !important;
+            }
+        }
+
 </style>
     </head>
     <body>
@@ -4850,17 +5162,17 @@
 
         <!-- VIÊN THUỐC THỜI TIẾT & THÍCH ỨNG EL NIÑO / LA NIÑA TRỰC TIẾP (PHÂN BỔ THEO 4 VAI TRÒ) -->
         <div id="live-weather-pill" class="hazard-safe" onclick="toggleWeatherInfo()" title="Nhấn để mở Trung tâm Thời tiết thích ứng theo vai trò của bạn">
-            <span id="wp-enso-badge" class="wp-enso-chip neutral role-gis-survey">⚖️ ENSO</span>
-            <span id="wp-temp-icon">⛅ --°C</span>
-            <span class="wp-sep">|</span>
-            <span id="wp-rain-prob">🌧️ Mưa: --%</span>
-            <span class="wp-sep">|</span>
-            <span id="wp-wind-gust">💨 Gió: -- m/s</span>
-            <span class="wp-sep role-gis-survey">|</span>
-            <span id="wp-soil-et0" class="role-gis-survey" title="Độ ẩm đất tầng rễ & Nguy cơ bật gốc / Khô hạn">🌱 Ẩm đất: --%</span>
-            <span class="wp-sep ui-fitness-only">|</span>
-            <span id="wp-uv-aqi" class="ui-fitness-only">☀️ UV: -- · AQI: --</span>
-            <span id="wp-safety-badge" class="wp-badge safe">🟢 An toàn</span>
+            <span id="wp-enso-badge" class="wp-enso-chip neutral role-gis-only">⚖️ ENSO</span>
+            <span id="wp-temp-icon">⏳ Đang đồng bộ khí tượng...</span>
+            <span class="wp-sep wp-dynamic-sep" style="display:none;">|</span>
+            <span id="wp-rain-prob" style="display:none;">🌧️ Mưa: --%</span>
+            <span class="wp-sep wp-dynamic-sep" style="display:none;">|</span>
+            <span id="wp-wind-gust" style="display:none;">💨 Gió: -- m/s</span>
+            <span class="wp-sep role-gis-survey wp-dynamic-sep" style="display:none;">|</span>
+            <span id="wp-soil-et0" class="role-gis-survey" style="display:none;" title="Độ ẩm đất tầng rễ & Nguy cơ bật gốc / Khô hạn">🌱 Ẩm đất: --%</span>
+            <span class="wp-sep ui-fitness-only wp-dynamic-sep" style="display:none;">|</span>
+            <span id="wp-uv-aqi" class="ui-fitness-only" style="display:none;">☀️ UV: -- · AQI: --</span>
+            <span id="wp-safety-badge" class="wp-badge safe" style="display:none;">🟢 An toàn</span>
         </div>
 
         <!-- THANH CẢNH BÁO AN TOÀN LAO ĐỘNG & RỦI RO CÂY XANH TỰ ĐỘNG -->
@@ -4914,14 +5226,14 @@
                 <div class="survey-style-bar">
                     <span>Biểu tượng:</span>
                     <select id="survey-point-symbol" class="survey-select-mini" title="Chọn kiểu biểu tượng Điểm mốc">
-                        <option value="🌳">🌳 Cây xanh</option>
-                        <option value="🌴">🌴 Cây cổ thụ</option>
-                        <option value="⚠️">⚠️ Sự cố/Sâu bệnh</option>
-                        <option value="🪓">🪓 Cây cần cắt tỉa</option>
-                        <option value="📍">📍 Mốc tọa độ</option>
-                        <option value="💧">💧 Điểm ngập/Van nước</option>
-                        <option value="💡">💡 Trụ đèn/Hạ tầng</option>
-                        <option value="🌺">🌺 Bồn hoa/Tiểu cảnh</option>
+                        <option value="🌳">🌳 Cây xanh bóng mát</option>
+                        <option value="🌴">🌴 Cây cổ thụ / Bảo tồn</option>
+                        <option value="⚠️">⚠️ Sự cố / Sâu bệnh / Nguy hiểm</option>
+                        <option value="🪓">🪓 Cây cần cắt tỉa / Duy tu</option>
+                        <option value="📍">📍 Mốc tọa độ / Ranh giới</option>
+                        <option value="💧">💧 Điểm ngập / Thoát nước</option>
+                        <option value="💡">💡 Trụ đèn / Chiếu sáng</option>
+                        <option value="🌺">🌺 Bồn hoa / Mảng xanh</option>
                     </select>
                     <span>Nét:</span>
                     <select id="survey-line-dash" class="survey-select-mini" title="Chọn kiểu đường kẻ viền">
@@ -5150,8 +5462,8 @@
             </button>
             
             <div class="support-row">
-                <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" title="Mời Em Ếch Xinh ly cà phê">☕</a>
-                <a href="#" id="donate-btn" title="Hỗ trợ Em Ếch Xinh duy trì">❤️</a>
+                <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" title="Ủng hộ duy trì Hệ thống WebGIS Cây xanh">☕</a>
+                <a href="#" id="donate-btn" title="Thông tin hỗ trợ & Đóng góp phát triển">❤️</a>
                 <button id="info-btn" title="Ẩn/Hiện bảng thông tin thời tiết chi tiết">⛅</button>
                 <button id="btn-open-f16-player" class="role-gis-only" onclick="open16DayForecastPlayer()" title="Mở Trình phát tự động 64 mốc Dự báo mưa 16 ngày (Quản lý GIS)" style="background:#eff6ff !important; color:#1d4ed8 !important; font-size:16px; border:1px solid #93c5fd !important;">🌧️</button>
             </div>
@@ -5518,20 +5830,33 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         <div id="timemark-camera-modal" class="modal-overlay">
             <div class="modal-content" style="max-width: 500px; padding: 18px 20px;">
                 <button class="modal-close-btn" onclick="closeTimemarkCameraModal()">×</button>
-                <h3 style="display:flex; align-items:center; gap:8px; color:#ea580c; margin-bottom:8px;">
-                    📸 Chụp Ảnh Hiện Trường Timemark
+                <h3 style="display:flex; align-items:center; gap:8px; color:#ea580c; margin-bottom:6px;">
+                    📸 Chụp Ảnh &amp; Quay Video Hiện Trường Timemark
                 </h3>
 
-                <!-- Khung ngắm Camera trực tiếp & Xem trước ảnh đóng dấu -->
-                <div class="tm-cam-viewport">
-                    <div class="tm-cam-top-tools" id="tm-live-top-tools">
-                        <button type="button" class="btn-tm-mini" id="btn-tm-switch-cam" title="Đổi camera Trước / Sau">🔄 Đổi Cam</button>
-                        <button type="button" class="btn-tm-mini" id="btn-tm-refresh-gps" title="Lấy lại tọa độ GPS và địa chỉ mới nhất">📍 Làm mới GPS</button>
-                    </div>
-                    <div class="tm-top-badge">✔ TIMEMARK GPS VERIFIED</div>
+                <!-- Thanh chuyển chế độ Chụp Ảnh / Quay Video -->
+                <div class="tm-mode-switcher" id="tm-capture-mode-switcher">
+                    <button type="button" class="tm-mode-tab active" data-tmmode="photo">📸 Chụp Ảnh Đóng Dấu</button>
+                    <button type="button" class="tm-mode-tab" data-tmmode="video">🎥 Quay Video Đóng Dấu</button>
+                </div>
 
+                <!-- Khung ngắm Camera trực tiếp & Xem trước ảnh/video đóng dấu -->
+                <div class="tm-cam-viewport" id="tm-cam-viewport-box">
+                    <div class="tm-cam-top-tools" id="tm-live-top-tools">
+                        <button type="button" class="btn-tm-mini" id="btn-tm-fullscreen-toggle" title="Mở rộng / Thu nhỏ khung ngắm toàn màn hình">⛶ Toàn màn hình</button>
+                        <button type="button" class="btn-tm-mini" id="btn-tm-switch-cam" title="Đổi camera Trước / Sau">🔄 Đổi Cam</button>
+                        <button type="button" class="btn-tm-mini" id="btn-tm-grid-toggle" title="Bật/Tắt lưới căn bố cục 1/3">⊞ Lưới</button>
+                        <button type="button" class="btn-tm-mini" id="btn-tm-hud-toggle" title="Thu gọn / Hiện đầy đủ thông tin tem trên khung ngắm">👁️ Gọn tem</button>
+                        <button type="button" class="btn-tm-mini" id="btn-tm-refresh-gps" title="Lấy lại tọa độ GPS và địa chỉ mới nhất">📍 GPS</button>
+                    </div>
+                    <div class="tm-cam-aspect-badge">✔ TIMEMARK GPS</div>
+                    <div class="tm-grid-overlay" id="tm-grid-overlay"></div>
+                    <div class="tm-focus-ring" id="tm-focus-ring"></div>
+
+                    <div class="tm-rec-indicator" id="tm-rec-indicator"><span class="tm-rec-dot"></span><span id="tm-rec-timer">REC 00:00</span></div>
                     <video id="timemark-video" autoplay playsinline muted></video>
                     <img id="timemark-captured-preview" alt="Ảnh hiện trường Timemark">
+                    <video id="timemark-video-preview" controls playsinline></video>
 
                     <!-- Lớp phủ Timemark trực tiếp trên khung ngắm -->
                     <div class="tm-live-overlay" id="tm-live-overlay-box">
@@ -5570,6 +5895,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                         📱 Cam gốc / Ảnh
                     </button>
                     <input type="file" id="tm-native-file-input" accept="image/*" capture="environment" style="display:none;">
+                    <input type="file" id="tm-native-video-input" accept="video/*" capture="environment" style="display:none;">
                 </div>
 
                 <!-- Các nút thao tác sau khi chụp xong -->
@@ -5664,14 +5990,14 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <div>
                         <label for="gis-feat-symbol">🎯 Biểu tượng (Nếu là Điểm):</label>
                         <select id="gis-feat-symbol" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:7px; font-size:12.5px;">
-                            <option value="🌳">🌳 Cây xanh</option>
-                            <option value="🌴">🌴 Cây cổ thụ</option>
-                            <option value="⚠️">⚠️ Cảnh báo / Sự cố</option>
-                            <option value="🪓">🪓 Cần cắt tỉa</option>
-                            <option value="📍">📍 Mốc tọa độ</option>
-                            <option value="💧">💧 Nước / Ngập</option>
-                            <option value="💡">💡 Đèn / Hạ tầng</option>
-                            <option value="🌺">🌺 Bồn hoa</option>
+                            <option value="🌳">🌳 Cây xanh bóng mát</option>
+                            <option value="🌴">🌴 Cây cổ thụ / Bảo tồn</option>
+                            <option value="⚠️">⚠️ Sự cố / Sâu bệnh / Nguy hiểm</option>
+                            <option value="🪓">🪓 Cây cần cắt tỉa / Duy tu</option>
+                            <option value="📍">📍 Mốc tọa độ / Ranh giới</option>
+                            <option value="💧">💧 Điểm ngập / Thoát nước</option>
+                            <option value="💡">💡 Trụ đèn / Chiếu sáng</option>
+                            <option value="🌺">🌺 Bồn hoa / Mảng xanh</option>
                         </select>
                     </div>
                     <div>
@@ -5882,9 +6208,9 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         <div id="donate-modal" class="modal-overlay">
             <div class="modal-content donate-modal-content">
                 <button class="modal-close-btn" onclick="document.getElementById('donate-modal').classList.remove('visible')">×</button>
-                <h2>Hỗ Trợ Em Ếch Xinh</h2>
-                <p>Em Ếch Xinh không thu phí sử dụng, không đặt quảng cáo làm gián đoạn mất tập trung.</p>
-                <p class="highlight">Nhưng Em Ếch Xinh cần chi phí để duy trì, bảo trì, nâng cấp.</p>
+                <h2>Hỗ Trợ Duy Trì Hệ Thống WebGIS Cây Xanh</h2>
+                <p>Hệ thống WebGIS Quản lý Cây xanh hoạt động miễn phí, không đặt quảng cáo làm gián đoạn công tác chuyên môn.</p>
+                <p class="highlight">Kinh phí đóng góp được sử dụng trực tiếp để duy trì máy chủ, bản đồ nền và nâng cấp tính năng.</p>
                 
                 <div class="support-option">
                     <h4>Qua nền tảng Buy Me A Coffee</h4>
@@ -5922,7 +6248,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
 
                 <div style="color: #334155; font-size: 13.5px; line-height: 1.55; margin-bottom: 16px;">
                     <p style="margin: 0 0 10px 0;">
-                        Chào mừng bạn đến với hệ thống <strong>Cây xanh 2</strong>! Để ứng dụng tự động hiển thị thời tiết, dẫn đường và hỗ trợ khảo sát cây xanh chuẩn xác ngay từ điểm xuất phát, bạn có thể lựa chọn cách khởi tạo vị trí của mình:
+                        Chào mừng bạn đến với <strong>Hệ thống WebGIS Quản lý Cây xanh &amp; Hạ tầng</strong>! Để ứng dụng tự động hiển thị thời tiết, dẫn đường và hỗ trợ khảo sát cây xanh chuẩn xác ngay từ điểm xuất phát, bạn có thể lựa chọn cách khởi tạo vị trí của mình:
                     </p>
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 12px;">
                         <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 8px;">
@@ -7133,7 +7459,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         }).fitBounds([[10.811760026465123,106.70929626999828],[10.862154776319636,106.80403573000173]]);
         
         var hash = new L.Hash(map);
-        map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">Em</a> · <a href="https://leafletjs.com" title="A JS library for interactive maps">Ếch</a> · <a href="https://qgis.org">Xinh</a>');
+        map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank">WebGIS Quản lý Cây xanh</a> · <a href="https://qgis.org" target="_blank">QGIS</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a>');
 
         function copyLocationLink(lat, lng) {
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -7223,12 +7549,18 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             pane: 'pane_BingSatellite_Map', opacity: 1.0, attribution: '© Microsoft Bing Maps', minZoom: 1, maxZoom: 28
         });
 
+        map.createPane('pane_Esri_WorldImagery');
+        map.getPane('pane_Esri_WorldImagery').style.zIndex = 400;
+        var layer_Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            pane: 'pane_Esri_WorldImagery', opacity: 1.0, attribution: '© Esri World Imagery', minZoom: 1, maxZoom: 28, maxNativeZoom: 19, crossOrigin: 'anonymous'
+        });
+        map.addLayer(layer_Esri_WorldImagery);
+
         map.createPane('pane_GEHybrid_0');
         map.getPane('pane_GEHybrid_0').style.zIndex = 400;
         var layer_GEHybrid_0 = L.tileLayer('https://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}', {
             pane: 'pane_GEHybrid_0', opacity: 1.0, attribution: '', minZoom: 1, maxZoom: 28, minNativeZoom: 0, maxNativeZoom: 30
         });
-        map.addLayer(layer_GEHybrid_0);
 
         map.createPane('pane_OSM_OpenSource');
         map.getPane('pane_OSM_OpenSource').style.zIndex = 401;
@@ -7721,6 +8053,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             },
             externalLayersNode, 
 			{label: '<b>Bản đồ nền:</b>', children: [
+                {label: "Ảnh vệ tinh Esri (Mặc định)", layer: layer_Esri_WorldImagery},
                 {label: "Bản đồ Vietbando", layer: layer_Vietbando_Map},
                 {label: "Bản đồ Raster TP.HCM", layer: layer_HCM_Raster_Map},
                 {label: "OpenStreetMap (Mã nguồn mở)", layer: layer_OSM_OpenSource},
@@ -21991,6 +22324,669 @@ ${photoPlacemarksKml}</Document>
                         items: resolvedItems
                     };
                 }
+            };
+        })();
+
+
+        // =========================================================================
+        // BỔ SUNG V31: ĐỒNG BỘ HÓA TOÀN DIỆN NỘI DUNG, VAI TRÒ & LUỒNG DỮ LIỆU
+        // =========================================================================
+        (function() {
+            // 1. Khi nhận dữ liệu thời tiết thực tế, hiện đầy đủ các thành phần trên Live Weather Pill
+            const prevUpdatePill = window.updateLiveWeatherPillAndCamUI;
+            // Bọc getWeather để tự mở các ngăn hiển thị trên #live-weather-pill ngay khi có dữ liệu
+            const origGetWeatherV31 = window.getWeather;
+            window.getWeather = async function(lat, lng, locationName) {
+                await origGetWeatherV31(lat, lng, locationName);
+                $('#live-weather-pill .wp-dynamic-sep, #wp-rain-prob, #wp-wind-gust, #wp-safety-badge').css('display', '');
+                const curRole = document.body.getAttribute('data-role') || 'gis';
+                if (curRole === 'gis' || curRole === 'survey') {
+                    $('#wp-soil-et0').css('display', '');
+                }
+                if (curRole === 'fitness') {
+                    $('#wp-uv-aqi').css('display', '');
+                }
+            };
+
+            // 2. Bổ sung 2 thẻ chỉ số chuyên môn hiện trường (Ảnh Timemark & Điểm mốc) trong khung Hành trình
+            // thay cho Pace/Calo khi không ở chế độ Thể thao
+            $(document).ready(function() {
+                const metricGrid = document.querySelector('#tracking-body-content .fitness-metric-grid');
+                if (metricGrid && !document.getElementById('field-card-photos')) {
+                    metricGrid.insertAdjacentHTML('beforeend', `
+                        <div class="fitness-card role-field-pro" id="field-card-photos">
+                            <span class="fitness-label">ẢNH TIMEMARK</span>
+                            <span class="fitness-val" id="track-field-photos-val">0 <small>ảnh</small></span>
+                        </div>
+                        <div class="fitness-card role-field-pro" id="field-card-features">
+                            <span class="fitness-label">ĐỐI TƯỢNG GIS</span>
+                            <span class="fitness-val" id="track-field-features-val">0 <small>mốc</small></span>
+                        </div>
+                    `);
+                }
+
+                // Đồng bộ số liệu 2 thẻ hiện trường theo thời gian thực
+                setInterval(() => {
+                    const photoCntEl = document.getElementById('track-photo-count');
+                    const fieldPhotoVal = document.getElementById('track-field-photos-val');
+                    if (photoCntEl && fieldPhotoVal) {
+                        fieldPhotoVal.innerHTML = `${photoCntEl.textContent || '0'} <small>ảnh</small>`;
+                    }
+                    const featCntEl = document.getElementById('surv-feature-count');
+                    const fieldFeatVal = document.getElementById('track-field-features-val');
+                    if (featCntEl && fieldFeatVal) {
+                        fieldFeatVal.innerHTML = `${featCntEl.textContent || '0'} <small>mốc</small>`;
+                    }
+                }, 1000);
+            });
+
+            // 3. Đồng bộ tiêu đề & ngữ cảnh theo 4 Vai trò khi chuyển đổi
+            const prevRoleFnV31 = window.applyUserRole;
+            window.applyUserRole = function(role, showNotification = true) {
+                const targetRole = ['worker', 'survey', 'gis', 'fitness'].includes(role) ? role : 'gis';
+                if (typeof prevRoleFnV31 === 'function') {
+                    prevRoleFnV31(targetRole, showNotification);
+                }
+
+                // Cập nhật tiêu đề khung Hành trình theo đúng nghiệp vụ từng vai trò
+                const trackTitles = {
+                    worker: '👷 Nhật ký Tuyến Duy tu',
+                    survey: '📐 Nhật ký Đo đạc Thực địa',
+                    gis: '🛰️ Giám sát Lộ trình GPS',
+                    fitness: '🏃 Nhật ký Vận động'
+                };
+                const h4El = document.querySelector('#tracking-control-panel .tracking-header h4');
+                if (h4El) h4El.textContent = trackTitles[targetRole] || '🛰️ Giám sát Lộ trình GPS';
+
+                // Trên màn hình nhỏ, tự thu gọn các bảng nổi đang mở khi đổi vai trò để tránh che bản đồ
+                if (window.innerWidth <= 767) {
+                    if (typeof hideWeatherInfoPanel === 'function') hideWeatherInfoPanel();
+                    $('#route-summary-modal').hide();
+                }
+
+                // Đồng bộ lại các thành phần hiển thị trên Live Weather Pill
+                if (extState && extState.lastWeatherData) {
+                    $('#wp-soil-et0').toggle(targetRole === 'gis' || targetRole === 'survey');
+                    $('#wp-uv-aqi').toggle(targetRole === 'fitness');
+                }
+                if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                    setTimeout(window.updateDynamicLayoutOffsets, 80);
+                }
+            };
+
+            // 4. Tôn trọng tọa độ/zoom trên URL hash (VD: #9/11.0055/106.7139) nếu người dùng mở link trực tiếp
+            const prevCheckPrompt = window.checkAndPromptInitialLocation;
+            window.checkAndPromptInitialLocation = function() {
+                const h = window.location.hash || '';
+                if (/^#\d+\/[\d.-]+\/[\d.-]+/.test(h)) {
+                    const c = map.getCenter();
+                    if (typeof window.getWeather === 'function') {
+                        window.getWeather(c.lat, c.lng, `Khu vực (${c.lat.toFixed(4)}, ${c.lng.toFixed(4)})`);
+                    }
+                    return;
+                }
+                if (typeof prevCheckPrompt === 'function') prevCheckPrompt();
+            };
+        })();
+
+
+        // =========================================================================
+        // BỔ SUNG V32: ĐIỀU KHIỂN KHUNG NGẮM CAMERA TIMEMARK RÕ NÉT TRÊN DI ĐỘNG
+        // =========================================================================
+        (function() {
+            function setTimemarkFullscreen(enable) {
+                const modal = $('#timemark-camera-modal');
+                const btn = $('#btn-tm-fullscreen-toggle');
+                modal.toggleClass('tm-fullscreen-mode', !!enable);
+                if (enable) {
+                    btn.html('🗗 Thu gọn').css({ background: '#ea580c', borderColor: '#fde047' });
+                } else {
+                    btn.html('⛶ Toàn màn hình').css({ background: '', borderColor: '' });
+                }
+            }
+
+            $(document).ready(function() {
+                // 1. Nút Bật/Tắt Toàn màn hình khung ngắm
+                $('#btn-tm-fullscreen-toggle').on('click', function(e) {
+                    e.stopPropagation();
+                    const isFull = $('#timemark-camera-modal').hasClass('tm-fullscreen-mode');
+                    setTimemarkFullscreen(!isFull);
+                });
+
+                // 2. Nút Bật/Tắt Lưới căn bố cục 1/3
+                $('#btn-tm-grid-toggle').on('click', function(e) {
+                    e.stopPropagation();
+                    const grid = $('#tm-grid-overlay');
+                    const isOn = grid.toggleClass('active').hasClass('active');
+                    $(this).css({
+                        background: isOn ? '#16a34a' : '',
+                        borderColor: isOn ? '#86efac' : ''
+                    });
+                });
+
+                // 3. Nút Thu gọn / Hiện đầy đủ thông tin tem trên khung ngắm (giúp nhìn rõ chủ thể cây xanh)
+                $('#btn-tm-hud-toggle').on('click', function(e) {
+                    e.stopPropagation();
+                    const vp = $('#tm-cam-viewport-box');
+                    const isCompact = vp.toggleClass('hud-compact').hasClass('hud-compact');
+                    $(this).html(isCompact ? '👁️ Đủ tem' : '👁️ Gọn tem').css({
+                        background: isCompact ? '#0284c7' : '',
+                        borderColor: isCompact ? '#7dd3fc' : ''
+                    });
+                });
+
+                // 4. Chạm vào khung ngắm video để hiển thị vòng tròn lấy nét trực quan & đồng bộ GPS nhẹ
+                $('#timemark-video').on('click touchstart', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const clientX = e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY;
+                    if (typeof clientX !== 'number' || typeof clientY !== 'number') return;
+
+                    const relX = Math.max(28, Math.min(rect.width - 28, clientX - rect.left));
+                    const relY = Math.max(28, Math.min(rect.height - 28, clientY - rect.top));
+                    const ring = $('#tm-focus-ring');
+                    ring.css({ left: relX + 'px', top: relY + 'px' }).removeClass('show');
+                    void ring[0]?.offsetWidth;
+                    ring.addClass('show');
+                    setTimeout(() => ring.removeClass('show'), 950);
+                });
+            });
+
+            // 5. Khi chụp xong ảnh, tự động thoát chế độ Toàn màn hình để hiển thị đầy đủ ô nhập Ghi chú & 6 nút Lưu/Gửi/Ghim
+            const origRenderStamped = window.renderTimemarkStampedImage;
+            if (typeof origRenderStamped === 'function') {
+                window.renderTimemarkStampedImage = function(sourceElem, srcW, srcH) {
+                    setTimemarkFullscreen(false);
+                    return origRenderStamped.apply(this, arguments);
+                };
+            }
+
+            // 6. Khi đóng Modal Camera, đảm bảo reset trạng thái Toàn màn hình
+            const origCloseTmV32 = window.closeTimemarkCameraModal;
+            window.closeTimemarkCameraModal = function() {
+                setTimemarkFullscreen(false);
+                if (typeof origCloseTmV32 === 'function') origCloseTmV32();
+            };
+
+            // 7. Khi mở Modal Camera trên điện thoại, tự động thu gọn tem trực tiếp (Gọn tem) để mở rộng tầm nhìn khung ngắm
+            const origOpenTmV32 = window.openTimemarkCameraModal;
+            window.openTimemarkCameraModal = function() {
+                if (typeof origOpenTmV32 === 'function') origOpenTmV32();
+                if (window.innerWidth <= 767) {
+                    $('#tm-cam-viewport-box').addClass('hud-compact');
+                    $('#btn-tm-hud-toggle').html('👁️ Đủ tem').css({ background: '#0284c7', borderColor: '#7dd3fc' });
+                } else {
+                    $('#tm-cam-viewport-box').removeClass('hud-compact');
+                    $('#btn-tm-hud-toggle').html('👁️ Gọn tem').css({ background: '', borderColor: '' });
+                }
+            };
+        })();
+
+
+        // =========================================================================
+        // BỔ SUNG V33: QUAY VIDEO HIỆN TRƯỜNG ĐÓNG DẤU TỌA ĐỘ & THỜI GIAN THỜI GIAN THỰC
+        // =========================================================================
+        (function() {
+            const tmVideoState = {
+                mode: 'photo', // 'photo' | 'video'
+                isRecording: false,
+                mediaRecorder: null,
+                recordedChunks: [],
+                recordedBlob: null,
+                recordedUrl: null,
+                recordedExt: 'webm',
+                recordedMime: 'video/webm',
+                recordedFileName: '',
+                recStartTime: 0,
+                recTimerInterval: null,
+                renderAnimId: null,
+                audioStream: null,
+                offscreenCanvas: null
+            };
+
+            function formatRecDuration(ms) {
+                const totalSec = Math.max(0, Math.floor(ms / 1000));
+                const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+                const ss = String(totalSec % 60).padStart(2, '0');
+                return `${mm}:${ss}`;
+            }
+
+            // Vẽ một khung hình video kèm lớp tem Timemark thời gian thực (Giờ chạy từng giây, GPS cập nhật liên tục)
+            function drawStampedVideoFrame(ctx, videoEl, targetW, targetH) {
+                ctx.drawImage(videoEl, 0, 0, targetW, targetH);
+
+                const scale = Math.max(0.6, Math.min(1.25, targetW / 1000));
+                const pad = Math.round(20 * scale);
+
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const mo = String(now.getMonth() + 1).padStart(2, '0');
+                const yyyy = now.getFullYear();
+                const weekdays = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+                const timeStr = `${hh}:${mm}:${ss}`;
+                const dateStr = `${dd}/${mo}/${yyyy} (${weekdays[now.getDay()]})`;
+
+                const lat = timemarkCamState.lat !== null ? timemarkCamState.lat : map.getCenter().lat;
+                const lng = timemarkCamState.lng !== null ? timemarkCamState.lng : map.getCenter().lng;
+                const projectTitle = ($('#tm-project-input').val() || 'KHẢO SÁT CÂY XANH & HIỆN TRƯỜNG').trim();
+                const noteText = ($('#tm-note-input').val() || '').trim();
+                const addrText = timemarkCamState.address || `Tọa độ (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                const gpsLine = `GPS: ${lat.toFixed(6)}°N, ${lng.toFixed(6)}°E`;
+                const elapsedTxt = formatRecDuration(Date.now() - tmVideoState.recStartTime);
+
+                // Huy hiệu REC + TIMEMARK góc trên bên phải
+                ctx.save();
+                const badgeFont = Math.round(15 * scale);
+                ctx.font = `bold ${badgeFont}px Consolas, monospace, Arial`;
+                const recBadge = `● REC ${elapsedTxt} · TIMEMARK GPS`;
+                const bw = ctx.measureText(recBadge).width + Math.round(24 * scale);
+                const bh = Math.round(30 * scale);
+                const bx = targetW - bw - pad;
+                const by = pad;
+                ctx.fillStyle = 'rgba(185, 28, 28, 0.86)';
+                ctx.beginPath();
+                ctx.roundRect(bx, by, bw, bh, Math.round(15 * scale));
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(recBadge, bx + Math.round(12 * scale), by + Math.round(20 * scale));
+                ctx.restore();
+
+                // Khung tem Timemark góc dưới bên trái
+                const lineH = Math.round(24 * scale);
+                const linesCount = noteText ? 4 : 3;
+                const boxH = Math.round(46 * scale) + linesCount * lineH + Math.round(16 * scale);
+                const boxW = Math.min(targetW - pad * 2, Math.round(780 * scale));
+                const boxY = targetH - boxH - pad;
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+                ctx.beginPath();
+                ctx.roundRect(pad, boxY, boxW, boxH, Math.round(12 * scale));
+                ctx.fill();
+
+                const barW = Math.round(5 * scale);
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.roundRect(pad, boxY, barW, boxH, Math.round(3 * scale));
+                ctx.fill();
+
+                const tx = pad + barW + Math.round(14 * scale);
+                let cy = boxY + Math.round(38 * scale);
+
+                ctx.font = `bold ${Math.round(34 * scale)}px Consolas, monospace, Arial`;
+                ctx.fillStyle = '#facc15';
+                ctx.fillText(timeStr, tx, cy);
+                const tw = ctx.measureText(timeStr).width;
+
+                ctx.font = `bold ${Math.round(17 * scale)}px system-ui, Arial, sans-serif`;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(dateStr, tx + tw + Math.round(14 * scale), cy - Math.round(6 * scale));
+
+                cy += lineH + Math.round(4 * scale);
+                ctx.font = `bold ${Math.round(18 * scale)}px system-ui, Arial, sans-serif`;
+                ctx.fillStyle = '#fde047';
+                ctx.fillText(projectTitle.slice(0, 62), tx, cy);
+
+                if (noteText) {
+                    cy += lineH;
+                    ctx.font = `600 ${Math.round(16 * scale)}px system-ui, Arial, sans-serif`;
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillText(`Ghi chú: ${noteText.slice(0, 68)}`, tx, cy);
+                }
+
+                cy += lineH;
+                ctx.font = `500 ${Math.round(16 * scale)}px system-ui, Arial, sans-serif`;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillText(`Đ/c: ${addrText.slice(0, 74)}`, tx, cy);
+
+                cy += lineH;
+                ctx.font = `bold ${Math.round(17 * scale)}px Consolas, monospace, Arial`;
+                ctx.fillStyle = '#86efac';
+                ctx.fillText(gpsLine, tx, cy);
+                ctx.restore();
+            }
+
+            function syncShutterButtonForMode() {
+                const shutterBtn = $('#btn-tm-take-photo');
+                const nativeBtn = $('#btn-tm-native-camera');
+                if (tmVideoState.mode === 'video') {
+                    if (tmVideoState.isRecording) {
+                        shutterBtn.removeClass('gps-pending video-ready').addClass('video-recording').prop('disabled', false);
+                        shutterBtn.html('⏹️ DỪNG & LƯU VIDEO');
+                    } else {
+                        shutterBtn.removeClass('video-recording').addClass('video-ready');
+                        if (!shutterBtn.hasClass('gps-pending')) {
+                            shutterBtn.html('🎥 BẮT ĐẦU QUAY VIDEO');
+                        }
+                    }
+                    nativeBtn.html('📹 Quay Cam gốc');
+                } else {
+                    shutterBtn.removeClass('video-ready video-recording');
+                    if (!shutterBtn.hasClass('gps-pending')) {
+                        shutterBtn.html('📸 CHỤP ẢNH ĐÓNG DẤU');
+                    }
+                    nativeBtn.html('📱 Cam gốc / Ảnh');
+                }
+            }
+
+            window.setTimemarkCaptureMode = function(mode) {
+                if (tmVideoState.isRecording) {
+                    showToast("Vui lòng dừng quay video hiện tại trước khi chuyển chế độ.", "info");
+                    return;
+                }
+                tmVideoState.mode = (mode === 'video') ? 'video' : 'photo';
+                $('.tm-mode-tab').removeClass('active');
+                $(`.tm-mode-tab[data-tmmode="${tmVideoState.mode}"]`).addClass('active');
+                resetTimemarkToViewfinderMode();
+                syncShutterButtonForMode();
+            };
+
+            async function startTimemarkVideoRecording() {
+                const videoEl = document.getElementById('timemark-video');
+                if (!timemarkCamState.stream || !videoEl || videoEl.readyState < 2 || videoEl.videoWidth <= 0) {
+                    $('#tm-native-video-input').click();
+                    return;
+                }
+                if (typeof MediaRecorder === 'undefined') {
+                    showToast("Trình duyệt không hỗ trợ ghi hình trực tiếp, chuyển sang Camera gốc...", "info");
+                    $('#tm-native-video-input').click();
+                    return;
+                }
+
+                // Chuẩn hóa kích thước canvas HD mượt mà trên mọi thiết bị di động (tối đa cạnh dài 1280px)
+                const maxDim = 1280;
+                let w = videoEl.videoWidth || 1280;
+                let h = videoEl.videoHeight || 720;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                    else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                }
+                // Bảo đảm chiều rộng/cao là số chẵn cho bộ mã hóa video H.264/VP8
+                w = w % 2 === 0 ? w : w - 1;
+                h = h % 2 === 0 ? h : h - 1;
+
+                const recCanvas = document.createElement('canvas');
+                recCanvas.width = w;
+                recCanvas.height = h;
+                const ctx = recCanvas.getContext('2d');
+                tmVideoState.offscreenCanvas = recCanvas;
+                tmVideoState.recStartTime = Date.now();
+                tmVideoState.recordedChunks = [];
+
+                // Chụp kèm 1 ảnh khung hình đại diện đóng dấu Timemark chuẩn để phục vụ Ghim bản đồ & KMZ
+                renderTimemarkStampedImage(videoEl, videoEl.videoWidth, videoEl.videoHeight);
+                // Quay lại khung ngắm để tiếp tục ghi hình
+                $('#timemark-captured-preview').hide();
+                $('#timemark-video').show();
+                $('#tm-live-overlay-box').show();
+                $('#tm-live-top-tools').show();
+                $('#tm-shutter-controls').show();
+                $('#tm-post-capture-actions').removeClass('active');
+
+                // Vòng lặp vẽ từng khung hình kèm tem Timemark thời gian thực
+                let running = true;
+                const renderLoop = () => {
+                    if (!running || !tmVideoState.isRecording) return;
+                    drawStampedVideoFrame(ctx, videoEl, w, h);
+                    tmVideoState.renderAnimId = requestAnimationFrame(renderLoop);
+                };
+                tmVideoState.isRecording = true;
+                renderLoop();
+
+                const canvasStream = recCanvas.captureStream(25);
+                // Thử thu thêm âm thanh micro hiện trường (không bắt buộc nếu người dùng từ chối mic)
+                try {
+                    const aStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    tmVideoState.audioStream = aStream;
+                    aStream.getAudioTracks().forEach(track => canvasStream.addTrack(track));
+                } catch (audioErr) {
+                    tmVideoState.audioStream = null;
+                }
+
+                // Chọn định dạng video tương thích tốt nhất (MP4 trên Safari iOS, WebM VP9/VP8 trên Chrome/Android)
+                const mimeCandidates = [
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=vp9,opus',
+                    'video/webm;codecs=vp8,opus',
+                    'video/webm'
+                ];
+                let chosenMime = '';
+                for (const m of mimeCandidates) {
+                    if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) {
+                        chosenMime = m;
+                        break;
+                    }
+                }
+
+                try {
+                    const recorder = chosenMime
+                        ? new MediaRecorder(canvasStream, { mimeType: chosenMime, videoBitsPerSecond: 2500000 })
+                        : new MediaRecorder(canvasStream);
+
+                    tmVideoState.recordedMime = recorder.mimeType || chosenMime || 'video/webm';
+                    tmVideoState.recordedExt = tmVideoState.recordedMime.includes('mp4') ? 'mp4' : 'webm';
+
+                    recorder.ondataavailable = (ev) => {
+                        if (ev.data && ev.data.size > 0) tmVideoState.recordedChunks.push(ev.data);
+                    };
+
+                    recorder.onstop = () => {
+                        running = false;
+                        if (tmVideoState.renderAnimId) cancelAnimationFrame(tmVideoState.renderAnimId);
+                        if (tmVideoState.audioStream) {
+                            tmVideoState.audioStream.getTracks().forEach(t => t.stop());
+                            tmVideoState.audioStream = null;
+                        }
+                        const blob = new Blob(tmVideoState.recordedChunks, { type: tmVideoState.recordedMime });
+                        tmVideoState.recordedBlob = blob;
+                        if (tmVideoState.recordedUrl) {
+                            try { URL.revokeObjectURL(tmVideoState.recordedUrl); } catch (e) {}
+                        }
+                        tmVideoState.recordedUrl = URL.createObjectURL(blob);
+
+                        const now = new Date();
+                        const stamp = `Timemark_Video_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
+                        tmVideoState.recordedFileName = `${stamp}.${tmVideoState.recordedExt}`;
+
+                        // Chuyển sang giao diện xem lại Video vừa quay
+                        $('#timemark-video').hide();
+                        $('#timemark-captured-preview').hide();
+                        $('#tm-live-overlay-box').hide();
+                        $('#tm-live-top-tools').hide();
+                        $('#tm-shutter-controls').hide();
+                        $('#tm-rec-indicator').removeClass('active');
+
+                        const vidPreview = document.getElementById('timemark-video-preview');
+                        vidPreview.src = tmVideoState.recordedUrl;
+                        $(vidPreview).show();
+
+                        $('#btn-tm-download-img').html('📥 Tải Video Đóng Dấu');
+                        $('#btn-tm-share-photo').html('📲 Gửi Video (Zalo...)');
+                        $('#btn-tm-retake').html('🔄 Quay video khác');
+                        $('#tm-post-capture-actions').addClass('active');
+
+                        // Thoát fullscreen nếu đang bật để thấy đầy đủ các nút lưu/chia sẻ
+                        $('#timemark-camera-modal').removeClass('tm-fullscreen-mode');
+                        showToast(`🎥 Đã lưu Video hiện trường đóng dấu GPS (${(blob.size / (1024*1024)).toFixed(1)} MB)!`, "success");
+                    };
+
+                    tmVideoState.mediaRecorder = recorder;
+                    recorder.start(500);
+
+                    $('#tm-rec-indicator').addClass('active');
+                    $('#tm-rec-timer').text('REC 00:00');
+                    if (tmVideoState.recTimerInterval) clearInterval(tmVideoState.recTimerInterval);
+                    tmVideoState.recTimerInterval = setInterval(() => {
+                        $('#tm-rec-timer').text(`REC ${formatRecDuration(Date.now() - tmVideoState.recStartTime)}`);
+                    }, 500);
+
+                    syncShutterButtonForMode();
+                    if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+                    showToast("🎥 Đang quay video đóng dấu tọa độ & thời gian trực tiếp...", "info");
+                } catch (recErr) {
+                    running = false;
+                    tmVideoState.isRecording = false;
+                    console.error("MediaRecorder error:", recErr);
+                    $('#tm-native-video-input').click();
+                }
+            }
+
+            function stopTimemarkVideoRecording() {
+                if (!tmVideoState.isRecording) return;
+                tmVideoState.isRecording = false;
+                if (tmVideoState.recTimerInterval) {
+                    clearInterval(tmVideoState.recTimerInterval);
+                    tmVideoState.recTimerInterval = null;
+                }
+                syncShutterButtonForMode();
+                if (tmVideoState.mediaRecorder && tmVideoState.mediaRecorder.state !== 'inactive') {
+                    try { tmVideoState.mediaRecorder.stop(); } catch (e) {}
+                }
+            }
+
+            $(document).ready(function() {
+                // Chuyển đổi tab Ảnh / Video
+                $(document).on('click', '.tm-mode-tab', function() {
+                    const m = $(this).attr('data-tmmode');
+                    window.setTimemarkCaptureMode(m);
+                });
+
+                // Ghi đè nút Chụp chính (#btn-tm-take-photo) để hỗ trợ cả Chụp Ảnh & Bắt đầu/Dừng Quay Video
+                $('#btn-tm-take-photo').off('click').on('click', function() {
+                    if (tmVideoState.mode === 'video') {
+                        if (tmVideoState.isRecording) {
+                            stopTimemarkVideoRecording();
+                        } else {
+                            startTimemarkVideoRecording();
+                        }
+                        return;
+                    }
+                    const videoEl = document.getElementById('timemark-video');
+                    if (timemarkCamState.stream && videoEl && videoEl.readyState >= 2 && videoEl.videoWidth > 0) {
+                        renderTimemarkStampedImage(videoEl, videoEl.videoWidth, videoEl.videoHeight);
+                    } else {
+                        $('#tm-native-file-input').click();
+                    }
+                });
+
+                // Nút Cam gốc / Ảnh: mở máy ảnh hoặc máy quay gốc tùy tab đang chọn
+                $('#btn-tm-native-camera').off('click').on('click', function() {
+                    if (tmVideoState.mode === 'video') {
+                        $('#tm-native-video-input').click();
+                    } else {
+                        $('#tm-native-file-input').click();
+                    }
+                });
+
+                // Xử lý file video quay từ Camera gốc điện thoại
+                $('#tm-native-video-input').on('change', function(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    tmVideoState.recordedBlob = file;
+                    tmVideoState.recordedMime = file.type || 'video/mp4';
+                    tmVideoState.recordedExt = file.name.split('.').pop() || 'mp4';
+                    tmVideoState.recordedFileName = file.name;
+                    if (tmVideoState.recordedUrl) {
+                        try { URL.revokeObjectURL(tmVideoState.recordedUrl); } catch (err) {}
+                    }
+                    tmVideoState.recordedUrl = URL.createObjectURL(file);
+
+                    $('#timemark-video').hide();
+                    $('#timemark-captured-preview').hide();
+                    $('#tm-live-overlay-box').hide();
+                    $('#tm-live-top-tools').hide();
+                    $('#tm-shutter-controls').hide();
+
+                    const vidPreview = document.getElementById('timemark-video-preview');
+                    vidPreview.src = tmVideoState.recordedUrl;
+                    $(vidPreview).show();
+
+                    $('#btn-tm-download-img').html('📥 Tải Video');
+                    $('#btn-tm-share-photo').html('📲 Gửi Video (Zalo...)');
+                    $('#btn-tm-retake').html('🔄 Quay video khác');
+                    $('#tm-post-capture-actions').addClass('active');
+                    showToast("📹 Đã nạp video hiện trường kèm tọa độ GPS!", "success");
+                    $(this).val('');
+                });
+
+                // Ghi đè nút Tải xuống để tải Video khi ở chế độ Video
+                const origDownloadHandlers = $._data(document.getElementById('btn-tm-download-img'), 'events')?.click?.map(h => h.handler) || [];
+                $('#btn-tm-download-img').off('click').on('click', function(e) {
+                    if (tmVideoState.mode === 'video' && tmVideoState.recordedBlob) {
+                        const a = document.createElement('a');
+                        a.href = tmVideoState.recordedUrl || URL.createObjectURL(tmVideoState.recordedBlob);
+                        a.download = tmVideoState.recordedFileName || `Timemark_Video_${Date.now()}.webm`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showToast("📥 Đã tải Video hiện trường đóng dấu GPS về máy!", "success");
+                        return;
+                    }
+                    origDownloadHandlers.forEach(fn => fn.call(this, e));
+                });
+
+                // Ghi đè nút Gửi/Chia sẻ để gửi tệp Video trực tiếp qua Zalo/Messenger trên di động
+                const origShareHandlers = $._data(document.getElementById('btn-tm-share-photo'), 'events')?.click?.map(h => h.handler) || [];
+                $('#btn-tm-share-photo').off('click').on('click', async function(e) {
+                    if (tmVideoState.mode === 'video' && tmVideoState.recordedBlob) {
+                        const fileName = tmVideoState.recordedFileName || `Timemark_Video_${Date.now()}.webm`;
+                        const videoFile = new File([tmVideoState.recordedBlob], fileName, { type: tmVideoState.recordedMime });
+                        if (navigator.canShare && navigator.canShare({ files: [videoFile] })) {
+                            try {
+                                await navigator.share({
+                                    title: '🎥 Video Hiện Trường Timemark',
+                                    text: `Video hiện trường tại ${extState.currentOcrData?.address || ''} (${extState.currentOcrData?.lat?.toFixed(6)}, ${extState.currentOcrData?.lng?.toFixed(6)})`,
+                                    files: [videoFile]
+                                });
+                                showToast("Đã chia sẻ Video hiện trường!", "success");
+                            } catch (err) {}
+                        } else {
+                            $('#btn-tm-download-img').click();
+                            showToast("Trình duyệt chưa hỗ trợ gửi trực tiếp tệp video lớn, đã tải video về máy để bạn gửi qua Zalo!", "info");
+                        }
+                        return;
+                    }
+                    for (const fn of origShareHandlers) {
+                        await fn.call(this, e);
+                    }
+                });
+            });
+
+            // Bọc resetTimemarkToViewfinderMode để reset cả khung xem video & nhãn nút
+            const origResetViewfinder = window.resetTimemarkToViewfinderMode;
+            window.resetTimemarkToViewfinderMode = function() {
+                if (typeof origResetViewfinder === 'function') origResetViewfinder();
+                const vidPreview = document.getElementById('timemark-video-preview');
+                if (vidPreview) {
+                    vidPreview.pause();
+                    vidPreview.removeAttribute('src');
+                    $(vidPreview).hide();
+                }
+                $('#tm-rec-indicator').removeClass('active');
+                $('#btn-tm-download-img').html('📥 Tải Ảnh Timemark');
+                $('#btn-tm-share-photo').html('📲 Gửi Ảnh (Zalo...)');
+                $('#btn-tm-retake').html('🔄 Chụp ảnh khác');
+                syncShutterButtonForMode();
+            };
+
+            // Đảm bảo dừng ghi hình an toàn nếu người dùng đóng modal khi đang quay
+            const origCloseTmV33 = window.closeTimemarkCameraModal;
+            window.closeTimemarkCameraModal = function() {
+                if (tmVideoState.isRecording) {
+                    stopTimemarkVideoRecording();
+                }
+                if (typeof origCloseTmV33 === 'function') origCloseTmV33();
+            };
+
+            // Đồng bộ lại nhãn nút sau khi hàm khóa chờ GPS mở khóa nút chụp
+            const origOpenTmV33 = window.openTimemarkCameraModal;
+            window.openTimemarkCameraModal = function() {
+                if (typeof origOpenTmV33 === 'function') origOpenTmV33();
+                setTimeout(syncShutterButtonForMode, 3400);
             };
         })();
 
